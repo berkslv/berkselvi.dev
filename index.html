@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="node_modules/bulma/css/bulma.min.css">
+    <link rel="stylesheet" href="_node_modules/bulma/css/bulma.min.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous" />
     <title>Berk Selvi</title>
     <link rel="icon" href="./assets/images/favicon.ico"></link>
     <link rel="shortcut icon" href="./assets/images/favicon.ico"></link>
+    <link href="_node_modules/aos/dist/aos.css" rel="stylesheet">
     <meta name="description" content="Berk Selvi's Portfolio, Software developer, Works with back-end fron-end and mobile technologies.">
     <script type="application/ld+json">
         {
@@ -29,7 +30,7 @@
 <body>
 
     <!-- Desktop navbar -->
-    <aside class="menu">
+    <aside class="menu" data-aos="fade-right" data-aos-duration="2000">
         <ul class="menu-list">
             <li>
                 <span class="icon is-large">
@@ -63,7 +64,7 @@
     </aside>
 
     <!-- Mobile navbar -->
-    <nav id="custom-navbar">
+    <nav id="custom-navbar" data-aos="fade-left" data-aos-duration="2000">
         <div>
             <div>
                 <span class="icon is-large">
@@ -301,5 +302,9 @@
     </footer>
 
     <script src="/js/main.js"></script>
+    <script src="/_node_modules/aos/dist/aos.js"></script>
+    <script>
+        AOS.init({once:true});
+      </script>
 </body>
 </html>
