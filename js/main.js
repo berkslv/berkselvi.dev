@@ -22,10 +22,8 @@ const paddingHorizontal = document.getElementsByClassName("px-5");
     }
 
     if (screen.width < 620) {
-        for (let index = 0; index < paddingHorizontal.length; index++) {
-            const element = paddingHorizontal[index];
-            element.classList.remove("px-5");
-        }
+        paddingHorizontal[0].classList.remove("px-5");
+        paddingHorizontal[0].classList.remove("px-5");  
     }
 })();
 
