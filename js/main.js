@@ -8,13 +8,23 @@ const derin = document.getElementById("derin");
 const medpic = document.getElementById("medpic");
 // Mobile navbar icons
 const mobileNavIcons = document.getElementById("custom-navbar").getElementsByTagName("i");
+// Has padding
+const paddingHorizontal = document.getElementsByClassName("px-5");
 
 (() => {
+
     if (screen.width > 620) {
         for (let index = 0; index < mobileNavIcons.length; index++) {
             const element = mobileNavIcons[index];
             element.classList.remove("fa-lg");
             element.classList.add("fa-2x");
+        }
+    }
+
+    if (screen.width < 620) {
+        for (let index = 0; index < paddingHorizontal.length; index++) {
+            const element = paddingHorizontal[index];
+            element.classList.remove("px-5");
         }
     }
 })();
