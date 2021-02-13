@@ -1,0 +1,127 @@
+/*----- General Items -----*/
+:root{
+    --base-color: hsl(204, 71%, 39%);
+    --dark-color: hsl(0, 0%, 4%);
+}
+
+html, body {
+    background-color: var(--dark-color);
+    color: #fff;
+}
+
+
+/*----- Responsive sizes -----*/
+/* Formula -> font-size: calc([minimum size] + ([maximum size] - [minimum size]) * ((100vw - [minimum viewport width]) / ([maximum viewport width] - [minimum viewport width]))); */
+.is-fluid-size-1{
+    font-size: calc(32px + (72 - 32) * ((100vw - 300px) / (1800 - 300) )); /* 5rem - 72px - 32px */
+}
+.is-fluid-size-2{
+    font-size: calc(28px + (57 - 28) * ((100vw - 300px) / (1800 - 300) )); /* 57.6px / 25.60px */
+}
+
+.is-fluid-size-3{
+    font-size: calc(19.2px + (43.2 - 19.2) * ((100vw - 300px) / (1800 - 300) )); /* 43.2px / 19.2px */
+}
+
+.is-fluid-size-4{
+    font-size: calc(16px + (36 - 16) * ((100vw - 300px) / (1800 - 300) )); /* 36px / 16px*/
+}
+
+.is-fluid-size-5{
+    font-size: calc(15.8px + (28.8 - 15.8) * ((100vw - 300px) / (1800 - 300) )); /* 28.8px / 15.8px */
+}
+
+.is-fluid-size-6{
+    font-size: calc(13.6px + (21.6 - 13.6) * ((100vw - 300px) / (1800 - 300) )); /* 21.6px / 13.6px  */
+}
+
+.is-fluid-size-7{
+    font-size: calc(8.2px + (14.4 - 8.2) * ((100vw - 300px) / (1800 - 300) ))x; /* 1rem - 14.4px */
+}
+
+.is-fluid-width-9rem{
+    width: calc(87.7px + (129.6 - 87.7) * ((100vw - 300px) / (1800 - 300) )); /* 129.6 / 87.6*/
+}
+
+/*----- Custom class / Not found in Bulma -----*/
+.is-none{
+    display: none;
+}
+
+/*----- Desktop navbar -----*/
+aside{
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--base-color);
+}
+
+aside li{
+    margin: 3rem 0;
+}
+
+/*----- Mobile navbar -----*/
+#custom-navbar{
+    position: absolute;
+    top: 70px;
+    right: 0;
+    width: 75%;
+    display: none;
+    justify-content: center;
+    align-items:center;
+    background-color: var(--base-color);
+}
+
+#custom-navbar span{
+    margin: 0 calc(1px + (50 - 1) * ((100vw - 300px) / (1000 - 300) )); 
+}
+
+/*----- About us section -----*/
+#about-us li{
+    list-style: none;
+}
+
+/*----- Works section -----*/
+#work-tabs a:hover{
+    color: var(--dark-color) !important;
+}
+
+#work-details img{
+    width: calc(200px + (300 - 200) * ((100vw - 300px) / (1800 - 300) )); /* 300px 200px */
+    border-radius: 10%;
+    margin: 0 auto;
+}
+
+#work-details a:hover{
+    color: hsl(171, 100%, 41%) !important;
+}
+
+.is-custom-active{
+    background-color: var(--base-color);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+/*----- Footer -----*/
+footer{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 6rem;
+    border-top: 2px solid var(--base-color);
+}
+
+/*----- Change mobile and dekstop navbar -----*/
+@media (max-width:1092px){
+    aside{
+        display: none;
+    }
+    #custom-navbar{
+        display: flex;
+    }
+}
