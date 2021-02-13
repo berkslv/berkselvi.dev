@@ -1,7 +1,7 @@
 /*----- General Items -----*/
 :root{
     --base-color: hsl(204, 71%, 39%);
-    --dark-color: hsl(0, 0%, 4%);
+    --dark-color: hsl(0, 0%, 14%);
 }
 
 html, body {
@@ -54,7 +54,7 @@ aside{
     left: 0;
     top: 0;
     height: 100%;
-    width: 3rem;
+    width: 3.5rem;
     display: flex;
     justify-content: center;
     align-items: center;
