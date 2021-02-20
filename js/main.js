@@ -27,6 +27,26 @@ const paddingHorizontal = document.getElementsByClassName("px-5");
     }
 })();
 
+function randomNotification() {
+    var notifTitle = 'bu bir test mesajıdır';
+    var notifBody = 'Test mesajıdır';
+    var notifImg = 'images/favicon.png';
+    var options = {
+        body: notifBody,
+        icon: notifImg
+    }
+    var notif = new Notification(notifTitle, options);
+}
+
+document.getElementById("notif").addEventListener('click', function(e) {
+    Notification.requestPermission().then(function(result) {
+        if(result === 'granted') {
+            randomNotification();
+        }
+    });
+});
+
+
 /**
  * Makes class changes to handle clicking the tabs.
  * @param {this} e For the clicked element itself 
