@@ -41,7 +41,9 @@ function randomNotification() {
 document.getElementById("notif").addEventListener('click', function(e) {
     Notification.requestPermission().then(function(result) {
         if(result === 'granted') {
-            randomNotification();
+            setTimeout(() => {
+                randomNotification();
+            }, 4000);
         }
     });
 });
