@@ -1,6 +1,27 @@
 {
-  "dependencies": {
-    "aos": "^2.3.4",
-    "bulma": "^0.9.2"
+  "name": "berkslv.github.io",
+  "version": "1.0.0",
+  "description": "Developer portfolio",
+  "main": "index.html",
+  "scripts": {
+    "watch" : "npx tailwindcss -o ./assets/css/tailwind.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/berkslv/berkslv.github.io.git"
+  },
+  "keywords": [
+    "portfolio"
+  ],
+  "author": "berkslv",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/berkslv/berkslv.github.io/issues"
+  },
+  "homepage": "https://github.com/berkslv/berkslv.github.io#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.3.2",
+    "postcss": "^8.3.6",
+    "tailwindcss": "^2.2.7"
   }
 }
