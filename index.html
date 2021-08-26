@@ -12,6 +12,72 @@
 
 <body>
 
+    <div id="contact-modal" class="fixed z-50 inset-0 overflow-y-auto transition-all invisible duration-500 opacity-0"
+        aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center h-screen w-full pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="flex items-center justify-center">
+                        <form action="">
+                            <h5 class="lg:text-2xl md:text-xl text-lg font-semibold">Message me. I will respond with
+                                lightning speed. ⚡️</h5>
+                            <div class="relative mb-4">
+                                <label for="name" class="leading-7 text-sm text-gray-600">Name</label>
+                                <input type="text" id="name" name="name"
+                                    class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                            </div>
+                            <div class="relative mb-4">
+                                <label for="email" class="leading-7 text-sm text-gray-600">Email</label>
+                                <input type="email" id="email" name="email"
+                                    class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                            </div>
+                            <div class="relative mb-4">
+                                <label for="message" class="leading-7 text-sm text-gray-600">Message</label>
+                                <textarea id="message" name="message"
+                                    class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
+                            </div>
+
+                            <div id="error-modal"
+                                class="bg-yellow-200 border-yellow-600 text-yellow-600 border-l-4 p-4 hidden"
+                                role="alert">
+                                <p class="font-bold">
+                                    🤯 Wow
+                                </p>
+                                <p>
+                                    Please provide a valid input.
+                                </p>
+                            </div>
+
+                            <div id="success-modal"
+                                class="bg-green-200 border-green-600 text-green-600 border-l-4 p-4 hidden" role="alert">
+                                <p class="font-bold">
+                                    🥳 Thanks!
+                                </p>
+                                <p>
+                                    I will reply you as soon as possible
+                                </p>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" id="contact-btn-send"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Send
+                    </button>
+                    <button type="button" id="contact-btn-cancel"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <nav class="w-full h-20 flex items-center justify-between lg:px-36 md:px-20 sm:px-14 px-8">
         <div>
             <h1 class="lg:text-3xl md:text-2xl text-xl text-green-500 font-bold">
@@ -19,13 +85,12 @@
             </h1>
         </div>
         <div>
-            <a href="#"
+            <button id="contact-btn-1"
                 class="md:px-4 px-3.5 md:py-2 py-1.5 md:text-xl sm:text-lg text-base font-semibold bg-green-50 text-green-600 rounded-md border-2 border-green-500 transition-colors duration-200 hover:border-green-600 hover:text-green-100 hover:bg-green-600">
                 Say hello
-            </a>
+            </button>
         </div>
     </nav>
-
 
     <header class="w-full flex justify-center">
         <div class="pt-20 pb-32 mx-10">
@@ -189,9 +254,9 @@
             <h3 class="lg:text-4xl md:text-3xl text-2xl font-semibold mb-6 text-white">Start a project?</h3>
             <h5 class="lg:text-xl md:text-lg text-base font-light text-gray-100 mb-10">If you're interested in working
                 together, we should chat about it right now. Or just say hello.</h5>
-            <a href=""
+            <button id="contact-btn-2"
                 class="md:px-4 px-3.5 md:py-2 py-1.5 md:text-xl sm:text-lg text-base font-semibold bg-green-600 text-green-50 rounded-md border-4 border-green-200 transition-colors duration-200 hover:border-green-400 hover:text-green-100 hover:bg-green-700">Get
-                in touch</a>
+                in touch</button>
         </div>
     </section>
 
@@ -254,7 +319,7 @@
             <!-- Medium icon end -->
         </div>
         <div class="flex justify-center items-center mb-5">
-            <a href="https://www.reddit.com/u/berkslv_" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
+            <button id="share-button" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
                 <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"
                     class="w-8 h-8 text-green-700" fill="currentColor">
                     <g>
@@ -265,7 +330,8 @@
                             d="M16,5l-1.42,1.42l-1.59-1.59V16h-1.98V4.83L9.42,6.42L8,5l4-4L16,5z M20,10v11c0,1.1-0.9,2-2,2H6c-1.11,0-2-0.9-2-2V10 c0-1.11,0.89-2,2-2h3v2H6v11h12V10h-3V8h3C19.1,8,20,8.89,20,10z" />
                     </g>
                 </svg>
-            </a>
+                <input type="text" value="https://berkslv.github.io" hidden id="clipboard">
+            </button>
         </div>
         <h5 class="md:text-lg text-base text-white">Built with ❤️ by Berkslv © 2021</h5>
     </footer>
