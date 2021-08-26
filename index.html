@@ -27,44 +27,48 @@
                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="flex items-center justify-center">
-                        <h4 class="lg:text-2xl md:text-xl text-lg font-semibold">Message me. I will respond with
-                            lightning speed. ⚡️</h5>
-                            <div class="relative mb-4">
-                                <label for="name" class="leading-7 text-sm text-gray-600">Name</label>
-                                <input type="text" id="name" name="name"
-                                    class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
-                            </div>
-                            <div class="relative mb-4">
-                                <label for="email" class="leading-7 text-sm text-gray-600">Email</label>
-                                <input type="email" id="email" name="email"
-                                    class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
-                            </div>
-                            <div class="relative mb-4">
-                                <label for="message" class="leading-7 text-sm text-gray-600">Message</label>
-                                <textarea id="message" name="message"
-                                    class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
-                            </div>
+                        <div>
+                            <h4 class="lg:text-2xl md:text-xl text-lg font-semibold">Message me. I will respond with
+                                lightning speed. ⚡️</h5>
+                                <div class="mb-4">
+                                    <label for="name" class="leading-7 text-sm text-gray-600">Name</label>
+                                    <input type="text" id="name" name="name"
+                                        class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="email" class="leading-7 text-sm text-gray-600">Email</label>
+                                    <input type="email" id="email" name="email"
+                                        class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="message" class="leading-7 text-sm text-gray-600">Message</label>
+                                    <textarea id="message" name="message"
+                                        class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
+                                </div>
 
-                            <div id="error-modal"
-                                class="bg-yellow-200 border-yellow-600 text-yellow-600 border-l-4 p-4 hidden"
-                                role="alert">
-                                <p class="font-bold">
-                                    🤯 Wow
-                                </p>
-                                <p>
-                                    Please provide a valid input.
-                                </p>
-                            </div>
+                                <div id="error-modal"
+                                    class="bg-yellow-200 border-yellow-600 text-yellow-600 border-l-4 p-4 hidden"
+                                    role="alert">
+                                    <p class="font-bold">
+                                        🤯 Wow
+                                    </p>
+                                    <p>
+                                        Please provide a valid input.
+                                    </p>
+                                </div>
 
-                            <div id="success-modal"
-                                class="bg-green-200 border-green-600 text-green-600 border-l-4 p-4 hidden" role="alert">
-                                <p class="font-bold">
-                                    🥳 Thanks!
-                                </p>
-                                <p>
-                                    I will reply you as soon as possible
-                                </p>
-                            </div>
+                                <div id="success-modal"
+                                    class="bg-green-200 border-green-600 text-green-600 border-l-4 p-4 hidden"
+                                    role="alert">
+                                    <p class="font-bold">
+                                        🥳 Thanks!
+                                    </p>
+                                    <p>
+                                        I will reply you as soon as possible
+                                    </p>
+                                </div>
+                        </div>
+
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -269,7 +273,8 @@
         <div class="flex justify-center items-center">
             <!-- Mail icon start -->
             <a href="mailto:berkslv@gmail.com" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-8 h-8 text-green-700" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-8 h-8 text-green-700"
+                    fill="currentColor">
                     <path d="M0 0h24v24H0V0z" fill="none" />
                     <path
                         d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z" />
