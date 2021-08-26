@@ -32,23 +32,25 @@ const form_message = document.getElementById("message");
 const error_modal = document.getElementById("error-modal");
 const success_modal = document.getElementById("success-modal");
 const shareButton = document.querySelector("#share-button");
+const clipboardText = document.getElementById("clipboard-input");
+const clipboard_modal = document.getElementById("clipboard-modal");
 
 /**
  * Opens modal with classes
  */
-function openModal() {
-  contactModal.classList.remove("invisible");
-  contactModal.classList.remove("opacity-0");
-  contactModal.classList.add("opacity-100");
+function openModal(modal) {
+  modal.classList.remove("invisible");
+  modal.classList.remove("opacity-0");
+  modal.classList.add("opacity-100");
 }
 
 /**
  * Closes modal with classes
  */
-function closeModal() {
-  contactModal.classList.remove("opacity-100");
-  contactModal.classList.add("opacity-0");
-  contactModal.classList.add("invisible");
+function closeModal(modal) {
+  modal.classList.remove("opacity-100");
+  modal.classList.add("opacity-0");
+  modal.classList.add("invisible");
 }
 
 /**
@@ -107,6 +109,24 @@ const shareData = {
   url: "https://berkslv.github.io",
 };
 
+/**
+ * Copy URL to the clipboard
+ */
+function copyToClipboard() {
+  /* Select the text field */
+  clipboardText.select();
+  clipboardText.setSelectionRange(0, 99999); /* For mobile devices */
+
+  /* Copy the text inside the text field */
+  navigator.clipboard.writeText(clipboardText.value);
+
+  openModal(clipboard_modal);
+
+  setTimeout(() => {
+    closeModal(clipboard_modal);
+  }, 1800);
+}
+
 // Must be triggered some kind of "user activation"
 shareButton.addEventListener("click", async () => {
   // IOS and mobile devices try to Share API
@@ -117,24 +137,18 @@ shareButton.addEventListener("click", async () => {
       alert(err);
     }
   } else {
-    // Copy URL to the clipboard
-    /* Get the text field */
-    var copyText = document.getElementById("clipboard");
-
-    /* Select the text field */
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); /* For mobile devices */
-
-    /* Copy the text inside the text field */
-    navigator.clipboard.writeText(copyText.value);
-
-    /* Alert the copied text */
-    alert("Copied the text: " + copyText.value);
+    copyToClipboard();
   }
 });
 
 // Events.
-contactBtn_1.addEventListener("click", openModal);
-contactBtn_2.addEventListener("click", openModal);
-contactBtn_cancel.addEventListener("click", closeModal);
+contactBtn_1.addEventListener("click", () => {
+  openModal(contactModal);
+});
+contactBtn_2.addEventListener("click", () => {
+  openModal(contactModal);
+});
+contactBtn_cancel.addEventListener("click", () => {
+  closeModal(contactModal);
+});
 contactBtn_send.addEventListener("click", submit);
