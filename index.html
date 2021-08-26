@@ -18,15 +18,19 @@
 
 <body>
 
-    <div id="contact-modal" class="fixed z-50 inset-0 overflow-y-auto transition-all invisible duration-500 opacity-0"
+    <!-- Contact modal -->
+    <div id="contact-modal"
+        class="w-full fixed z-50 inset-0 overflow-y-auto transition-all invisible duration-500 opacity-0"
         aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center h-screen w-full pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center h-screen w-full px-2 py-4 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <!-- Contact modal card -->
             <div
                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="flex items-center justify-center">
+                        <!-- Form -->
                         <div>
                             <h4 class="lg:text-2xl md:text-xl text-lg font-semibold">Message me. I will respond with
                                 lightning speed. ⚡️</h5>
@@ -46,6 +50,7 @@
                                         class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 h-32 text-base outline-none text-gray-700 py-1 px-3 resize-none leading-6 transition-colors duration-200 ease-in-out"></textarea>
                                 </div>
 
+                                <!-- Error response -->
                                 <div id="error-modal"
                                     class="bg-yellow-200 border-yellow-600 text-yellow-600 border-l-4 p-4 hidden"
                                     role="alert">
@@ -56,7 +61,9 @@
                                         Please provide a valid input.
                                     </p>
                                 </div>
+                                <!-- Error response -->
 
+                                <!-- Success response -->
                                 <div id="success-modal"
                                     class="bg-green-200 border-green-600 text-green-600 border-l-4 p-4 hidden"
                                     role="alert">
@@ -67,10 +74,13 @@
                                         I will reply you as soon as possible
                                     </p>
                                 </div>
-                        </div>
+                                <!-- Success response -->
 
+                        </div>
+                        <!-- Form -->
                     </div>
                 </div>
+                <!-- Form control -->
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                     <button type="button" id="contact-btn-send"
                         class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
@@ -81,10 +91,14 @@
                         Cancel
                     </button>
                 </div>
+                <!-- Form control -->
             </div>
+            <!-- Contact modal card -->
         </div>
     </div>
+    <!-- Contact modal -->
 
+    <!-- Navbar -->
     <nav class="w-full h-20 flex items-center justify-between lg:px-36 md:px-20 sm:px-14 px-8">
         <div>
             <h2 class="lg:text-3xl md:text-2xl text-xl text-green-500 font-bold">
@@ -98,50 +112,69 @@
             </button>
         </div>
     </nav>
+    <!-- Navbar -->
 
+    <!-- Header -->
     <header class="w-full flex justify-center">
         <div class="pt-20 pb-32 mx-10">
+            <!-- Header Text -->
             <h1 class="lg:text-6xl md:text-5xl text-4xl font-semibold mb-4 text-left">
                 Berk Selvi.
-                <span class="text-left block">
-                    <span class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-light mt-5 text-gray-700">
+                <span class="text-left block mt-5">
+                    <span class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-light text-gray-700">
                         I design and code simple plus efficient</span>
                     <span
-                        class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-medium mt-5 text-green-600 border-b-4 border-green-500 mx-1">
+                        class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-medium text-green-600 border-b-4 border-green-500 mx-1">
                         Web</span>
-                    <span class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-light mt-5 text-gray-700">things as a
+                    <span class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-light text-gray-700">things as a
                         <span
-                            class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-medium mt-5 text-green-600 border-b-4 border-green-500 mx-1">
+                            class="lg:text-3xl md:text-2xl sm:text-xl text-lg font-medium text-green-600 border-b-4 border-green-500 mx-1">
                             Freelancer.</span>
                     </span>
                 </span>
             </h1>
+            <!-- Header Text -->
+            <!-- Header Image -->
             <div class="mt-20">
                 <img src="./assets/img/profile.webp" alt="profile image for berk selvi"
                     class="2xl:h-80 xl:h-72 lg:h-60 h-56 mx-auto border-4 border-green-700 rounded-full">
             </div>
+            <!-- Header Image -->
         </div>
     </header>
+    <!-- Header -->
 
+    <!-- Section has green background -->
     <section class="w-full flex justify-center items-center bg-green-600 ">
         <div class="py-20 container mx-auto 2xl:px-80 xl:px-72 lg:px-64 md:px-36 sm:px-20 xs:px-10 px-5 text-center">
+            <!-- Title -->
             <h3 class="lg:text-4xl md:text-3xl text-2xl font-medium mb-6 text-white">Hello there, nice to meet you.</h4>
+                <!-- Title -->
+                <!-- Content -->
                 <p
                     class="lg:text-xl md:text-lg text-base md:font-thin font-light text-white  mt-4 xl:px-32 lg:px-20 px-5">
                     I have been actively working on web development for about 3 years and at the same time I am studying
                     computer engineering. No more words needed, actions speak louder than words.
                 </p>
+                <!-- Content -->
         </div>
     </section>
+    <!-- Section has green background -->
 
 
+    <!-- Cards -->
     <section class="flex justify-center items-center relative">
+        <!-- Background string -->
         <div class="absolute md:h-10 h-36 bg-green-600 w-full z-0"></div>
+        <!-- Background string -->
         <div
             class="w-full container mx-auto pt-20 pb-10 2xl:px-80 xl:px-52 lg:px-10 md:px-10 px-7 relative flex justify-center items-center z-20">
+            <!-- Card grid container -->
             <div class="grid grid-cols-12">
+                <!-- Card 1 -->
                 <div
                     class="col-span-12 bg-white md:col-span-6 py-20 px-10 flex flex-col justify-center items-center md:rounded-tl-md md:rounded-bl-md rounded-tr-md rounded-tl-md border-t border-l border-b md:border-r-0 border-r shadow">
+                    <!-- Icon -->
                     <div>
                         <svg class="h-24 w-24 text-green-600" viewBox="0 0 500 500" fill="currentColor"
                             xmlns="http://www.w3.org/2000/svg">
@@ -153,12 +186,16 @@
                                 class="text-green-600" />
                         </svg>
                     </div>
+                    <!-- Icon -->
+                    <!-- Title -->
                     <div class="text-center">
                         <h3 class="mt-5 lg:text-2xl md:text-xl sm:text-lg text-base">Front-end</h4>
                             <p class="pt-5 lg:text-lg text-base font-light text-gray-500">I believe in clean design and
                                 happy
                                 users, I like to code from scratch according to customer's needs.</p>
                     </div>
+                    <!-- Title -->
+                    <!-- Content -->
                     <div class="text-center mt-7">
                         <h4 class="lg:text-xl md:text-lg text-base text-green-500  font-medium">Things I love to work
                             with</h5>
@@ -170,9 +207,13 @@
                                 <li>SEO optimizing</li>
                             </ol>
                     </div>
+                    <!-- Content -->
                 </div>
+                <!-- Card 1 -->
+                <!-- Card 2 -->
                 <div
                     class="col-span-12 bg-white md:col-span-6 py-20 px-10 flex flex-col justify-center items-center md:rounded-tr-md md:rounded-br-md rounded-br-md rounded-bl-md border shadow">
+                    <!-- Icon -->
                     <div>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-20 w-20 text-green-600"
                             viewBox="0 0 16 16">
@@ -182,6 +223,8 @@
                                 d="M2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2zm12 1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h12z" />
                         </svg>
                     </div>
+                    <!-- Icon -->
+                    <!-- Title -->
                     <div class="text-center">
                         <h3 class="mt-5 lg:text-2xl md:text-xl sm:text-lg text-base">Back-end</h4>
                             <p class="pt-5 lg:text-lg text-base font-light text-gray-500">I focus on solving problems in
@@ -190,6 +233,8 @@
                                 product.
                             </p>
                     </div>
+                    <!-- Title -->
+                    <!-- Content -->
                     <div class="text-center mt-7">
                         <h4 class="lg:text-xl md:text-lg text-base text-green-500  font-medium">Tools I like to use</h5>
                             <ol class="mt-3 font-light text-gray-700">
@@ -200,40 +245,64 @@
                                 <li>Serverless</li>
                             </ol>
                     </div>
+                    <!-- Content -->
                 </div>
+                <!-- Card 2 -->
             </div>
+            <!-- Card grid container -->
         </div>
     </section>
+    <!-- Cards -->
 
+    <!-- Works section -->
     <section class="w-full flex flex-col justify-center pt-32 pb-10">
+        <!-- Title -->
         <div class="text-center">
             <h1 class="lg:text-4xl md:text-3xl text-2xl font-semibold mb-12">My Last Works</h1>
         </div>
+        <!-- Title -->
+        <!-- Grid container -->
         <div class="w-full container mx-auto pb-10 px-7 grid grid-cols-12 gap-4">
+            <!-- Item -->
             <div class="md:col-span-6 col-span-12">
                 <div class="c-overlay cursor-pointer rounded-md border-4 border-green-600">
+                    <!-- Image -->
                     <img src="./assets/img/blojer.webp" alt="Mountains" class="c-overlay-layer_bottom">
+                    <!-- Image -->
+                    <!-- Hover text -->
                     <div class="c-overlay-layer_top">
                         <div class="c-overlay-text md:text-lg text-base">Blojer is a wordpress theme that I developed
                             for Themeforest. It
                             will be listed in the store soon.</div>
                     </div>
+                    <!-- Hover text -->
                 </div>
             </div>
+            <!-- Item -->
+            <!-- Item -->
             <div class="md:col-span-6 col-span-12">
                 <div class="c-overlay cursor-pointer rounded-md border-4 border-green-600">
+                    <!-- Image -->
                     <img src="./assets/img/corpat.webp" alt="Mountains" class="c-overlay-layer_bottom">
+                    <!-- Image -->
+                    <!-- Hover text -->
                     <div class="c-overlay-layer_top">
                         <div class="c-overlay-text md:text-lg text-base">Corpat is a wordpress theme I developed for
                             Themeforest and it is in
                             active use by one of my clients. It
                             will be listed in the store soon.</div>
                     </div>
+                    <!-- Hover text -->
                 </div>
             </div>
+            <!-- Item -->
+            <!-- Item -->
             <div class="md:col-span-6 col-span-12">
                 <div class="c-overlay cursor-pointer rounded-md border-4 border-green-600">
+                    <!-- Image -->
                     <img src="./assets/img/medpic.webp" alt="Mountains" class="c-overlay-layer_bottom">
+                    <!-- Image -->
+                    <!-- Hover text -->
                     <div class="c-overlay-layer_top">
                         <div class="c-overlay-text md:text-lg text-base">
                             <a href="http://medpicmedikal.com/"
@@ -241,37 +310,56 @@
                             first website I developed, it has legacy features. Visit
                         </div>
                     </div>
+                    <!-- Hover text -->
                 </div>
             </div>
+            <!-- Item -->
+            <!-- Item -->
             <div class="md:col-span-6 col-span-12">
                 <div class="c-overlay cursor-pointer rounded-md border-4 border-green-600">
+                    <!-- Image -->
                     <img src="./assets/img/derin.webp" alt="Mountains" class="c-overlay-layer_bottom">
+                    <!-- Image -->
+                    <!-- Hover text -->
                     <div class="c-overlay-layer_top">
                         <div class="c-overlay-text md:text-lg text-base">Derin is the website I developed for a medical
                             company, it is not in
                             active use at the moment due to customer needs.</div>
                     </div>
+                    <!-- Hover text -->
                 </div>
             </div>
-
+            <!-- Item -->
         </div>
+        <!-- Grid container -->
     </section>
+    <!-- Works section -->
 
 
+    <!-- Work me section -->
     <section class="w-full flex flex-col justify-center py-20 bg-green-600">
         <div class="text-center px-3">
+            <!-- Title -->
             <h2 class="lg:text-4xl md:text-3xl text-2xl font-semibold mb-6 text-white">Start a project?</h2>
+            <!-- Title -->
+            <!-- Subtitle -->
             <h3 class="lg:text-xl md:text-lg text-base font-light text-gray-100 mb-10">If you're interested in working
                 together, we should chat about it right now. Or just say hello.</h4>
+                <!-- Subtitle -->
+                <!-- Control -->
                 <button id="contact-btn-2"
                     class="md:px-4 px-3.5 md:py-2 py-1.5 md:text-xl sm:text-lg text-base font-semibold bg-green-600 text-green-50 rounded-md border-4 border-green-200 transition-colors duration-200 hover:border-green-400 hover:text-green-100 hover:bg-green-700">Get
                     in touch</button>
+                <!-- Control -->
         </div>
     </section>
+    <!-- Work me section -->
 
+    <!-- Footer -->
     <footer class="w-full bg-green-700 py-14 flex flex-col justify-center items-center">
+        <!-- First row -->
         <div class="flex justify-center items-center">
-            <!-- Mail icon start -->
+            <!-- Mail icon -->
             <a href="mailto:berkslv@gmail.com" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-8 h-8 text-green-700"
                     fill="currentColor">
@@ -280,10 +368,10 @@
                         d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6zm-2 0l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z" />
                 </svg>
             </a>
-            <!-- Mail icon end -->
+            <!-- Mail icon -->
 
 
-            <!-- Instagram icon start -->
+            <!-- Instagram icon -->
             <a href="https://www.instagram.com/berkslv/" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
                 <svg class="w-8 h-8 text-green-700" aria-hidden="true" focusable="false" data-prefix="fab"
                     data-icon="instagram" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
@@ -292,9 +380,9 @@
                     </path>
                 </svg>
             </a>
-            <!-- Instagram icon end -->
+            <!-- Instagram icon -->
 
-            <!-- Github icon start -->
+            <!-- Github icon -->
             <a href="https://github.com/berkslv/" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
                 <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github"
                     class="sw-8 h-8 text-green-700" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512">
@@ -303,9 +391,9 @@
                     </path>
                 </svg>
             </a>
-            <!-- Github icon end -->
+            <!-- Github icon -->
 
-            <!-- Twitter icon start -->
+            <!-- Twitter icon -->
             <a href="https://twitter.com/berkslv/" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
                 <svg class="w-8 h-8 text-green-700" aria-hidden="true" focusable="false" data-prefix="fab"
                     data-icon="twitter" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -314,9 +402,9 @@
                     </path>
                 </svg>
             </a>
-            <!-- Twitter icon end -->
+            <!-- Twitter icon -->
 
-            <!-- Medium icon start -->
+            <!-- Medium icon -->
             <a href="https://berkslv.medium.com/" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
                 <svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="medium-m"
                     class="w-8 h-8 text-green-700" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -325,9 +413,12 @@
                     </path>
                 </svg>
             </a>
-            <!-- Medium icon end -->
+            <!-- Medium icon -->
         </div>
+        <!-- First row -->
+        <!-- Second row -->
         <div class="flex justify-center items-center mb-5">
+            <!-- Share icon -->
             <button id="share-button" class="p-2 bg-green-50 hover:bg-green-200 rounded-md m-2">
                 <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"
                     class="w-8 h-8 text-green-700" fill="currentColor">
@@ -341,9 +432,12 @@
                 </svg>
                 <input type="text" value="https://berkslv.github.io" hidden id="clipboard">
             </button>
+            <!-- Share icon -->
         </div>
+        <!-- Second row -->
         <h4 class="md:text-lg text-base text-white">Built with ❤️ by Berkslv © 2021</h5>
     </footer>
+    <!-- Footer -->
 
     <script src="./assets/js/app.js"></script>
 </body>

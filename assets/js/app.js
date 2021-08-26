@@ -1,3 +1,9 @@
+/**
+ * Check browser mobile or not.
+ * Mobile -> true
+ * Other -> false
+ * @returns boolean
+ */
 window.mobileCheck = function () {
   let check = false;
   (function (a) {
@@ -14,6 +20,7 @@ window.mobileCheck = function () {
   return check;
 };
 
+// Variables
 const contactModal = document.getElementById("contact-modal");
 const contactBtn_1 = document.getElementById("contact-btn-1");
 const contactBtn_2 = document.getElementById("contact-btn-2");
@@ -24,56 +31,81 @@ const form_name = document.getElementById("name");
 const form_message = document.getElementById("message");
 const error_modal = document.getElementById("error-modal");
 const success_modal = document.getElementById("success-modal");
+const shareButton = document.querySelector("#share-button");
 
+/**
+ * Opens modal with classes
+ */
 function openModal() {
   contactModal.classList.remove("invisible");
   contactModal.classList.remove("opacity-0");
   contactModal.classList.add("opacity-100");
 }
 
+/**
+ * Closes modal with classes
+ */
 function closeModal() {
   contactModal.classList.remove("opacity-100");
   contactModal.classList.add("opacity-0");
   contactModal.classList.add("invisible");
 }
 
+/**
+ * Contact me form submit event
+ */
 function submit() {
+  // if inputs null
   if (
     form_email.value !== "" &&
     form_name.value !== "" &&
     form_message.value !== ""
   ) {
+    // if there is error model, closed it.
     if (!error_modal.classList.contains("hidden")) {
       error_modal.classList.add("hidden");
     }
   } else {
+    // something wrong, show the error and exit the func.
     error_modal.classList.remove("hidden");
     return;
   }
 
+  // send mail with external mail app.
   sendMail(form_email.value, form_name.value, form_message.value);
 
+  // action resulted with success.
   success_modal.classList.remove("hidden");
 }
 
+/**
+ * Opens external mail app with subject etc.
+ * @param {string} email
+ * @param {string} name
+ * @param {string} message
+ */
 function sendMail(email, name, message) {
-  const _message = `${email}, ${name}
-${message}`.trim();
+  const _message = `${email}, ${name}, ${message}`.trim();
   const subject = `Contact request by ${name}`;
 
+  // opens mail app.
   document.location.href =
     "mailto:berkslv@gmail.com?subject=" +
     encodeURIComponent(subject) +
     "&body=" +
     encodeURIComponent(_message);
 }
+
+/*
+  Share API is only compatible with Safari and mobile Samsung browser.
+ */
+
+// Share API content.
 const shareData = {
   title: "Berk Selvi's portfolio",
-  text: "I design and code simple plus efficient Web things as a Freelancer.",
+  text: "Would you like to hire me?",
   url: "https://berkslv.github.io",
 };
-
-const shareButton = document.querySelector("#share-button");
 
 // Must be triggered some kind of "user activation"
 shareButton.addEventListener("click", async () => {
@@ -81,9 +113,8 @@ shareButton.addEventListener("click", async () => {
   if (navigator.share && window.mobileCheck()) {
     try {
       await navigator.share(shareData);
-      resultPara.textContent = "MDN shared successfully";
     } catch (err) {
-      console.log(err);
+      alert(err);
     }
   } else {
     // Copy URL to the clipboard
@@ -102,6 +133,7 @@ shareButton.addEventListener("click", async () => {
   }
 });
 
+// Events.
 contactBtn_1.addEventListener("click", openModal);
 contactBtn_2.addEventListener("click", openModal);
 contactBtn_cancel.addEventListener("click", closeModal);
