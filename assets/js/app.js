@@ -105,7 +105,6 @@ function sendMail(email, name, message) {
 // Share API content.
 const shareData = {
   title: "Berk Selvi's portfolio",
-  text: "Would you like to hire me?",
   url: "https://berkslv.github.io",
 };
 
