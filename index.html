@@ -476,7 +476,7 @@
     <script>
         const lang_pref = localStorage.getItem("lang");
 
-        if (navigator.language.includes("en") && lang_pref === "vary") {
+        if (navigator.language.includes("en") && lang_pref !== "vary") {
             window.location.href = "/tr.html";
         }
 
