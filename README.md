@@ -6,7 +6,7 @@
 </h1>
 <p align="center">
   <a href="https://berkslv.github.io" target="_blank">
-    <img src="https://raw.githubusercontent.com/berkslv/berkslv.github.io/main/dist/assets/img/preview.webp" alt="Preview" />
+    <img src="https://raw.githubusercontent.com/berkslv/berkslv.github.io/main/dist/assets/img/preview.jpeg" alt="Preview" />
   </a>
 </p>
 
