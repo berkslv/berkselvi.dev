@@ -15,7 +15,7 @@ textarea {
 }
 
 .button-normal {
-    @apply box-border border-4 border-blue-500 bg-blue-500 px-10 py-2.5 font-semibold text-white uppercase transition-colors duration-150 hover:bg-blue-600 hover:border-blue-600;
+    @apply box-border border-4 border-blue-500 bg-blue-500 px-10 py-2.5 text-center font-semibold text-white uppercase transition-colors duration-150 hover:bg-blue-600 hover:border-blue-600;
 }
 
 .button-normal-small {

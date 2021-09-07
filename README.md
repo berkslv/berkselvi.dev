@@ -2,7 +2,7 @@
   <img alt="Logo" src="https://raw.githubusercontent.com/berkslv/berkslv.github.io/main/dist/assets/img/logo.png" width="100" />
 </div>
 <h1 align="center">
-  berkslv.github.io - v2
+  berkslv.github.io
 </h1>
 <p align="center">
   <a href="https://berkslv.github.io" target="_blank">
