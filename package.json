@@ -4,7 +4,7 @@
   "description": "Developer portfolio",
   "private": true,
   "scripts": {
-    "watch": "npx tailwindcss -i ./assets/css/main.css -o ./assets/css/tailwind.css --watch"
+    "watch": "npx tailwindcss -i ./src/css/main.css -o ./dist/assets/css/tailwind.css --watch"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "webpack-cli": "^4.8.0"
   },
   "dependencies": {
+    "alpinejs": "^3.3.2",
     "smoothscroll-polyfill": "^0.4.4"
   }
 }

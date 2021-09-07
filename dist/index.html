@@ -28,8 +28,7 @@
     <meta name="theme-color" content="#202029">
 
     <link rel="icon" href="./assets/img/favicon.ico">
-    <link rel="stylesheet" href="./assets/css/main.css">
-    <link rel="stylesheet" href="./assets/css/tailwind.css">
+    <link rel="stylesheet" href="./assets/css/tailwind.min.css">
 </head>
 
 <body class="bg-prime-1000">
@@ -38,15 +37,15 @@
     <!-- Navbar -->
     <nav class="w-full flex justify-between items-center md:px-10 px-3 py-2 fixed top-0 bg-prime-1000">
         <h3 class="text-white font-bold text-sm">Berk Selvi / @berkslv</h3>
-        <a href="#contact-me"
-            class="box-border border-4 border-blue-500 bg-blue-500 px-4 py-1 text-white font-semibold text-sm uppercase transition-colors duration-150 hover:bg-blue-600 hover:border-blue-600">Hire
+        <a href="#hire-me"
+            class="hire-me-btn box-border border-4 border-blue-500 bg-blue-500 px-4 py-1 text-white font-semibold text-sm uppercase transition-colors duration-150 hover:bg-blue-600 hover:border-blue-600">Hire
             me</a>
     </nav>
     <!-- Navbar -->
 
     <!-- Header -->
     <header
-        class="w-full h-screen grid grid-cols-2 container mx-auto 2xl:px-72 xl:px-60 lg:px-32 md:px-16 sm:px-10 px-5">
+        class="w-full h-screen grid grid-cols-2 container mx-auto xl:px-60 lg:px-32 md:px-16 sm:px-10 px-5">
         <!-- Text Content -->
         <div class="md:col-span-1 col-span-2 flex items-center justify-center flex-col gap-x-6">
             <!-- Title & Subtitle -->
@@ -307,7 +306,7 @@
     <!-- Toolbox -->
 
     <!-- Contact -->
-    <section id="contact-me" class="w-full h-auto py-20">
+    <section id="hire-me" class="w-full h-auto py-20">
         <!-- Title -->
         <div class="w-full text-center text-white px-12">
             <h1 class="md:text-3xl text-xl font-semibold">Great! <br> Now it's your turn to say hi. <br> Please don't be
@@ -315,33 +314,32 @@
         </div>
         <!-- Title -->
         <div class="md:w-6/12 sm:w-10/12 w-11/12 container mx-auto py-8" style="background-color: #2e2e3b;">
-            <div class="flex p-10 flex-col">
+            <form id="form" action="https://api.staticforms.xyz/submit" method="post" class="flex p-10 flex-col">
+                <input type="hidden" name="accessKey" value="310cda8e-848f-48e9-b021-b373f9deea9f"> <!-- Required -->
                 <label class="block">
                     <span class="text-gray-200 font-semibold">Name</span>
-                    <input type="text"
-                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150"
-                        placeholder="" />
+                    <input type="text" name="name"
+                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150" />
                 </label>
                 <label class="block mt-8">
                     <span class="text-gray-200 font-semibold">Email</span>
-                    <input type="email"
-                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150"
-                        placeholder="" />
+                    <input type="email" name="email"
+                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150" />
                 </label>
                 <label class="block mt-8">
                     <span class="text-gray-200 font-semibold">Your message</span>
-                    <textarea type="text" rows="4"
-                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150"
-                        placeholder=""></textarea>
+                    <textarea type="text" rows="4" name="message"
+                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150"></textarea>
                 </label>
                 <label class="block mt-12">
-                    <button class="button-outline w-full">Send</button>
+                    <input type="hidden" name="redirectTo" value="http://127.0.0.1:5500/dist/#hire-me-sent">
+                    <!-- Optional -->
+                    <button id="submit-form" type="submit" value="Submit" class="button-outline w-full">Send</button>
                 </label>
-            </div>
+            </form>
         </div>
     </section>
     <!-- Contact -->
-
 
     <!-- FAQ -->
     <section class="bg-prime-950 w-full text-white">
@@ -425,8 +423,31 @@
     </footer>
     <!-- Footer -->
 
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="main.js"></script>
+    <!-- Email sent modal -->
+    <div id="sent-modal"
+        class="w-full fixed z-50 inset-0 overflow-y-auto transition-all duration-500 invisible opacity-0"
+        aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center h-screen w-full px-2 py-4 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <!-- Email sent modal card -->
+            <div
+                class="inline-block align-bottom bg-prime-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-prime-900 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <!-- Card Content -->
+                    <div class="flex flex-col items-center justify-center">
+                        <p class="font-bold text-blue-200">Thank you for your interest!</p>
+                        <p class="font-light text-blue-50">I will respond as soon as possible. 🥳</p>
+                    </div>
+                    <!-- Card Content -->
+                </div>
+            </div>
+            <!-- Email sent modal card -->
+        </div>
+    </div>
+    <!-- Email sent modal -->
+
+    <script src="./main.js"></script>
 </body>
 
 </html>
