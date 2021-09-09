@@ -227,7 +227,8 @@
                         <p class="text-gray-300 font-light pt-4">Designed with prenciple of simplicity and minimalism
                         </p>
                     </div>
-                    <a href="https://berkslv.github.io/theme-blojer/static-html/index.html" class="button-outline-white text-center w-full mt-5">Visit</a>
+                    <a href="https://berkslv.github.io/theme-blojer/static-html/index.html"
+                        class="button-outline-white text-center w-full mt-5">Visit</a>
                 </div>
                 <div class="md:w-8/12 w-full bg-indigo-500 p-7">
                     <img src="./dist/assets/img/blojer.jpg" alt="">
@@ -245,7 +246,8 @@
                         <p class="text-gray-300 font-light pt-4">Designed with prenciple of simplicity and minimalism
                         </p>
                     </div>
-                    <a href="https://github.com/berkslv/theme-corpat" class="button-outline-white text-center w-full mt-5">Visit</a>
+                    <a href="https://github.com/berkslv/theme-corpat"
+                        class="button-outline-white text-center w-full mt-5">Visit</a>
                 </div>
                 <div class="md:w-8/12 w-full bg-pink-400 p-7">
                     <img src="./dist/assets/img/corpat.jpg" alt="">
@@ -382,13 +384,13 @@
                             x-bind:style="selected == 1 ? 'max-height: ' + $refs.container1.scrollHeight + 'px' : ''">
                             <div class="p-6">
                                 <p>
-                                    You should discuss the price with me, it will cause more confusion 
-                                    if I give a single price for projects that vary according to 
+                                    You should discuss the price with me, it will cause more confusion
+                                    if I give a single price for projects that vary according to
                                     different needs.
                                 </p>
                                 <br>
                                 <p>
-                                    I usually prefer to work on a flat rate, but we can work on 
+                                    I usually prefer to work on a flat rate, but we can work on
                                     an hourly rate depending on the situation.
                                 </p>
                             </div>
@@ -417,11 +419,11 @@
                             x-bind:style="selected == 2 ? 'max-height: ' + $refs.container2.scrollHeight + 'px' : ''">
                             <div class="p-6">
                                 <p>
-                                    Healthy communication is essential and the short answer is anytime. 
+                                    Healthy communication is essential and the short answer is anytime.
                                 </p>
                                 <br>
                                 <p>
-                                    Long answer is if our time zone is not different and I am awake that 
+                                    Long answer is if our time zone is not different and I am awake that
                                     moment, I will get back to you as soon as possible to meet your needs.
                                 </p>
                             </div>
@@ -474,17 +476,19 @@
 
     <!-- Laungugage specific scripts -->
     <script>
-        const lang_pref = localStorage.getItem("lang");
+        (() => {
+            const lang_pref = localStorage.getItem("lang");
 
-        if (navigator.language.includes("en") && lang_pref !== "vary") {
-            window.location.href = "/tr.html";
-        }
+            if (navigator.language.includes("tr") && lang_pref !== "vary") {
+                window.location.href = "/tr.html";
+            }
 
-        const change_lang_button = document.getElementById("change-lang");
-        change_lang_button.addEventListener("click",()=>{
-            window.location.href = "/tr.html";
-            localStorage.setItem("lang","vary");
-        })
+            const change_lang_button = document.getElementById("change-lang");
+            change_lang_button.addEventListener("click", () => {
+                window.location.href = "/tr.html";
+                localStorage.setItem("lang", "vary");
+            })
+        })();
     </script>
     <!-- Laungugage specific scripts -->
     <script src="./dist/main.js"></script>

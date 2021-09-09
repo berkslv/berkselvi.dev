@@ -401,7 +401,8 @@
                                 </p>
                                 <br>
                                 <p>
-                                    Genelde sabit ücretle çalışmayı tercih ederim ama duruma göre saatlik ücretle de çalışabiliriz.
+                                    Genelde sabit ücretle çalışmayı tercih ederim ama duruma göre saatlik ücretle de
+                                    çalışabiliriz.
                                 </p>
                             </div>
                         </div>
@@ -433,7 +434,7 @@
                                 </p>
                                 <br>
                                 <p>
-                                    Uzun cevap, saat dilimimiz farklı değilse ve o an uyanırsam, 
+                                    Uzun cevap, saat dilimimiz farklı değilse ve o an uyanırsam,
                                     ihtiyaçlarınızı karşılamak için en kısa sürede size geri döneceğim.
                                 </p>
                             </div>
@@ -452,7 +453,8 @@
         <div class="md:w-6/12 w-10/12 container mx-auto">
             <div class="flex flex-col items-center justify-center">
                 <h5 class="text-white">Berk Selvi tarafından ❤️ ile yapıldı © 2021</h5>
-                <button id="change-lang" href="/index.html" class="text-white px-2 py-1 bg-prime-800 hover:bg-prime-700 mt-4">
+                <button id="change-lang" href="/index.html"
+                    class="text-white px-2 py-1 bg-prime-800 hover:bg-prime-700 mt-4">
                     🇺🇸 English
                 </button>
             </div>
@@ -486,17 +488,20 @@
 
     <!-- Laungugage specific scripts -->
     <script>
-        const lang_pref = localStorage.getItem("lang");
-        
-        if (navigator.language.includes("en") && lang_pref !== "vary") {
-            window.location.href = "/index.html";
-        }
+        (() => {
 
-        const change_lang_button = document.getElementById("change-lang");
-        change_lang_button.addEventListener("click",()=>{
-            window.location.href = "/index.html";
-            localStorage.setItem("lang","vary");
-        })
+            const lang_pref = localStorage.getItem("lang");
+
+            if (navigator.language.includes("en") && lang_pref !== "vary") {
+                window.location.href = "/index.html";
+            }
+
+            const change_lang_button = document.getElementById("change-lang");
+            change_lang_button.addEventListener("click", () => {
+                window.location.href = "/index.html";
+                localStorage.setItem("lang", "vary");
+            })
+        })();
     </script>
     <!-- Laungugage specific scripts -->
     <script src="./dist/main.js"></script>
