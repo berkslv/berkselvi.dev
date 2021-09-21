@@ -450,12 +450,12 @@
             const lang_pref = localStorage.getItem("lang");
 
             if (navigator.language.includes("tr") && lang_pref !== "vary") {
-                window.location.href = "tr.html";
+                window.location.href = "&#x2F;tr.html";
             }
 
             const change_lang_button = document.getElementById("change-lang");
             change_lang_button.addEventListener("click", () => {
-                window.location.href = "tr.html";
+                window.location.href = "&#x2F;tr.html";
                 localStorage.setItem("lang", "vary");
             })
         })();

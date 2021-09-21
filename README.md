@@ -17,15 +17,34 @@ You can break this repo and use it as you wish, although it is not required, I w
 
 ## 🛠 Installation & Set Up
 
-1. Make sure dependencies is up to date.
+Make sure dependencies is up to date.
 
    ```sh
    npm install
    ```
 
-4. Build the css for Tailwindcss
+### TailwindCSS compile
+
+Build the css for Tailwindcss
 
    ```sh
    npm run watch
    ```
+
+### Template re-build
+
+Build the html files from mustache file.
+
+   ```sh
+   npm run template
+   ```
+
+### Script (webpack) re-build
+
+Build the javascript files with webpack.
+
+   ```sh
+   npm run webpack
+   ```
+
    

@@ -4,7 +4,9 @@
   "description": "Developer portfolio",
   "private": true,
   "scripts": {
-    "watch": "npx tailwindcss -i ./src/css/main.css -o ./dist/assets/css/tailwind.css --watch"
+    "watch": "npx tailwindcss -i ./src/css/main.css -o ./dist/assets/css/tailwind.css --watch",
+    "webpack": "npx webpack",
+    "template": "cd src && cd template && node template.js"
   },
   "repository": {
     "type": "git",
@@ -28,6 +30,7 @@
   },
   "dependencies": {
     "alpinejs": "^3.3.2",
+    "mustache": "^4.2.0",
     "smoothscroll-polyfill": "^0.4.4"
   }
 }
