@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="tr-tr">
 
 <head>
     <meta charset="UTF-8">
@@ -445,21 +445,7 @@
     <!-- Email sent modal -->
 
     <!-- Laungugage specific scripts -->
-    <script>
-        (() => {
-            const lang_pref = localStorage.getItem("lang");
-
-            if (navigator.language.includes("tr") && lang_pref !== "vary") {
-                window.location.href = "index.html";
-            }
-
-            const change_lang_button = document.getElementById("change-lang");
-            change_lang_button.addEventListener("click", () => {
-                window.location.href = "index.html";
-                localStorage.setItem("lang", "vary");
-            })
-        })();
-    </script>
+    <script>(()=>{const e=localStorage.getItem('lang');navigator.language.includes('en')&&'vary'!==e&&(window.location.href='index.html'),document.getElementById('change-lang').addEventListener('click',()=>{window.location.href='index.html',localStorage.setItem('lang','vary')})})();</script>
     <!-- Laungugage specific scripts -->
     <script src="./dist/main.js"></script>
 </body>

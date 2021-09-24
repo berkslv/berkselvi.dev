@@ -10,10 +10,10 @@ function generateHTML() {
     if (err) throw err;
     // compile inde.html
     const output_en = Mustache.render(data.toString(), DATA.en);
-    fs.writeFileSync("../index.html", output_en);
+    fs.writeFileSync("../../index.html", output_en);
     // compile tr.html
     const output_tr = Mustache.render(data.toString(), DATA.tr);
-    fs.writeFileSync("../tr.html", output_tr);
+    fs.writeFileSync("../../tr.html", output_tr);
   });
 }
 
