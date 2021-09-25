@@ -40,18 +40,18 @@
         "projects":{
             "title":"Projects",
             "project1":{
+                "title":"Jamstack Web App",
+                "subtitle":"Barınamayanlar",
+                "desc":"Designed with Jamstack tools; Google Drive as CMS, Next.js as site builder and Vercel as hosting provider. These are all free!",
+                "link":"https://github.com/berkslv/barinamayanlar-web",
+                "thumbnail":"./dist/assets/img/barinamiyoruz.jpeg"
+            },
+            "project2":{
                 "title":"WordPress Blog Theme",
                 "subtitle":"Blojer",
                 "desc":"Designed with prenciple of simplicity and minimalism",
                 "link":"https://berkslv.github.io/theme-blojer/static-html/index.html",
                 "thumbnail":"./dist/assets/img/blojer.jpg"
-            },
-            "project2":{
-                "title":"Corpat",
-                "subtitle":"WordPress Company Theme",
-                "desc":"Designed with prenciple of simplicity and minimalism",
-                "link":"https://github.com/berkslv/theme-corpat",
-                "thumbnail":"./dist/assets/img/corpat.jpg"
             }
         },
         "toolbox":{
@@ -133,18 +133,18 @@
         "projects":{
             "title":"Projects",
             "project1":{
+                "title":"Jamstack Web App",
+                "subtitle":"Barınamayanlar",
+                "desc":"Jamstack araçlarıyla tasarlandı; CMS olarak Google Drive, site oluşturucu olarak Next.js ve barındırma sağlayıcısı olarak Vercel. Bunların hepsi ücretsiz!",
+                "link":"https://github.com/berkslv/barinamayanlar-web",
+                "thumbnail":"./dist/assets/img/barinamiyoruz.jpeg"
+            },
+            "project2":{
                 "title":"WordPress Blog Teması",
                 "subtitle":"Blojer",
                 "desc":"Sadelik ve minimalizm ilkesiyle tasarlandı",
                 "link":"https://berkslv.github.io/theme-blojer/static-html/index.html",
                 "thumbnail":"./dist/assets/img/blojer.jpg"
-            },
-            "project2":{
-                "title":"Corpat",
-                "subtitle":"WordPress Company Teması",
-                "desc":"Sadelik ve minimalizm ilkesiyle tasarlandı",
-                "link":"https://github.com/berkslv/theme-corpat",
-                "thumbnail":"./dist/assets/img/corpat.jpg"
             }
         },
         "toolbox":{
