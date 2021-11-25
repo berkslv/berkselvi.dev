@@ -21,15 +21,6 @@ faq_button.forEach((btn) => {
   });
 });
 
-//--------------------------------------- hire me button scrool behavior
-const hire_me_btn = document.querySelectorAll(".hire-me-btn");
-hire_me_btn.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const hire_me_section_top = document.getElementById("hire-me").offsetTop;
-    window.scroll({ top: hire_me_section_top, left: 0, behavior: "smooth" });
-  });
-});
-
 //--------------------------------------- projects button scrool behavior
 const projects_btn = document.querySelector(".projects-btn");
 projects_btn.addEventListener("click", () => {

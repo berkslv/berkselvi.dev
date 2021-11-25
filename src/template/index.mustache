@@ -49,7 +49,7 @@
     <!-- Navbar -->
     <nav class="w-full flex justify-between items-center md:px-10 px-3 py-2 fixed top-0 bg-prime-1000">
         <h3 class="text-white font-bold text-sm">{{navbar.title}}</h3>
-        <a href="#hire-me"
+        <a href="mailto:{{shared.mail}}"
             class="hire-me-btn box-border border-4 border-blue-500 bg-blue-500 px-4 py-1 text-white font-semibold text-sm uppercase transition-colors duration-150 hover:bg-blue-600 hover:border-blue-600">{{shared.hire_me}}</a>
     </nav>
     <!-- Navbar -->
@@ -73,7 +73,7 @@
                         <img src="./dist/assets/img/twitter.svg" alt=""
                             class="p-1 my-1 rounded-md transition-colors duration-150 active:bg-blue-500 hover:bg-blue-500">
                     </a>
-                    <a href="https://www.instagram.com/berkselvi_dev/">
+                    <a href="https://www.instagram.com/berkselvi.dev/">
                         <img src="./dist/assets/img/instagram.svg" alt=""
                             class="p-1 my-1 rounded-md transition-colors duration-150 active:bg-blue-500 hover:bg-blue-500">
                     </a>
@@ -89,7 +89,7 @@
                 <!-- Social -->
                 <!-- Control -->
                 <div class="flex flex-col">
-                    <a href="#hire-me" class="button-normal m-3 hire-me-btn">{{shared.hire_me}}</a>
+                    <a href="mailto:{{shared.mail}}" class="button-normal m-3 hire-me-btn">{{shared.hire_me}}</a>
                     <a href="#projects" class="button-outline m-3 projects-btn">{{shared.projects}}</a>
                 </div>
                 <!-- Control -->
@@ -243,6 +243,26 @@
             </div>
             <!-- Project -->
 
+            <!-- Project -->
+            <div class="flex md:flex-row flex-col-reverse mt-10">
+                <div
+                    class="md:w-4/12 w-full flex flex-col justify-between items-start md:pt-8 pt-6 md:p-8 p-3 bg-pink-900">
+                    <div>
+                        <h5 class="md:text-lg text-base text-gray-200">{{projects.project3.subtitle}}</h5>
+                        <h4 class="md:text-4xl text-2xl text-white">{{projects.project3.title}}</h4>
+                        <p class="text-gray-300 font-light pt-4">
+                            {{projects.project3.desc}}
+                        </p>
+                    </div>
+                    <a href="{{{projects.project3.link}}}"
+                        class="button-outline-white text-center w-full mt-5">{{shared.visit}}</a>
+                </div>
+                <div class="md:w-8/12 w-full bg-pink-500 p-7">
+                    <img src="{{{projects.project3.thumbnail}}}" alt="">
+                </div>
+            </div>
+            <!-- Project -->
+
         </div>
         <!-- Projects Container -->
 
@@ -306,41 +326,6 @@
     </section>
     <!-- Toolbox -->
 
-    <!-- Contact -->
-    <section id="hire-me" class="w-full h-auto py-20">
-        <!-- Title -->
-        <div class="w-full text-center text-white px-12">
-            <h1 class="md:text-3xl text-xl font-semibold">{{{contact.title}}}</h1>
-        </div>
-        <!-- Title -->
-        <div class="md:w-6/12 sm:w-10/12 w-11/12 container mx-auto py-8" style="background-color: #2e2e3b;">
-            <form id="form" action="https://api.staticforms.xyz/submit" method="post" class="flex p-10 flex-col">
-                <input type="hidden" name="accessKey" value="310cda8e-848f-48e9-b021-b373f9deea9f"> <!-- Required -->
-                <label class="block">
-                    <span class="text-gray-200 font-semibold">{{{contact.name}}}</span>
-                    <input type="text" name="name"
-                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150" />
-                </label>
-                <label class="block mt-8">
-                    <span class="text-gray-200 font-semibold">{{{contact.mail}}}</span>
-                    <input type="email" name="email"
-                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150" />
-                </label>
-                <label class="block mt-8">
-                    <span class="text-gray-200 font-semibold">{{{contact.message}}}</span>
-                    <textarea type="text" rows="4" name="message"
-                        class="block w-full px-2 py-1 mt-2 text-gray-400 bg-prime-751 border-b-2 border-gray-400 focus:outline-none  focus:border-blue-400 focus:bg-prime-780 transition-colors duration-150"></textarea>
-                </label>
-                <label class="block mt-12">
-                    <input type="hidden" name="redirectTo" value="http://127.0.0.1:5500/dist/#hire-me-sent">
-                    <!-- Optional -->
-                    <button id="submit-form" type="submit" value="Submit" class="button-outline w-full">{{{contact.send}}}</button>
-                </label>
-            </form>
-        </div>
-    </section>
-    <!-- Contact -->
-
     <!-- FAQ -->
     <section class="bg-prime-950 w-full text-white">
         <div class="mx-auto  md:w-8/12 sm:w-9/12 w-11/12 py-20">
@@ -357,7 +342,7 @@
                         <!-- Faq Control -->
                         <button type="button"
                             class="faq-btn w-full px-8 py-6 text-left border-3 border-prime-1100 focus:border-blue-500 hover:border-blue-500"
-                            @click="selected !== 1 ? selected = 1 : selected = null">
+                            @click="selected !== {{id}} ? selected = {{id}} : selected = null">
                             <div class="flex items-center justify-start">
                                 <img src="./dist/assets/img/chevron.svg" alt="chevron"
                                     class="h-5 w-5 transition-transform transform faq-icon -rotate-90 mr-2">
@@ -368,10 +353,10 @@
                         </button>
                         <!-- Faq Control -->
                         <!-- Faq Content -->
-                        <div class="relative overflow-hidden transition-all max-h-0 duration-700" x-ref="container1"
-                            x-bind:style="selected == 1 ? 'max-height: ' + $refs.container1.scrollHeight + 'px' : ''">
+                        <div class="relative overflow-hidden transition-all max-h-0 duration-700" x-ref="container{{id}}"
+                            x-bind:style="selected == {{id}} ? 'max-height: ' + $refs.container1.scrollHeight + 'px' : ''">
                             <div class="p-6">
-                                {{{content}}}
+                                {{{content}}} 
                             </div>
                         </div>
                         <!-- Faq Content -->

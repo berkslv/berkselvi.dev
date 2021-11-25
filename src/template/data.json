@@ -9,7 +9,8 @@
         "shared": {
             "hire_me":"Hire Me",
             "projects":"Projects",
-            "visit":"Visit"
+            "visit":"Visit",
+            "mail":"berkselvi.dev@gmail.com"
         },
         "navbar":{
             "title":"Berk Selvi"
@@ -40,11 +41,11 @@
         "projects":{
             "title":"Projects",
             "project1":{
-                "title":"Jamstack Web App",
-                "subtitle":"Barınamayanlar",
-                "desc":"Designed with Jamstack tools; Google Drive as CMS, Next.js as site builder and Vercel as hosting provider. These are all free!",
-                "link":"https://github.com/berkslv/barinamayanlar-web",
-                "thumbnail":"./dist/assets/img/barinamiyoruz.jpeg"
+                "title":"Wordpress website",
+                "subtitle":"Rotadan",
+                "desc":"I used Wordpress as the content control system on the website that I specially designed according to the needs of the customer.",
+                "link":"http://www.rotasuurunleri.com",
+                "thumbnail":"./dist/assets/img/rotadan.jpg"
             },
             "project2":{
                 "title":"WordPress Blog Theme",
@@ -52,6 +53,13 @@
                 "desc":"Designed with prenciple of simplicity and minimalism",
                 "link":"https://berkslv.github.io/theme-blojer/static-html/index.html",
                 "thumbnail":"./dist/assets/img/blojer.jpg"
+            },
+            "project3":{
+                "title":"Jamstack Web App",
+                "subtitle":"Barınamayanlar",
+                "desc":"Designed with Jamstack tools; Google Drive as CMS, Next.js as site builder and Vercel as hosting provider. These are all free!",
+                "link":"https://github.com/berkslv/barinamayanlar-web",
+                "thumbnail":"./dist/assets/img/barinamiyoruz.jpeg"
             }
         },
         "toolbox":{
@@ -61,21 +69,16 @@
             "subtitle3":"Other"
 
         },
-        "contact":{
-            "title":"Great! <br> Now it's your turn to say hi. <br> Please don't be shy 🎉",
-            "name":"Name",
-            "mail":"Email",
-            "message":"Your Message",
-            "send":"Send"
-        },
         "faq":{
             "title":"FAQ",
             "items":[
                 {
+                    "id":"1",
                     "title":"Do you work on an hourly or fixed price and how much is it?",
                     "content":"<p> You should discuss the price with me, it will cause more confusion if I give a single price for projects that vary according to different needs. </p> <br> <p> I usually prefer to work on a flat rate, but we can work on an hourly rate depending on the situation. </p>"
                 },
                 {
+                    "id":"2",
                     "title":"Can I reach you anytime if we work together?",
                     "content":"<p> Healthy communication is essential and the short answer is anytime. </p> <br> <p> Long answer is if our time zone is not different and I am awake that moment, I will get back to you as soon as possible to meet your needs. </p>"
                 }
@@ -114,7 +117,7 @@
         "services":{
             "title":"Sunduğum çözümler",
             "sec1": {
-                "title":"1. Website yapımı",
+                "title":"1. Website geliştirme",
                 "content":"Herhangi bir nedenle bir web sitesi istiyorsanız, tanıtım, e-ticaret, veya tek sayfa web siteleri gibi ihtiyaçlarınız için yüksek performanslı, SEO optimizasyonlu, Responsive ve en önemlisi uygun maliyetli bir web sitesi yapabilirim."
             },
             "sec2": {
@@ -133,11 +136,11 @@
         "projects":{
             "title":"Projects",
             "project1":{
-                "title":"Jamstack Web App",
-                "subtitle":"Barınamayanlar",
-                "desc":"Jamstack araçlarıyla tasarlandı; CMS olarak Google Drive, site oluşturucu olarak Next.js ve barındırma sağlayıcısı olarak Vercel. Bunların hepsi ücretsiz!",
-                "link":"https://github.com/berkslv/barinamayanlar-web",
-                "thumbnail":"./dist/assets/img/barinamiyoruz.jpeg"
+                "title":"Wordpress website",
+                "subtitle":"Rotadan",
+                "desc":"Müşterinin ihtiyaçlarına göre özel olarak tasarladığım websitesinde içerik kontrol sistemi olarak Wordpress kullandım.",
+                "link":"http://www.rotasuurunleri.com",
+                "thumbnail":"./dist/assets/img/rotadan.jpg"
             },
             "project2":{
                 "title":"WordPress Blog Teması",
@@ -145,6 +148,13 @@
                 "desc":"Sadelik ve minimalizm ilkesiyle tasarlandı",
                 "link":"https://berkslv.github.io/theme-blojer/static-html/index.html",
                 "thumbnail":"./dist/assets/img/blojer.jpg"
+            },
+            "project3":{
+                "title":"Jamstack Web App",
+                "subtitle":"Barınamayanlar",
+                "desc":"Jamstack araçlarıyla tasarlandı; CMS olarak Google Drive, site oluşturucu olarak Next.js ve barındırma sağlayıcısı olarak Vercel. Bunların hepsi ücretsiz!",
+                "link":"https://github.com/berkslv/barinamayanlar-web",
+                "thumbnail":"./dist/assets/img/barinamiyoruz.jpeg"
             }
         },
         "toolbox":{
@@ -154,21 +164,16 @@
             "subtitle3":"Diğer"
 
         },
-        "contact":{
-            "title":" Harika! <br> Şimdi merhaba deme sırası sende. <br> Lütfen çekinme 🎉",
-            "name":"İsim",
-            "mail":"Mail",
-            "message":"Mesajın",
-            "send":"Gönder"
-        },
         "faq":{
             "title":"FAQ",
             "items":[
                 {
+                    "id":"1",
                     "title":"Saatlik mi yoksa sabit ücretle mi çalışıyorsunuz ve ne kadar ücret alıyorsunuz?",
                     "content":"<p> Ücret konusunu benimle görüşmelisiniz, farklı ihtiyaçlara göre değişen projeler için tek fiyat vermem daha çok kafa karışıklığına neden olur. </p> <br> <p> Genelde sabit ücretle çalışmayı tercih ederim ama duruma göre saatlik ücretle de çalışabiliriz. </p>"
                 },
                 {
+                    "id":"2",
                     "title":"Birlikte çalışırsak sana her zaman ulaşabilir miyim?",
                     "content":"<p> Sağlıklı iletişim esastır ve kısa cevap; her zaman. </p> <br> <p> Uzun cevap, saat dilimimiz farklı değilse ve o an uyanırsam, ihtiyaçlarınızı karşılamak için en kısa sürede size geri döneceğim. </p>"
                 }
