@@ -8,6 +8,7 @@ import Services from "../components/Services";
 import Projects from "../components/Projects";
 import Toolbox from "../components/Toolbox";
 import Footer from "../components/Footer";
+import Meta from "../components/Meta";
 
 export default function Index({ allPosts, homePost }) {
   const lang = useLocale(useRouter());
@@ -17,10 +18,7 @@ export default function Index({ allPosts, homePost }) {
   return (
     <>
       <Head>
-        <title>
-          {heroPost.shared.title}
-        </title>
-        <meta name="description" content={heroPost.shared.description}></meta>
+        <Meta heroPost={heroPost} />
       </Head>
       <Navbar heroPost={heroPost} />
       <Hero heroPost={heroPost} />
