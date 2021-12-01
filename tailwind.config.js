@@ -10,7 +10,7 @@ const colors = require("tailwindcss/colors");
   1100: "#1c1c24",
 }),
   (module.exports = {
-    purge: ["./src/**/*.html", "./src/**/*.js"],
+    purge: ['./components/**/*.js', './pages/**/*.js'],
     darkMode: false, // or 'media' or 'class'
     theme: {
       extend: {},

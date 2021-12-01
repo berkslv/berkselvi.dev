@@ -1,36 +1,24 @@
 {
-  "name": "berkslv.github.io",
-  "version": "1.0.0",
-  "description": "Developer portfolio",
   "private": true,
   "scripts": {
-    "watch": "npx tailwindcss -i ./src/css/main.css -o ./dist/assets/css/tailwind.css --watch",
-    "webpack": "npx webpack",
-    "template": "cd src && cd template && node template.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/berkslv/berkslv.github.io.git"
-  },
-  "keywords": [
-    "portfolio"
-  ],
-  "author": "berkslv",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/berkslv/berkslv.github.io/issues"
-  },
-  "homepage": "https://github.com/berkslv/berkslv.github.io#readme",
-  "devDependencies": {
-    "autoprefixer": "^10.3.2",
-    "postcss": "^8.3.6",
-    "tailwindcss": "^2.2.7",
-    "webpack": "^5.52.0",
-    "webpack-cli": "^4.8.0"
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "alpinejs": "^3.3.2",
-    "mustache": "^4.2.0",
-    "smoothscroll-polyfill": "^0.4.4"
+    "classnames": "2.2.6",
+    "date-fns": "2.16.1",
+    "gray-matter": "4.0.2",
+    "html-react-parser": "^1.4.1",
+    "next": "latest",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "remark": "13.0.0",
+    "remark-html": "13.0.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.2.1",
+    "postcss": "^8.2.4",
+    "tailwindcss": "^2.0.2"
   }
 }
