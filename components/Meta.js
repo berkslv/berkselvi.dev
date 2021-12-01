@@ -30,6 +30,8 @@ export default function Meta({ heroPost }) {
       <meta name="description" content={heroPost.shared.description} />
       <meta name="theme-color" content="#202029" />
       
+      <link rel="icon" href="/assets/favicon.ico" />
+
       <script
         async
         src="https://www.googletagmanager.com/gtag/js?id=G-JKZ8XL30H6"
