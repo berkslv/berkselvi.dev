@@ -17,7 +17,7 @@ social:
     url: "https://www.linkedin.com/in/berkslv/"
     img: "/assets/linkedin.svg" 
 shared:
-  title: Berk Selvi | Web dev
+  title: "Berk Selvi | Web dev"
   description: "Küçük veya büyük şirketler için web uygulamaları, UI&UX tasarımı, SEO ve mobil uyumlu web siteleri geliştiriyorum."
   hire_me: "İletişim"
   projects: "Projeler"

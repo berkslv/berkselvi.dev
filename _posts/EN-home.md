@@ -17,7 +17,7 @@ social:
     url: "https://www.linkedin.com/in/berkslv/"
     img: "/assets/linkedin.svg" 
 shared:
-  title: Berk Selvi | Web dev
+  title: "Berk Selvi | Web dev"
   description: "I develop web applications, UI&UX design, SEO and mobile-friendly websites for small or large companies."
   hire_me: "Contact"
   projects: "Projects"
