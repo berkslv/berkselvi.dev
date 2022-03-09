@@ -21,7 +21,7 @@ Mind is not fixed and can be developed, not only mind and IQ, intellectual skill
 
 And remember, valuable things like money accumulate. This includes knowledge, and the more you learn new things, the easier it is to learn and make sense of new things.
 
-## Not the learning
+## Not the learning
 
 Studying the same subject over and over, reading the same things over and over can create a sense of learning, but this is most likely a wrong feeling. sense of learning and fluency can easily be confused with each other.
 
@@ -47,6 +47,6 @@ Blend recall and detailing. After a topic or class, ask yourself, “How did it 
 
 ---
 
-## Conclusion
+## Conclusion
 
 This information that I am trying to convey to you has emerged as a result of the blending of my own experiences and Make it Stick book. If there is anything you would like to add or correct, mention it in the comments and you should subscribe to the email if you find this information valuable. Thanks so much for your time! 🥳

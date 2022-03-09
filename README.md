@@ -1,3 +1,3 @@
 # berkselvi.dev
 
-This is my personal website build in [jekyll](https://jekyllrb.com) and uses [hacker](https://pages-themes.github.io/hacker/) theme
+This is my personal website build in [Hugo](https://gohugo.io) and uses [terminal](https://github.com/panr/hugo-theme-terminal) theme

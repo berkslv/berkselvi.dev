@@ -1,5 +1,5 @@
 +++
-title = "How to learn something very well"
+title = "Bir şey nasıl çok iyi öğrenilir"
 date = "2022-03-09T10:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
