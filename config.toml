@@ -65,10 +65,10 @@ paginate = 5
   [languages.en]
     languageName = "English"
     title = "Berk Selvi | Web Dev"
-    subtitle = "A simple, retro theme for Hugo"
+    subtitle = "Open source web developer studying in turkey"
     owner = ""
     keywords = ""
-    copyright = ""
+    copyright = "MIT"
     menuMore = "Show more"
     readMore = "Read more"
     readOtherPosts = "Read other posts"
@@ -91,17 +91,17 @@ paginate = 5
   [languages.tr]
     languageName = "Turkish"
     title = "Berk Selvi | Web Dev"
-    subtitle = "Berk selvi myself"
+    subtitle = "Türkiyede okuyan açık kaynak web developer"
     owner = ""
     keywords = ""
-    copyright = ""
-    menuMore = "Show more"
-    readMore = "Read more"
-    readOtherPosts = "Read other posts"
-    newerPosts = "Newer posts"
-    olderPosts = "Older posts"
-    missingContentMessage = "Page not found..."
-    missingBackButtonLabel = "Back to home page"
+    copyright = "MIT"
+    menuMore = "Hepsini göster"
+    readMore = "Hepsini oku"
+    readOtherPosts = "Diğer gönderileri oku"
+    newerPosts = "En yeni gönderiler"
+    olderPosts = "Daha eski gönderiler"
+    missingContentMessage = "Sayfa bulunamadı..."
+    missingBackButtonLabel = "Anasayfaya geri dön"
 
     [languages.tr.params.logo]
       logoText = "Berk Selvi"
@@ -109,6 +109,6 @@ paginate = 5
 
     [languages.tr.menu]
       [[languages.tr.menu.main]]
-        identifier = "about"
-        name = "About"
-        url = "/about"
+        identifier = "hakkımda"
+        name = "Hakkımda"
+        url = "/hakkımda"
