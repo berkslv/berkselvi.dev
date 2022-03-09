@@ -1,80 +1,79 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>knowledge on Berk Selvi | Web Dev</title><link>https://berkselvi.dev/tr/tags/knowledge/</link><description>Recent content in knowledge on Berk Selvi | Web Dev</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>MIT</copyright><lastBuildDate>Wed, 09 Mar 2022 10:01:10 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/tags/knowledge/index.xml" rel="self" type="application/rss+xml"/><item><title>Her Geliştiricinin Sahip Olması Gereken 5 Temel Felsefe</title><link>https://berkselvi.dev/tr/posts/5-core-philosophies-that-every-developer-should-have/</link><pubDate>Wed, 09 Mar 2022 10:01:10 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/5-core-philosophies-that-every-developer-should-have/</guid><description>türkçe I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.
-Table of Contents Be a responsible person Don’t ruin anything in your code Don’t be a perfectionist Your asset is your knowledge Develop your community!</description><content>&lt;p>türkçe
-I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.&lt;/p>
-&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>knowledge on Berk Selvi | Web Dev</title><link>https://berkselvi.dev/tr/tags/knowledge/</link><description>Recent content in knowledge on Berk Selvi | Web Dev</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>MIT</copyright><lastBuildDate>Wed, 09 Mar 2022 11:01:10 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/tags/knowledge/index.xml" rel="self" type="application/rss+xml"/><item><title>Her Geliştiricinin Sahip Olması Gereken 5 Temel Felsefe</title><link>https://berkselvi.dev/tr/posts/her-geli%C5%9Ftiricinin-sahip-olmas%C4%B1-gereken-5-temel-felsefe/</link><pubDate>Wed, 09 Mar 2022 11:01:10 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/her-geli%C5%9Ftiricinin-sahip-olmas%C4%B1-gereken-5-temel-felsefe/</guid><description>Ben şahsen yazılımın bir iş olmadan önce bir yaşam felsefesi olduğunu düşünüyorum ve bir yazılım geliştirici olarak hayatımdaki sorunların çoğuna bu şekilde yaklaşmaktan ve çözmekten büyük zevk alıyorum. Bu yazımda bu felsefenin temel taşlarından bahsedeceğim.
+İçindekiler Sorumlu bir insan olun Kodunuzdaki hiçbir şeyi mahvetmeyin Mükemmeliyetçi olmayın Varlığınız, bilginizdir Topluluğunuzu geliştirin! Sorumlu bir insan olun Bir programcı olarak yazdığınız JavaScript kodunda bir hata varsa bu hatanın sebebinin C++ derleyicisi olduğunu söyleyemezsiniz.</description><content>&lt;p>Ben şahsen yazılımın bir iş olmadan önce bir yaşam felsefesi olduğunu düşünüyorum ve bir yazılım geliştirici olarak hayatımdaki sorunların çoğuna bu şekilde yaklaşmaktan ve çözmekten büyük zevk alıyorum. Bu yazımda bu felsefenin temel taşlarından bahsedeceğim.&lt;/p>
+&lt;h2 id="içindekiler">İçindekiler&lt;/h2>
 &lt;ul>
-&lt;li>Be a responsible person&lt;/li>
-&lt;li>Don’t ruin anything in your code&lt;/li>
-&lt;li>Don’t be a perfectionist&lt;/li>
-&lt;li>Your asset is your knowledge&lt;/li>
-&lt;li>Develop your community!&lt;/li>
+&lt;li>Sorumlu bir insan olun&lt;/li>
+&lt;li>Kodunuzdaki hiçbir şeyi mahvetmeyin&lt;/li>
+&lt;li>Mükemmeliyetçi olmayın&lt;/li>
+&lt;li>Varlığınız, bilginizdir&lt;/li>
+&lt;li>Topluluğunuzu geliştirin!&lt;/li>
 &lt;/ul>
-&lt;h2 id="be-a-responsible-person">Be a responsible person&lt;/h2>
-&lt;p>As a programmer, if there is an error in the JavaScript code you write, you cannot say that the reason for this error is C++ compiler. This may sound a nonsense, but consider adapting this situation to yourself!&lt;/p>
-&lt;p>Before you take a job, plan the requirements of that job well because that doesn’t happen when you’ve come a long way in the project and when you go to a client or your boss they ask you a valid question, “why didn’t you think of this before” If there’s a mistake and you’re going to explain it, be prepared for any questions It would be good because it can help you get out of such situations. But the answer you give should definitely not be something “that is impossible to do!”. You should try to offer different solution alternatives suitable for that problem.&lt;/p>
-&lt;h2 id="dont-ruin-anything-in-your-code">Don’t ruin anything in your code&lt;/h2>
-&lt;p>Think of software like a building, if a window in an apartment is broken and not repaired, if another window is broken and no one cares, this will continue and eventually graffiti will appear on the walls and the building will start to go completely disorganized. Later; never live with a broken glass. This example of broken glass for software can be bad design, and a poor code that can lead to future bugs.&lt;/p>
-&lt;p>Actually this situation is quite scientific, if you think about entropy in physics, disorder always wants to increase. It is up to you to not allow this. If there is a bug in the software, focus on fixing it before adding a new feature and keep going.Don’t say you can’t do it, say you did.&lt;/p>
-&lt;h2 id="dont-be-a-perfectionist">Don’t be a perfectionist&lt;/h2>
-&lt;p>If you have a great idea, after a year or two of working on it and publishing it, it can be incredibly disappointing to learn from the feedback that it’s a really worthless idea. Before making flawless progress on any project, it makes much more sense to have an MVP with the core features of that project and release it, evaluate the feedback, and if all is well, keep moving forward.&lt;/p>
-&lt;p>In short, perfectionism usually doesn’t work for software. It’s a better idea to be sure of the product first and then perfect it. As a result, the world is changing every day and new technologies and products are emerging every minute!&lt;/p>
-&lt;h2 id="your-asset-is-your-knowledge">Your asset is your knowledge&lt;/h2>
-&lt;p>Your knowledge and experience is your most important asset. But these assets may be out of date, especially in the world of technology, everything is changing very quickly. The valuable assets you owned 1 year ago may now be worthless. That’s why you should focus on staying up to date.&lt;/p>
-&lt;p>Managing a portfolio of knowledge and experience is like managing financial assets and has certain requirements;&lt;/p>
+&lt;h2 id="sorumlu-bir-insan-olun">Sorumlu bir insan olun&lt;/h2>
+&lt;p>Bir programcı olarak yazdığınız JavaScript kodunda bir hata varsa bu hatanın sebebinin C++ derleyicisi olduğunu söyleyemezsiniz. Bu kulağa saçma gelebilir, ancak bu durumu kendinize uyarlamayı düşünün!&lt;/p>
+&lt;p>Bir işe girmeden önce, o işin gereksinimlerini iyi planlayın çünkü projede uzun bir yol kat ettiğinizde bu planlamayı yapamayacaksınızdır ve bir müşteriye veya patronunuza gittiğinizde size geçerli bir soru sorarlar, “neden yapmadınız”. Bunu daha önce düşünmedin mi” Eğer bir yanlışlık varsa ve açıklayacaksanız, her türlü soruya hazırlıklı olmanız iyi olur çünkü bu tür durumlardan kurtulmanıza yardımcı olabilir. Ancak vereceğiniz cevap kesinlikle “yapılması imkansız” bir şey olmamalıdır. O soruna uygun farklı çözüm alternatifleri sunmaya çalışmalısınız.&lt;/p>
+&lt;h2 id="kodunuzdaki-hiçbir-şeyi-mahvetmeyin">Kodunuzdaki hiçbir şeyi mahvetmeyin&lt;/h2>
+&lt;p>Yazılımı bir bina gibi düşünün, bir apartmanda bir pencere kırılır ve tamir edilmezse, bir başka pencere kırılırsa ve kimse umursamıyorsa, bu devam edecek ve sonunda duvarlarda grafitiler görünecek ve bina tamamen düzensizleşmeye başlayacaktır. Ek olarak; asla kırık bir bardakla yaşama. Yazılım için bu kırık cam örneği, kötü tasarım ve gelecekteki hatalara yol açabilecek zayıf bir kod olabilir.&lt;/p>
+&lt;p>Aslında bu durum oldukça bilimseldir, fizikteki entropiyi düşünürseniz düzensizlik hep artmak ister. Buna izin vermemek senin elinde. Yazılımda bir hata varsa, yeni bir özellik eklemeden önce düzeltmeye odaklanın ve devam edin. Yapamazsınız demeyin, yaptım deyin.&lt;/p>
+&lt;h2 id="mükemmeliyetçi-olmayın">Mükemmeliyetçi olmayın&lt;/h2>
+&lt;p>Harika bir fikriniz varsa, bir veya iki yıl üzerinde çalıştıktan ve yayınladıktan sonra, geri bildirimlerden bunun gerçekten değersiz bir fikir olduğunu öğrenmek inanılmaz derecede hayal kırıklığı yaratabilir. Herhangi bir projede kusursuz ilerleme kaydetmeden önce, o projenin temel özelliklerine sahip bir MVP&amp;rsquo;ye sahip olmak ve onu yayınlamak, geri bildirimleri değerlendirmek ve her şey yolundaysa ilerlemeye devam etmek çok daha mantıklı olacaktır.&lt;/p>
+&lt;p>Kısacası, mükemmeliyetçilik genellikle yazılımda işe yaramaz. Önce üründen emin olmak ve sonra onu mükemmelleştirmek daha iyi bir fikirdir. Sonuç olarak dünya her gün değişiyor ve her dakika yeni teknolojiler ve ürünler ortaya çıkıyor!&lt;/p>
+&lt;h2 id="varlığınız-bilginizdir">Varlığınız, bilginizdir&lt;/h2>
+&lt;p>Bilgi ve tecrübeniz en önemli varlığınızdır. Ancak bu varlıklar güncelliğini yitirmiş olabilir, özellikle teknoloji dünyasında her şey çok hızlı değişiyor. 1 yıl önce sahip olduğunuz değerli varlıklar artık değersiz olabilir. Bu yüzden güncel kalmaya odaklanmalısınız.&lt;/p>
+&lt;p>Bir bilgi ve deneyim portföyünü yönetmek, finansal varlıkları yönetmek gibidir ve belirli gereksinimleri vardır;&lt;/p>
 &lt;ol>
 &lt;li>
-&lt;p>Serious investors invest regularly as a habit: if you invest regularly, whether you make a little or a lot, you will get a huge profit in total in return.&lt;/p>
+&lt;p>Ciddi yatırımcılar bir alışkanlık olarak düzenli yatırım yapar: Düzenli olarak yatırım yaparsanız, az da olsa çok da olsa, karşılığında toplamda çok büyük bir kâr elde edersiniz.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Diversification is the key to long-term success: The more technology you are comfortable with, the better you can adapt to change.&lt;/p>
+&lt;p>Çeşitlendirme, uzun vadeli başarının anahtarıdır: Ne kadar çok teknoloji ile rahat olursanız, değişime o kadar iyi uyum sağlayabilirsiniz.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Smart investors balance their portfolios between low risk, low return and high risk, high return investments: Investing your entire asset (time and effort) in a high return asset that you think will be valuable in the future. Instead, branch your entity into secure branches and don’t put your entire entity in the same box.&lt;/p>
+&lt;p>Akıllı yatırımcılar, portföylerini düşük risk - düşük getiri ve yüksek risk - yüksek getiri yatırımları arasında dengeler: Varlığınızın tamamını (zaman ve emek) gelecekte değerli olacağını düşündüğünüz yüksek getirili bir varlığa yatırmak gelecekte değerli olabilir fakat olmayadabilir. Bunun yerine varlığınızı güvenli dallara ayırın ve varlığınızın tamamını aynı kutuya koymayın.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Investors try to buy low and sell high for maximum returns: investing in assets that you think will appreciate in the future can yield big returns.&lt;/p>
+&lt;p>Yatırımcılar maksimum getiri için düşükten alıp yüksekten satmaya çalışırlar: Gelecekte değerleneceğini düşündüğünüz varlıklara yatırım yapmak büyük getiriler sağlayabilir.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Portfolios should be reviewed and rebalanced periodically: We do business in a highly volatile industry, so you should regularly review your investments and watch out for depreciating assets.&lt;/p>
+&lt;p>Portföyler periyodik olarak gözden geçirilmeli ve yeniden dengelenmelidir: Çok değişken bir sektörde iş yapıyoruz, bu nedenle yatırımlarınızı düzenli olarak gözden geçirmeli ve değer kaybeden varlıklara dikkat etmelisiniz.&lt;/p>
 &lt;/li>
 &lt;/ol>
-&lt;p>But the most important and indispensable of all these goals is to invest regularly. If you don’t invest, it doesn’t make any sense where you invest. Here are a few tools you can use as a tool to achieve these goals.&lt;/p>
+&lt;p>Ancak tüm bu hedeflerin en önemlisi ve vazgeçilmezi düzenli yatırım yapmaktır. Yatırım yapmazsanız, nereye yatırım yaptığınızın bir anlamı yoktur. İşte bu hedeflere ulaşmak için bir araç olarak kullanabileceğiniz birkaç yol:&lt;/p>
 &lt;ol>
 &lt;li>
-&lt;p>Learn at least one new language every year. Different languages ​​solve the same problems in different ways. Learning a few different approaches can help broaden your thinking and avoid getting stuck in a routine.&lt;/p>
+&lt;p>Her yıl en az bir yeni dil öğrenin. Farklı diller aynı sorunları farklı şekillerde çözer. Birkaç farklı yaklaşımı öğrenmek, düşüncelerinizi genişletmenize ve bir rutine takılıp kalmamanıza yardımcı olabilir.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Read a technical book every quarter. Once you get used to it, read a book a month. Once you’ve mastered the technologies you’re currently using, branch out and work on some unrelated branches.&lt;/p>
+&lt;p>Her üç ayda bir teknik bir kitap okuyun. Alıştıktan sonra ayda bir kitap okuyun. Halihazırda kullanmakta olduğunuz teknolojilerde uzmanlaştıktan sonra, dallara ayrılın ve alanınızla ilgisiz bazı dallarda çalışın.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Read in non-technical books either. Computers are for humans, and if you can understand humans better, you can approach their solutions much better.&lt;/p>
+&lt;p>Teknik olmayan kitaplarda da okuyun. Bilgisayarlar insanlar içindir ve eğer insanları daha iyi anlayabilirseniz, onların çözümlerine çok daha iyi yaklaşabilirsiniz.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Join local user groups. Don’t just go and listen, participate actively. Isolation can be fatal to your career.&lt;/p>
+&lt;p>Yerel kullanıcı gruplarına katılın. Sadece gidip dinlemeyin, aktif olarak katılın. İzolasyon, kariyeriniz için ölümcül olabilir.&lt;/p>
 &lt;/li>
 &lt;/ol>
-&lt;p>It doesn’t matter if you’ve used any of the technologies you’ll learn about in a project or even put it on your resume. Learning these will increase your learning ability and contribute to your problem solving ability.&lt;/p>
-&lt;p>When you encounter a problem and you don’t know the answer to it, choose it as a goal and try to learn it. Ask a guru, if he isn’t around, find one online. This will both answer the problem and expand its network. Keep learning constantly. Carry and evaluate something to read in dead moments like traveling on the bus.&lt;/p>
-&lt;p>Just as the product that a bookstore is marketing to you is not the best product it has, but a product it is only trying to sell, don’t rely on the content that comes first in search engines, think about its accuracy. and weigh it in your mind and never accept it without question.&lt;/p>
-&lt;h2 id="develop-your-community">Develop your community!&lt;/h2>
-&lt;p>A good idea is an orphan when you don’t have effective communication. As developers, we use our communication skills when communicating with end users or creating documentation, communicating with our bosses or superiors. Here are a few ways to strengthen your communication skills;&lt;/p>
+&lt;p>Bir projede öğreneceğiniz teknolojilerden herhangi birini kullanmış olmanız veya hatta özgeçmişinize eklemeniz önemli değil. Bunları öğrenmek öğrenme yeteneğinizi artıracak ve problem çözme yeteneğinize katkı sağlayacaktır.&lt;/p>
+&lt;p>Bir problemle karşılaştığınızda ve cevabını bilmediğiniz zaman, onu bir hedef olarak seçin ve öğrenmeye çalışın. Bir guruya sorun, etrafınızda değilse çevrimiçi bir tane bulun. Bu hem sorunu çözecek hem de ağını genişletecektir. Sürekli öğrenmeye devam edin. Otobüste seyahat etmek gibi ölü anlarda okumak için bir şeyler taşıyın ve değerlendirin.&lt;/p>
+&lt;p>Nasıl ki bir kitapçının size pazarladığı ürün, sahip olduğu en iyi ürün değil, sadece satmaya çalıştığı bir ürünse, arama motorlarında ilk gelen içeriğe güvenmeyin, doğruluğunu düşünün. ve zihninizde tartın ve asla sorgulamadan kabul etmeyin.&lt;/p>
+&lt;h2 id="topluluğunuzu-geliştirin">Topluluğunuzu geliştirin!&lt;/h2>
+&lt;p>Etkili iletişiminiz olmadığında iyi bir fikir yetimdir. Geliştiriciler olarak, son kullanıcılarla iletişim kurarken veya dokümantasyon oluştururken, patronlarımız veya üstlerimizle iletişim kurarken iletişim becerilerimizi kullanırız. İşte iletişim becerilerinizi güçlendirmenin birkaç yolu;&lt;/p>
 &lt;ol>
 &lt;li>
-&lt;p>Your job as a programmer is not to play word games, but to convey the information you want accurately and clearly. Plan what you want to say. Write a draft. Then ask yourself, “Does this encompass everything I’m trying to say?” Repeat until you meet this requirement. Make this plan not just when writing a document, but before meetings and speeches, even before meeting with clients you care about.&lt;/p>
+&lt;p>Bir programcı olarak göreviniz kelime oyunları oynamak değil, istediğiniz bilgiyi doğru ve anlaşılır bir şekilde iletmektir. Ne söylemek istediğini planla. Bir taslak yaz. Sonra kendine sor, &amp;ldquo;Bu, söylemeye çalıştığım her şeyi kapsıyor mu?&amp;rdquo; Bu gereksinimi karşılayana kadar tekrarlayın. Bu planı yalnızca bir belge yazarken değil, toplantılardan ve konuşmalardan önce, hatta önemsediğiniz müşterilerle görüşmeden önce yapın.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>If you can convey information, you can ensure correct communication. Therefore, you need to determine the level of knowledge that the other person can meet.&lt;/p>
+&lt;p>Bilgi aktarabiliyorsanız, doğru iletişimi sağlayabilirsiniz. Bu nedenle, diğer kişinin karşılayabileceği bilgi düzeyini belirlemeniz gerekir.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>There are various ways of communication. Some customers may want to be informed by e-mail, while others may want to be called by phone.&lt;/p>
+&lt;p>İletişimin çeşitli yolları vardır. Bazı müşteriler e-posta ile bilgilendirilmek isterken bazıları ise telefonla aranmak isteyebilir.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>If you want to be listened to by people, the first thing you will do is listen to them. If you can turn a meeting into a dialogue, there’s no better than you.&lt;/p>
+&lt;p>İnsanlar tarafından dinlenmek istiyorsanız yapacağınız ilk şey onları dinlemek olacaktır. Bir toplantıyı diyaloğa dönüştürebilirseniz, sizden iyisi yoktur.&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>Don’t make people wait by saying I will get back to you, I will answer as soon as possible.&lt;/p>
+&lt;p>Size geri döneceğim, en kısa sürede cevap vereceğim diyerek insanları bekletmeyin.&lt;/p>
 &lt;/li>
 &lt;/ol>
 &lt;hr>
-&lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>This information that I am trying to convey to you has emerged as a result of the blending of my own experiences and the first part of the Pragmatic Programmer book. If there is anything you would like to add or correct, mention it in the comments and you should subscribe to the email if you find this information valuable. Thanks so much for your time! 🥳&lt;/p></content></item></channel></rss>
+&lt;h2 id="son-söz">Son söz&lt;/h2>
+&lt;p>Sizlere aktarmaya çalıştığım bu bilgiler, kendi tecrübelerimin ve Pragmatic Programmer kitabının ilk bölümünün harmanlanması sonucu ortaya çıkmıştır. Eklemek veya düzeltmek istediğiniz bir şey varsa, yorumlarda belirtin ve bu bilgileri değerli buluyorsanız e-posta listesine abone olmalısınız. Zaman ayırdığınız için çok teşekkürler! 🥳&lt;/p></content></item></channel></rss>
