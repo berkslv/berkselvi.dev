@@ -1,5 +1,6 @@
 ---
 title: "Hakkımda"
+slug: "hakkımda"
 date: 2022-03-09T09:45:53+03:00
 draft: false
 ---

@@ -1,12 +1,13 @@
 +++
 title = "5 Core Philosophies That Every Developer Should Have"
-date = "2022-03-09T10:01:10+03:00"
+date = "2022-03-09T11:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 cover = "/img/5-core-philosophies-that-every-developer-should-have.jpeg"
 tags = ["learning", "study", "knowledge"]
 keywords = ["", ""]
 description = "When you learn how to learn, you unlock almost all the possibilities in the world with knowledge."
+canonicalUrl = "https://medium.com/@berkselvi/5-core-philosophies-that-every-developer-should-have-45d1c12a838b"
 showFullContent = false
 readingTime = true
 +++

@@ -111,4 +111,4 @@ paginate = 5
       [[languages.tr.menu.main]]
         identifier = "hakkımda"
         name = "Hakkımda"
-        url = "/hakkımda"
+        url = "/tr/hakkımda"
