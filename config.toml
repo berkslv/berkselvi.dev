@@ -1,4 +1,4 @@
-baseURL = '/'
+baseURL = 'https://berkselvi.dev'
 languageCode = 'en-us'
 defaultContentLanguage = 'en'
 title = "Berk Selvi | Web Dev"
