@@ -65,7 +65,7 @@ paginate = 5
   [languages.en]
     languageName = "English"
     title = "Berk Selvi | Web Dev"
-    subtitle = "Open source web developer studying in turkey"
+    subtitle = "jr. open-source web developer, cs student."
     owner = ""
     keywords = ""
     copyright = "MIT"
@@ -91,7 +91,7 @@ paginate = 5
   [languages.tr]
     languageName = "Turkish"
     title = "Berk Selvi | Web Dev"
-    subtitle = "Türkiyede okuyan açık kaynak web developer"
+    subtitle = "jr. open-source web developer, cs student."
     owner = ""
     keywords = ""
     copyright = "MIT"
