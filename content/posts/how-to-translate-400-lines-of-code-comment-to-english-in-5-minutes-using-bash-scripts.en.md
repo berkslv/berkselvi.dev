@@ -10,7 +10,6 @@ keywords = ["bash", "bash script", "zsh", "automation"]
 description = "We'll cover how to update multiple pieces of data at once using the power of Bash."
 showFullContent = false
 readingTime = false
-draft = true
 +++
 
 Perhaps the most enjoyable part of being a computer engineer is automating simple tasks that will take a lot of time but do not require qualifications. In this article, I will briefly explain how I translated the comments in my project, which includes 400 lines of Turkish code comments, into English.
