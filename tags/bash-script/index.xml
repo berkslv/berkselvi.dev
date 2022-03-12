@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>bash script on Berk Selvi | Web Dev</title><link>https://berkselvi.dev/tags/bash-script/</link><description>Recent content in bash script on Berk Selvi | Web Dev</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><copyright>MIT</copyright><lastBuildDate>Sat, 12 Mar 2022 11:29:25 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tags/bash-script/index.xml" rel="self" type="application/rss+xml"/><item><title>How to translate 400 lines of code comment to English in 5 minutes? Using Bash Scripts!</title><link>https://berkselvi.dev/posts/how-to-translate-400-lines-of-code-comment-to-english-in-5-minutes-using-bash-scripts/</link><pubDate>Sat, 12 Mar 2022 11:29:25 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-translate-400-lines-of-code-comment-to-english-in-5-minutes-using-bash-scripts/</guid><description>Perhaps the most enjoyable part of being a computer engineer is automating simple tasks that will take a lot of time but do not require qualifications. In this article, I will briefly explain how I translated the comments in my project, which includes 400 lines of Turkish code comments, into English.
+My CollegeHub service project will be publicly released on GitHub very soon. I wrote the codes in Turkish, which is my native language, for convenience during the development phase, but in principle, I do not want to use a language other than English in the software source file 😁.</description><content>&lt;p>Perhaps the most enjoyable part of being a computer engineer is automating simple tasks that will take a lot of time but do not require qualifications. In this article, I will briefly explain how I translated the comments in my project, which includes 400 lines of Turkish code comments, into English.&lt;/p>
+&lt;p>My &lt;a href="https://github.com/college-hub">CollegeHub&lt;/a> service project will be publicly released on GitHub very soon. I wrote the codes in Turkish, which is my native language, for convenience during the development phase, but in principle, I do not want to use a language other than English in the software source file 😁.&lt;/p>
+&lt;h1 id="lets-jump-right-into-how-i-do-this">Let&amp;rsquo;s jump right into how I do this.&lt;/h1>
+&lt;p>I use VSC as IDE and I wrote my codes in C#. First, let&amp;rsquo;s explain the steps one by one and take a look at the details:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>I copied the comments on lines containing &amp;ldquo;//&amp;rdquo; into a txt file.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>I copied the contents of the txt file containing line-by-line comments and made a machine translation using Google Translate.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>I handled the translation of each file separately, file by file.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>I updated the words matching the Bash Script with their English.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="step-1">Step 1&lt;/h2>
+&lt;p>I selected all the comments containing &amp;ldquo;//&amp;rdquo; in a file with &lt;code>Ctrl+D&lt;/code>, copied and pasted them into the &amp;ldquo;translate.tr.txt&amp;rdquo; file. I then cleared the Comment marks. I have a file like below. In this way, I gathered the comments of all the files that I will translate in a single file.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-txt" data-lang="txt">&lt;span style="display:flex;">&lt;span># translate.tr.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- AuthManager.cs
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Kayıt işleminden önce validasyon yapılır.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Parola hashlenerek oluşturulur.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- CommentManager.cs
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Verilen id ile Post döndürülür.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Post kontrol edilir.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-txt" data-lang="txt">&lt;span style="display:flex;">&lt;span># translate.en.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- AuthManager.cs
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Validation is done before registration.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>It is created by hashing the password.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- CommentManager.cs
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Post is returned with the given id.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>The post is checked.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="step-2">Step 2&lt;/h2>
+&lt;p>In this file, I selected all of them with &lt;code>Ctrl+A&lt;/code> and translated them via Google Translate. If this txt file is too long, you can do this translation piece by piece (that&amp;rsquo;s how I did it.).&lt;/p>
+&lt;h2 id="step-3">Step 3&lt;/h2>
+&lt;p>To run the bash script, I kept the translations and original versions of each script files in two separate files. I have created the following three files in the same location as the source files.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-txt" data-lang="txt">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|- translate.AuthManager.en.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|- translate.AuthManager.tr.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|- replace.bash
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="step-4">Step 4&lt;/h2>
+&lt;p>We are at the most exciting part, bash script writing. I am definitely not a Bash Script guru, I only learn the part that I may need thanks to Google, but I plan to improve myself in this subject in the near future because with Bash Script you gain a lot of flexibility on the file system. If we explain the following piece of code simply;&lt;/p>
+&lt;p>First, the variables containing the filenames are defined, then the while loop is opened for the file &lt;code>tr&lt;/code> (The loop repeats the number of rows.), while in the while the matching lines in the file &lt;code>en&lt;/code> are read (take care that the translations are on the same lines.). Finally, the matching texts are updated using the &lt;code>sed&lt;/code> command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Assign the filenames&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>filename&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;AuthManager.cs&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>filenameTR&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;translate.AuthManager.tr.txt&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>filenameEN&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;translate.AuthManager.en.txt&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># initalize while loop&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>n&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># reading each line&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">while&lt;/span> read line; &lt;span style="color:#66d9ef">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># assign tr file line-by-line to search variable&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>search&lt;span style="color:#f92672">=&lt;/span>$line
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># assign en file line-by-line to replace variable&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>replace&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#66d9ef">$(&lt;/span>sed &lt;span style="color:#e6db74">&amp;#34;&lt;/span>$n&lt;span style="color:#e6db74"> q;d&amp;#34;&lt;/span> $filenameEN&lt;span style="color:#66d9ef">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># check if search and replace null&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> &lt;span style="color:#f92672">[[&lt;/span> $search !&lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> $replace !&lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span> &lt;span style="color:#f92672">]]&lt;/span>; &lt;span style="color:#66d9ef">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># replace all matching texts.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sed -i &lt;span style="color:#e6db74">&amp;#39;&amp;#39;&lt;/span> &lt;span style="color:#e6db74">&amp;#34;s/&lt;/span>$search&lt;span style="color:#e6db74">/&lt;/span>$replace&lt;span style="color:#e6db74">/&amp;#34;&lt;/span> $filename
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>n&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#66d9ef">$((&lt;/span>n+1&lt;span style="color:#66d9ef">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">done&lt;/span> &amp;lt; $filenameTR
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="last-word">Last word&lt;/h2>
+&lt;p>Thank you very much for your time. If you find this content valuable, you can specify it with a short comment. 🥳&lt;/p></content></item></channel></rss>
