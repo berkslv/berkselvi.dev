@@ -14,7 +14,7 @@ readingTime = false
 
 Perhaps the most enjoyable part of being a computer engineer is automating simple tasks that will take a lot of time but do not require qualifications. In this article, I will briefly explain how I translated the comments in my project, which includes 400 lines of Turkish code comments, into English.
 
-My [CollegeHub](https://github.com/college-hub) service project will be publicly released on GitHub very soon. I wrote the codes in Turkish, which is my native language, for convenience during the development phase, but in principle, I do not want to use a language other than English in the software source file 😁.
+My [CollegeHub](https://github.com/college-hub) service project will be publicly released on GitHub very soon. I wrote the docs in Turkish, which is my native language, for convenience during the development phase, but in principle, I do not want to use a language other than English in the software source file 😁.
 
 # Let's jump right into how I do this.
 
