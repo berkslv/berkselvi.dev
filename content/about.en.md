@@ -35,7 +35,7 @@ draft: false
 - Includes algorithmic problems I solved using C# using resources like LeetCode.
 - Currently contains more than 30 algorithm solutions.
 
-#### Pomodoro App :: Mobil Uygulama :: [link](https://github.com/berkslv/pomodoro-app-with-react-native)
+#### Pomodoro App :: Mobile application :: [link](https://github.com/berkslv/pomodoro-app-with-react-native)
 
 - A simple pomodoro counter for android devices
 - React Native and Redux technologies were used. Although Redux is not exactly suitable for this problem, I used it to gain practice.
