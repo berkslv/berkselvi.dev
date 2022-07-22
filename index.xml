@@ -202,7 +202,7 @@ This guide is simple and results oriented, you can learn more about it with this
 &lt;li>Includes algorithmic problems I solved using C# using resources like LeetCode.&lt;/li>
 &lt;li>Currently contains more than 30 algorithm solutions.&lt;/li>
 &lt;/ul>
-&lt;h4 id="pomodoro-app--mobil-uygulama--linkhttpsgithubcomberkslvpomodoro-app-with-react-native">Pomodoro App :: Mobil Uygulama :: &lt;a href="https://github.com/berkslv/pomodoro-app-with-react-native">link&lt;/a>&lt;/h4>
+&lt;h4 id="pomodoro-app--mobile-application--linkhttpsgithubcomberkslvpomodoro-app-with-react-native">Pomodoro App :: Mobile application :: &lt;a href="https://github.com/berkslv/pomodoro-app-with-react-native">link&lt;/a>&lt;/h4>
 &lt;ul>
 &lt;li>A simple pomodoro counter for android devices&lt;/li>
 &lt;li>React Native and Redux technologies were used. Although Redux is not exactly suitable for this problem, I used it to gain practice.&lt;/li>
