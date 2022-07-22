@@ -176,34 +176,34 @@ This guide is simple and results oriented, you can learn more about it with this
 &lt;p>Blend recall and detailing. After a topic or class, ask yourself, “How did it go? Could it be better? Does this remind you of something from the past?” Asking questions like these helps learning, and this is called &lt;strong>reflection&lt;/strong>.&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>This information that I am trying to convey to you has emerged as a result of the blending of my own experiences and Make it Stick book. If there is anything you would like to add or correct, mention it in the comments and you should subscribe to the email if you find this information valuable. Thanks so much for your time! 🥳&lt;/p></content></item><item><title>About</title><link>https://berkselvi.dev/about/</link><pubDate>Wed, 09 Mar 2022 09:45:53 +0300</pubDate><guid>https://berkselvi.dev/about/</guid><description>TL;DR Skillful in functional and OOP programming in JavaScript and C# languages. Talented in learning and applying new technologies, as evidenced by the projects he has developed. Responsible to the community, open source project developer and blog writer about what he learned. Technologies I use Programming Languages: C#, JavaScript, TypeScript Frameworks: React, React Native, .Net Core Databases: MySql, MongoDB Tools: Git, GitHub, Postman, Figma, Wordpress Projects CollegeHub :: Web-Mobil App :: link .</description><content>&lt;h1 id="tldr">TL;DR&lt;/h1>
+&lt;p>This information that I am trying to convey to you has emerged as a result of the blending of my own experiences and Make it Stick book. If there is anything you would like to add or correct, mention it in the comments and you should subscribe to the email if you find this information valuable. Thanks so much for your time! 🥳&lt;/p></content></item><item><title>About</title><link>https://berkselvi.dev/about/</link><pubDate>Wed, 09 Mar 2022 09:45:53 +0300</pubDate><guid>https://berkselvi.dev/about/</guid><description>TL;DR Skillful in functional and OOP programming in JavaScript and C#. Talented in learning and applying new technologies, as evidenced by the projects he has developed. Responsible to the community, open source project developer and blog writer about what he learned. Technologies I use Programming Languages: C#, JavaScript, T-SQL Frameworks: .Net Core, React Databases: MSSQL, MongoDB Tools: Git, GitHub, Postman, Figma, Wordpress Projects Facebook Clone :: Web Service :: link .</description><content>&lt;h1 id="tldr">TL;DR&lt;/h1>
 &lt;ul>
-&lt;li>Skillful in functional and OOP programming in JavaScript and C# languages.&lt;/li>
+&lt;li>Skillful in functional and OOP programming in JavaScript and C#.&lt;/li>
 &lt;li>Talented in learning and applying new technologies, as evidenced by the projects he has developed.&lt;/li>
 &lt;li>Responsible to the community, open source project developer and blog writer about what he learned.&lt;/li>
 &lt;/ul>
 &lt;hr>
 &lt;h1 id="technologies-i-use">Technologies I use&lt;/h1>
 &lt;ul>
-&lt;li>&lt;strong>Programming Languages:&lt;/strong> C#, JavaScript, TypeScript&lt;/li>
-&lt;li>&lt;strong>Frameworks:&lt;/strong> React, React Native, .Net Core&lt;/li>
-&lt;li>&lt;strong>Databases:&lt;/strong> MySql, MongoDB&lt;/li>
+&lt;li>&lt;strong>Programming Languages:&lt;/strong> C#, JavaScript, T-SQL&lt;/li>
+&lt;li>&lt;strong>Frameworks:&lt;/strong> .Net Core, React&lt;/li>
+&lt;li>&lt;strong>Databases:&lt;/strong> MSSQL, MongoDB&lt;/li>
 &lt;li>&lt;strong>Tools:&lt;/strong> Git, GitHub, Postman, Figma, Wordpress&lt;/li>
 &lt;/ul>
 &lt;hr>
 &lt;h1 id="projects">Projects&lt;/h1>
-&lt;h4 id="collegehub--web-mobil-app---linkhttpsaboutcollegehubapp">CollegeHub :: Web-Mobil App :: &lt;a href="https://about.collegehub.app">link&lt;/a>&lt;/h4>
+&lt;h4 id="facebook-clone--web-service---linkhttpsgithubcomberkslvminimalistic-faceebok-clone">Facebook Clone :: Web Service :: &lt;a href="https://github.com/berkslv/minimalistic-faceebok-clone">link&lt;/a>&lt;/h4>
 &lt;ul>
-&lt;li>.Net Core and MySql are used for the back-end, and React Native is used for the front-end.&lt;/li>
-&lt;li>A web-mobile application that only university students can use, where they can message and share messages in groups or privately with students from their own and all other universities, faculties and departments, and view nearby places.&lt;/li>
+&lt;li>.Net Core is used as web service framework and MySQL is used as database.&lt;/li>
+&lt;li>A web service of a imaginary mobile application that only university students can enter, where they can communicate with students from all universities through posts and comments.&lt;/li>
 &lt;/ul>
-&lt;h4 id="algorithms--algorithm-applications---linkhttpsgithubcomberkslvalgorithms">Algorithms :: Algorithm applications :: &lt;a href="https://github.com/berkslv/algorithms">link&lt;/a>&lt;/h4>
+&lt;h4 id="algorithms--algorithm-solutions---linkhttpsgithubcomberkslvalgorithms">Algorithms :: Algorithm solutions :: &lt;a href="https://github.com/berkslv/algorithms">link&lt;/a>&lt;/h4>
 &lt;ul>
-&lt;li>Contains algorithmic problems that I have solved using JavaScript, using various sources such as LeetCode, Project Euler.&lt;/li>
-&lt;li>Currently contains 15+ algorithm solutions.&lt;/li>
+&lt;li>Includes algorithmic problems I solved using C# using resources like LeetCode.&lt;/li>
+&lt;li>Currently contains more than 30 algorithm solutions.&lt;/li>
 &lt;/ul>
 &lt;h4 id="pomodoro-app--mobil-uygulama--linkhttpsgithubcomberkslvpomodoro-app-with-react-native">Pomodoro App :: Mobil Uygulama :: &lt;a href="https://github.com/berkslv/pomodoro-app-with-react-native">link&lt;/a>&lt;/h4>
 &lt;ul>
-&lt;li>A simple pomodoro counter for mobile&lt;/li>
+&lt;li>A simple pomodoro counter for android devices&lt;/li>
 &lt;li>React Native and Redux technologies were used. Although Redux is not exactly suitable for this problem, I used it to gain practice.&lt;/li>
 &lt;/ul></content></item></channel></rss>

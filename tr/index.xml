@@ -79,7 +79,7 @@ Adı geçen CollegeHub servis projem yakında GitHub üzerinden public olarak ya
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
 &lt;h2 id="son-söz">Son söz&lt;/h2>
 &lt;p>Vakit ayırdığınız için çok teşekkür ederim. Eğer bu içeriği değerli buluyorsanız kısa bir yorum ile belirtebilirsiniz. 🥳&lt;/p></content></item><item><title>Her Geliştiricinin Sahip Olması Gereken 5 Temel Felsefe</title><link>https://berkselvi.dev/tr/posts/her-geli%C5%9Ftiricinin-sahip-olmas%C4%B1-gereken-5-temel-felsefe/</link><pubDate>Wed, 09 Mar 2022 11:01:10 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/her-geli%C5%9Ftiricinin-sahip-olmas%C4%B1-gereken-5-temel-felsefe/</guid><description>Ben şahsen yazılımın bir iş olmadan önce bir yaşam felsefesi olduğunu düşünüyorum ve bir yazılım geliştirici olarak hayatımdaki sorunların çoğuna bu şekilde yaklaşmaktan ve çözmekten büyük zevk alıyorum. Bu yazımda bu felsefenin temel taşlarından bahsedeceğim.
-İçindekiler Sorumlu bir insan olun Kodunuzdaki hiçbir şeyi mahvetmeyin Mükemmeliyetçi olmayın Varlığınız, bilginizdir Topluluğunuzu geliştirin! Sorumlu bir insan olun Bir programcı olarak yazdığınız JavaScript kodunda bir hata varsa bu hatanın sebebinin C++ derleyicisi olduğunu söyleyemezsiniz.</description><content>&lt;p>Ben şahsen yazılımın bir iş olmadan önce bir yaşam felsefesi olduğunu düşünüyorum ve bir yazılım geliştirici olarak hayatımdaki sorunların çoğuna bu şekilde yaklaşmaktan ve çözmekten büyük zevk alıyorum. Bu yazımda bu felsefenin temel taşlarından bahsedeceğim.&lt;/p>
+İçindekiler Sorumlu bir insan olun Kodunuzdaki hiçbir şeyi mahvetmeyin Mükemmeliyetçi olmayın Varlığınız, bilginizdir Topluluğunuzu geliştirin! Sorumlu bir insan olun Bir programcı olarak yazdığınız JavaScript kodunda bir hata varsa bu hatanın sebebinin C++ derleyicisi olduğunu söyleyemezsiniz. Bu kulağa saçma gelebilir, ancak bu durumu kendinize uyarlamayı düşünün!</description><content>&lt;p>Ben şahsen yazılımın bir iş olmadan önce bir yaşam felsefesi olduğunu düşünüyorum ve bir yazılım geliştirici olarak hayatımdaki sorunların çoğuna bu şekilde yaklaşmaktan ve çözmekten büyük zevk alıyorum. Bu yazımda bu felsefenin temel taşlarından bahsedeceğim.&lt;/p>
 &lt;h2 id="içindekiler">İçindekiler&lt;/h2>
 &lt;ul>
 &lt;li>Sorumlu bir insan olun&lt;/li>
@@ -177,7 +177,7 @@ Bu kılavuz basit ve sonuç odaklıdır, bu harika kitapla konu hakkında daha f
 &lt;p>Geri çağırma ve detaylandırmayı harmanlayın. Bir konu veya dersten sonra kendinize sorun, “Nasıl gitti? Daha iyi olabilir mi? Bu sana geçmişten bir şey hatırlatıyor mu?” Bunun gibi sorular sormak öğrenmeye yardımcı olur ve buna &lt;strong>yansıtma&lt;/strong> denir.&lt;/p>
 &lt;hr>
 &lt;h2 id="son-söz">Son söz&lt;/h2>
-&lt;p>Sizlere aktarmaya çalıştığım bu bilgiler, kendi tecrübelerimin Make It Stick kitabıyla harmanlanması sonucu ortaya çıkmıştır. Eklemek veya düzeltmek istediğiniz bir şey varsa, yorumlarda belirtin ve bu bilgileri değerli buluyorsanız e-postaya abone olmalısınız. Zaman ayırdığınız için çok teşekkürler! 🥳&lt;/p></content></item><item><title>Hakkımda</title><link>https://berkselvi.dev/tr/hakk%C4%B1mda/</link><pubDate>Wed, 09 Mar 2022 09:45:53 +0300</pubDate><guid>https://berkselvi.dev/tr/hakk%C4%B1mda/</guid><description>TL;DR JavaScript ve C# dillerinde, fonksiyonel ve OOP programlamada yetenekli. Geliştirdiği projelerin gösterdiği üzere yeni teknolojileri öğrenmede ve uygulamada yetenekli. Topluluğa karşı sorumluluk sahibi, açık kaynak proje geliştiricisi ve öğrendiklerini blog yazılarıyla aktaran. Kullandığım teknolojiler Programlama Dilleri: C#, JavaScript, TypeScript Frameworkler: React, React Native, .Net Core Veritabanları: MySql, MongoDB Araçlar: Git, GitHub, Postman, Figma, Wordpress Projelerim CollegeHub :: Web-Mobil Uygulama :: link Back-end için .</description><content>&lt;h1 id="tldr">TL;DR&lt;/h1>
+&lt;p>Sizlere aktarmaya çalıştığım bu bilgiler, kendi tecrübelerimin Make It Stick kitabıyla harmanlanması sonucu ortaya çıkmıştır. Eklemek veya düzeltmek istediğiniz bir şey varsa, yorumlarda belirtin ve bu bilgileri değerli buluyorsanız e-postaya abone olmalısınız. Zaman ayırdığınız için çok teşekkürler! 🥳&lt;/p></content></item><item><title>Hakkımda</title><link>https://berkselvi.dev/tr/hakk%C4%B1mda/</link><pubDate>Wed, 09 Mar 2022 09:45:53 +0300</pubDate><guid>https://berkselvi.dev/tr/hakk%C4%B1mda/</guid><description>TL;DR JavaScript ve C# dillerinde, fonksiyonel ve OOP programlamada yetenekli. Geliştirdiği projelerin gösterdiği üzere yeni teknolojileri öğrenmede ve uygulamada yetenekli. Topluluğa karşı sorumluluk sahibi, açık kaynak proje geliştiricisi ve öğrendiklerini blog yazılarıyla aktaran. Kullandığım teknolojiler Programlama Dilleri: C#, JavaScript, T-SQL Frameworkler: .Net Core, React Veritabanları: MSSQL, MongoDB Araçlar: Git, GitHub, Postman, Figma, Wordpress Projelerim CollegeHub :: Web-Mobil Uygulama :: link Web servis framework&amp;rsquo;ü olarak .Net Core, Veritabanı olarak MySQL kullanılıyor. Yalnızca üniversite öğrencilerinin girebileceği, tüm üniversitelerden öğreniclerle gönderiler ve yorumlar aracılığıyla iletişime geçebilecekleri hayali bir mobil uygulamanın web servisi.</description><content>&lt;h1 id="tldr">TL;DR&lt;/h1>
 &lt;ul>
 &lt;li>JavaScript ve C# dillerinde, fonksiyonel ve OOP programlamada yetenekli.&lt;/li>
 &lt;li>Geliştirdiği projelerin gösterdiği üzere yeni teknolojileri öğrenmede ve uygulamada yetenekli.&lt;/li>
@@ -186,25 +186,25 @@ Bu kılavuz basit ve sonuç odaklıdır, bu harika kitapla konu hakkında daha f
 &lt;hr>
 &lt;h1 id="kullandığım-teknolojiler">Kullandığım teknolojiler&lt;/h1>
 &lt;ul>
-&lt;li>&lt;strong>Programlama Dilleri:&lt;/strong> C#, JavaScript, TypeScript&lt;/li>
-&lt;li>&lt;strong>Frameworkler:&lt;/strong> React, React Native, .Net Core&lt;/li>
-&lt;li>&lt;strong>Veritabanları:&lt;/strong> MySql, MongoDB&lt;/li>
+&lt;li>&lt;strong>Programlama Dilleri:&lt;/strong> C#, JavaScript, T-SQL&lt;/li>
+&lt;li>&lt;strong>Frameworkler:&lt;/strong> .Net Core, React&lt;/li>
+&lt;li>&lt;strong>Veritabanları:&lt;/strong> MSSQL, MongoDB&lt;/li>
 &lt;li>&lt;strong>Araçlar:&lt;/strong> Git, GitHub, Postman, Figma, Wordpress&lt;/li>
 &lt;/ul>
 &lt;hr>
 &lt;h1 id="projelerim">Projelerim&lt;/h1>
-&lt;h4 id="collegehub--web-mobil-uygulama---linkhttpsaboutcollegehubapp">CollegeHub :: Web-Mobil Uygulama :: &lt;a href="https://about.collegehub.app">link&lt;/a>&lt;/h4>
+&lt;h4 id="collegehub--web-mobil-uygulama---linkhttpsgithubcomberkslvminimalistic-faceebok-clone">CollegeHub :: Web-Mobil Uygulama :: &lt;a href="https://github.com/berkslv/minimalistic-faceebok-clone">link&lt;/a>&lt;/h4>
 &lt;ul>
-&lt;li>Back-end için .Net Core ve MySql, Front-end için React Native kullanılıyor.&lt;/li>
-&lt;li>Yalnızca üniversite öğrencilerinin girebileceği, kendi ve diğer tüm üniversitelerden, fakültelerden ve bölümlerden öğrencilerle grup halinde veya özel olarak mesajlaşabilecekleri, gönderi paylaşabilecekleri civardaki mekanları inceleyebilecekleri bir web-mobil uygulaması&lt;/li>
+&lt;li>Web servis framework&amp;rsquo;ü olarak .Net Core, Veritabanı olarak MySQL kullanılıyor.&lt;/li>
+&lt;li>Yalnızca üniversite öğrencilerinin girebileceği, tüm üniversitelerden öğreniclerle gönderiler ve yorumlar aracılığıyla iletişime geçebilecekleri hayali bir mobil uygulamanın web servisi.&lt;/li>
 &lt;/ul>
-&lt;h4 id="algorithms--algoritma-uygulamaları---linkhttpsgithubcomberkslvalgorithms">Algorithms :: Algoritma Uygulamaları :: &lt;a href="https://github.com/berkslv/algorithms">link&lt;/a>&lt;/h4>
+&lt;h4 id="algorithms--algoritma-çözümleri---linkhttpsgithubcomberkslvalgorithms">Algorithms :: Algoritma çözümleri :: &lt;a href="https://github.com/berkslv/algorithms">link&lt;/a>&lt;/h4>
 &lt;ul>
-&lt;li>JavaScript kullanılarak, LeetCode, Project Euler gibi çeşitli kaynaklardan yararlanarak çözdüğüm algoritmik problemleri içerir.&lt;/li>
-&lt;li>Güncel olarak 15+ algoritma çözümü içeriyor.&lt;/li>
+&lt;li>LeetCode gibi kaynaklardan faydalanarak, C# kullanarak çözdüğüm algoritmik sorunları içerir.&lt;/li>
+&lt;li>Şu anda 30&amp;rsquo;dan fazla algoritma çözümü içeriyor.&lt;/li>
 &lt;/ul>
 &lt;h4 id="pomodoro-app--mobil-uygulama--linkhttpsgithubcomberkslvpomodoro-app-with-react-native">Pomodoro App :: Mobil Uygulama :: &lt;a href="https://github.com/berkslv/pomodoro-app-with-react-native">link&lt;/a>&lt;/h4>
 &lt;ul>
-&lt;li>Mobil cihazlar için basit bir pomodoro sayacı&lt;/li>
-&lt;li>React Native ve Redux teknolojileri kullanıldı. Redux bu probleme tam olarak uygun olmasada pratik kazanmak için kullandım.&lt;/li>
+&lt;li>Android cihazlar için basit bir pomodoro sayacı&lt;/li>
+&lt;li>React Native ve Redux teknolojileri kullanıldı. Redux bu soruna tam olarak uygun olmasa da pratik yapmak için kullandım.&lt;/li>
 &lt;/ul></content></item></channel></rss>
