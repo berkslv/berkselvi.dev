@@ -24,7 +24,7 @@ draft: false
 
 # Projects
 
-#### Facebook Clone :: Web Service ::  [link](https://github.com/berkslv/minimalistic-faceebok-clone)
+#### Basic Facebook clone :: Web Service ::  [link](https://github.com/berkslv/minimalistic-faceebok-clone)
     
 - .Net Core is used as web service framework and MySQL is used as database.
 - A web service of a imaginary mobile application that only university students can enter, where they can communicate with students from all universities through posts and comments.
@@ -34,8 +34,3 @@ draft: false
 
 - Includes algorithmic problems I solved using C# using resources like LeetCode.
 - Currently contains more than 30 algorithm solutions.
-
-#### Pomodoro App :: Mobile application :: [link](https://github.com/berkslv/pomodoro-app-with-react-native)
-
-- A simple pomodoro counter for android devices
-- React Native and Redux technologies were used. Although Redux is not exactly suitable for this problem, I used it to gain practice.

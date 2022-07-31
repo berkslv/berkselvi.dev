@@ -17,7 +17,7 @@ paginate = 5
   showMenuItems = 2
 
   # show selector to switch language
-  showLanguageSelector = true
+  showLanguageSelector = false
 
   # set theme to full screen width
   fullWidthTheme = false
@@ -86,29 +86,3 @@ paginate = 5
         identifier = "about"
         name = "About"
         url = "/about"
-      
-    
-  [languages.tr]
-    languageName = "Turkish"
-    title = "Berk Selvi | Web Dev"
-    subtitle = "jr. open-source web developer, cs student."
-    owner = ""
-    keywords = ""
-    copyright = "MIT"
-    menuMore = "Hepsini göster"
-    readMore = "Hepsini oku"
-    readOtherPosts = "Diğer gönderileri oku"
-    newerPosts = "En yeni gönderiler"
-    olderPosts = "Daha eski gönderiler"
-    missingContentMessage = "Sayfa bulunamadı..."
-    missingBackButtonLabel = "Anasayfaya geri dön"
-
-    [languages.tr.params.logo]
-      logoText = "Berk Selvi"
-      logoHomeLink = "/"
-
-    [languages.tr.menu]
-      [[languages.tr.menu.main]]
-        identifier = "hakkımda"
-        name = "Hakkımda"
-        url = "/tr/hakkımda"
