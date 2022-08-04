@@ -16,11 +16,19 @@ draft: false
 # Technologies I use
 
 - **Programming Languages:** C#, JavaScript, T-SQL
-- **Frameworks:** .Net Core, React
-- **Databases:** MSSQL, MongoDB
-- **Tools:** Git, GitHub, Postman, Figma, Wordpress
+- **Frameworks:** .Net Core, React, React Native
+- **Databases:** SQL Server, MySql, MongoDB
+- **Tools:** Jira, Git, GitHub, Postman, Figma
 
 ---
+
+# Experience
+
+### Intern :: Infolojik Software :: [link](https://www.linkedin.com/company/infolojik) 
+- As a data engineer intern, I contributed to the creation of reports that play a key role in companies' decision-making processes by using Microsoft's tools such as SQL Server, SSIS, SSAS, Power BI.
+- In addition to company work, I carried out the entire process of the company with my project called NorthwindBI on the Northwind database. [link](https://github.com/berkslv/NorthwindBI)
+
+--- 
 
 # Projects
 
