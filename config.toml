@@ -64,8 +64,8 @@ paginate = 5
 [languages]
   [languages.en]
     languageName = "English"
-    title = "Berk Selvi | Web Dev"
-    subtitle = "jr. open-source web developer, cs student."
+    title = "Berk Selvi | Software Developer"
+    subtitle = "full-stack web developer, specialized in backend, interested in data science"
     owner = ""
     keywords = ""
     copyright = "MIT"
@@ -80,9 +80,3 @@ paginate = 5
     [languages.en.params.logo]
       logoText = "Berk Selvi"
       logoHomeLink = "/"
-
-    [languages.en.menu]
-      [[languages.en.menu.main]]
-        identifier = "about"
-        name = "About"
-        url = "/about"
