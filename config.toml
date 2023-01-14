@@ -10,6 +10,9 @@ paginate = 5
   # the list of set content will show up on your index page (baseurl).
   contentTypeName = "posts"
 
+  # Google analytics
+  googleAnalytics = 'G-W0L24EMSQ5'
+
   # ["orange", "blue", "red", "green", "pink"]
   themeColor = "green"
 
