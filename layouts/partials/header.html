@@ -1,0 +1,13 @@
+<head>
+  {{ template "_internal/google_analytics.html" . }} 
+  {{ template "_internal/google_analytics_async.html" . }}
+</head>
+<header class="header">
+  <div class="header__inner">
+    <div class="header__logo">{{ partial "logo.html" . }}</div>
+    {{ if len $.Site.Menus }}
+    <div class="menu-trigger">menu</div>
+    {{ end }}
+  </div>
+  {{ if len $.Site.Menus }} {{ partial "menu.html" . }} {{ end }}
+</header>

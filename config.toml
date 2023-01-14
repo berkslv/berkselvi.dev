@@ -4,14 +4,12 @@ defaultContentLanguage = 'en'
 title = "Berk Selvi | Web Dev"
 theme = "terminal"
 paginate = 5
+googleAnalytics = 'G-W0L24EMSQ5'
 
 [params]
   # dir name of your main content (default is `content/posts`).
   # the list of set content will show up on your index page (baseurl).
   contentTypeName = "posts"
-
-  # Google analytics
-  googleAnalytics = 'G-W0L24EMSQ5'
 
   # ["orange", "blue", "red", "green", "pink"]
   themeColor = "green"
