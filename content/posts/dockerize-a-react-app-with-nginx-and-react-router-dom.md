@@ -3,7 +3,6 @@ title = "How to Deploy a React App with Nginx using Docker with react-router-dom
 date = "2023-01-21T11:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-cover = "/img/dockerize-a-react-app-with-nginx-and-react-router-dom.jpg"
 tags = ["react","nginx","docker","dockerfile","docker-compose", "deployment"]
 keywords = ["react","nginx","docker","dockerfile","docker-compose", "deployment"] 
 description = "Learn how to deploy a React app with Nginx using Docker in this step-by-step tutorial. This tutorial covers everything from creating a Dockerfile for your React app to using Docker Compose to streamline the deployment process. By the end of this tutorial, you'll have a solid understanding of how to deploy a React app with Nginx using Docker and Docker Compose." 

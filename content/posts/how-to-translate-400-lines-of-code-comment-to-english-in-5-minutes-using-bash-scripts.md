@@ -4,7 +4,6 @@ slug = "how-to-translate-400-lines-of-code-comment-to-english-in-5-minutes-using
 date = "2022-03-12T11:29:25+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-cover = "/img/how-to-translate-400-lines-of-code-comment-to-english-in-5-minutes-using-bash-scripts.jpg"
 tags = ["bash", "bash script", "zsh", "automation"]
 keywords = ["bash", "bash script", "zsh", "automation"]
 description = "We'll cover how to update multiple pieces of data at once using the power of Bash."

@@ -3,7 +3,6 @@ title = "How to download website with all assets and sub pagess, with one line c
 date = "2023-01-21T11:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-cover = "/img/how-to-download-website-with-all-assets-and-sub-pages-with-one-line-command.jpg"
 tags = ["web scaraping", "wget", "website content", "website"]
 keywords = ["web scaraping", "wget", "website content", "website"]
 description = "There may be times when you need to download an entire website, including all of its pages, images, and styles. In this blog post, we'll take a look at a popular tool that you can use to download an entire website: wget."

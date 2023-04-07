@@ -3,7 +3,6 @@ title = "The Future of Backend Development: Predictions and Trends"
 date = "2023-01-10T11:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-cover = "/img/the-future-of-backend-development-predictions-and-trends.jpg"
 tags = ["backend", "container", "cloud", "ai development"]
 keywords = ["backend", "container", "cloud", "ai development"]
 description = "Take a closer look at what the future of backend development might look like, and consider some of the trends and predictions that experts are making."

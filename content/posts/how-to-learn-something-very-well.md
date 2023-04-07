@@ -3,7 +3,6 @@ title = "How to learn something very well"
 date = "2022-03-09T10:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-cover = "/img/how-to-learn-something-very-well.jpeg"
 tags = ["development", "software"]
 keywords = ["development", "software"]
 description = "Basic 5 skills that every software developer should have before writing code."
