@@ -18,7 +18,7 @@ googleAnalytics = 'G-W0L24EMSQ5'
   showMenuItems = 2
 
   # show selector to switch language
-  showLanguageSelector = false
+  showLanguageSelector = true
 
   # set theme to full screen width
   fullWidthTheme = false
@@ -59,17 +59,21 @@ googleAnalytics = 'G-W0L24EMSQ5'
   # set Twitter handles for Twitter cards
   # see https://developer.twitter.com/en/docs/tweets/optimize-with-cards/guides/getting-started#card-and-content-attribution
   # do not include @
-  creator = ""
+  creator = "berkslv"
   site = ""
 
 [languages]
   [languages.en]
+    disabled = false
     languageName = "English"
+    languageCode = 'en-US'
+    contentDir = 'content/english'
+    weight = 1
     title = "Berk Selvi | Software Developer"
     subtitle = "full-stack web developer, specialized in backend, interested in data science"
     owner = ""
     keywords = ""
-    copyright = "MIT"
+    copyright = "Made by Berk Selvi"
     menuMore = "Show more"
     readMore = "Read more"
     readOtherPosts = "Read other posts"
@@ -79,5 +83,28 @@ googleAnalytics = 'G-W0L24EMSQ5'
     missingBackButtonLabel = "Back to home page"
 
     [languages.en.params.logo]
+      logoText = "Berk Selvi"
+      logoHomeLink = "/"
+  
+  [languages.tr]
+    disabled = false
+    languageName = "Türkçe"
+    languageCode = 'tr-TR'
+    contentDir = 'content/turkish'
+    weight = 2
+    title = "Berk Selvi | Software Developer"
+    subtitle = "full-stack web developer, specialized in backend, interested in data science"
+    owner = ""
+    keywords = ""
+    copyright = "Made by Berk Selvi"
+    menuMore = "Daha fazla göster"
+    readMore = "Devamını oku"
+    readOtherPosts = "Diğer yazıları oku"
+    newerPosts = "Yeni yazılar"
+    olderPosts = "Eski yazılar"
+    missingContentMessage = "Sayfa bulunamadı..."
+    missingBackButtonLabel = "Ana sayfaya dön"
+
+    [languages.tr.params.logo]
       logoText = "Berk Selvi"
       logoHomeLink = "/"
