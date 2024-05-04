@@ -1,6 +1,6 @@
 +++
 title = "Achieving Zero Downtime: Azure App Service Deployment using Azure DevOps and Deployment Slots"
-date = "2023-05-21T00:00:00+03:00"
+date = "2023-11-21T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["ci/cd","azure devops","azure app service",".NET","azure"]
