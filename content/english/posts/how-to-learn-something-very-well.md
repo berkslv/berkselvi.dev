@@ -4,7 +4,7 @@ date = "2022-03-09T10:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["development", "software"]
-description = "Basic 5 skills that every software developer should have before writing code."
+description = "Explore the power of effective learning in this concise guide. Learn why knowledge is key, how to cultivate self-discipline, and discover actionable techniques for better retention and comprehension. Dive into recall methods..."
 showFullContent = false
 readingTime = true
 +++

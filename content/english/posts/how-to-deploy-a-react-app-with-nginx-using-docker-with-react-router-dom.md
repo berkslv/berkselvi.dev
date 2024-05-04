@@ -11,12 +11,12 @@ readingTime = true
 
 If you're looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we'll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We'll create a Dockerfile for our React app that uses Nginx to serve the app, and we'll also create an Nginx configuration file to tell Nginx how to serve the app. Finally, we'll build a Docker image of our app and run a Docker container to deploy the app.
 
-# Prerequisites:
+## Prerequisites:
 
 - A basic understanding of Docker
 - A React app to deploy
 
-# Step 1: Create a Dockerfile
+## Step 1: Create a Dockerfile
 
 The first step is to create a Dockerfile for our React app. This file will contain instructions on how to build a Docker image of our app. Here is an example Dockerfile for a React app with Nginx:
 
@@ -57,7 +57,7 @@ CMD ["nginx", "-g", "daemon off;"]
 
 This Dockerfile uses the official Node runtime as the parent image to install and build the React app. It then uses the official Nginx runtime as the parent image to serve the React app.
 
-# Step 2: Create an Nginx configuration file
+## Step 2: Create an Nginx configuration file
 
 Next, we need to create an Nginx configuration file to tell Nginx how to serve our React app. Here is an example configuration file:
 
@@ -75,7 +75,7 @@ server {
 
 __You must create this `nginx.conf` file in the same directory with Dockerfile.__ This configuration file sets up Nginx to listen on port 80 and serve the React app. The try_files directive tells Nginx to try serving the requested file, then the directory containing the file, and finally fall back to serving the index.html file if the requested file or directory doesn't exist.
 
-# Step 3: Build the Docker image
+## Step 3: Build the Docker image
 
 With the Dockerfile and Nginx configuration file created, we can now build the Docker image. Navigate to the directory containing the Dockerfile and run the following command:
 
@@ -85,7 +85,7 @@ docker build -t my-react-app .
 
 This command tells Docker to build an image using the Dockerfile in the current directory and tag it with the name my-react-app. The . at the end of the command tells Docker to use the current directory as the build context.
 
-# Step 4: Run the Docker container
+## Step 4: Run the Docker container
 
 With the Docker image built, we can now run a container using the following command:
 
@@ -97,7 +97,7 @@ This command creates a container from the my-react-app Docker image and maps por
 
 Congratulations, you have successfully deployed a React app with Nginx using Docker! You can now use this method to easily deploy your React apps to any server or hosting platform that supports Docker.
 
-# Step 5: Use Docker Compose to deploy the app
+## Step 5: Use Docker Compose to deploy the app
 
 If you prefer a more streamlined approach to deploying your app, you can use Docker Compose to manage your containers. Docker Compose is a tool that allows you to define and run multi-container Docker applications.
 

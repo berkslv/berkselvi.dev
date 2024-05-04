@@ -9,16 +9,13 @@ showFullContent = false
 readingTime = true
 +++
 
-
 When developing an application in the .Net ecosystem, when things get complicated, we may need some of our methods to go to multiple services, evaluate their responses, and report these results to different services and this takes long time! We do not want to waste resources by placing such long-running methods behind an endpoint and keeping our TCP connection open for the response from that HTTP request. We can call this usage on demand job because it will run when a request is made. We may also want it to run automatically at certain times of the day or week, without putting it behind an endpoint; in this case, we can call it a recurring job. In such cases, we use “background job” by starting our work on a different thread other than the main thread where the application runs.
 
 There are many different methods of managing background jobs in .Net. This will be a blog post where I will talk about them step by step, how they solve problems and what problems they cause us, and give in-depth usage examples in Hangfire, which is the package I like the most when dealing with background jobs. You can also access all the codes from the repo:
 
 [GitHub - berkslv/lecture-dotnet-background-jobs](https://github.com/berkslv/lecture-dotnet-background-jobs)
 
-
 ## Task.Run()
-
 
 We can create a new thread and run a method on it with the Task.Run() method, which is the first solution that comes to my mind when I need a background job. I have a method that has dependencies on many external services that can take up to 5 minutes to complete, and I was calling this method with an HTTP request through a controller that I created, but answering this request was problematic because it is required a TCP connection to remain open for 5 minutes, so instead when I called the method, If started successfully, I had to notify the client that the process was started successfully with a 200 status code.
 
@@ -109,7 +106,7 @@ public IActionResult Get()
 
 ## Hosted Service
 
-We had to develop our own system to manage recurring jobs, which we could not implement in our previous example, but with the Hosted service, we do not need to develop this management ourselves, instead we call our AddHostedService method in Program.cs as follows and inherit our TestService class from the BackgroundService class. In this example, our RunTests method will run every 10 seconds. This time interval is set from the ExecuteAsync method inherited from BackgroundService abstract class.
+We had to develop our own system to manage recurring jobs, which we could not implement in our previous example, but with the Hosted service, we do not need to develop this management ourselves, instead we call our `AddHostedService` method in Program.cs as follows and inherit our TestService class from the BackgroundService class. In this example, our RunTests method will run every 10 seconds. This time interval is set from the ExecuteAsync method inherited from BackgroundService abstract class.
 
 ```cs
 // Program.cs  
@@ -159,7 +156,7 @@ public class TestService : BackgroundService, ITestService
 }
 ```
 
-However, if we want to run our method on demand, we work on a new thread with the help of the Task.Run method, so we do not need to make any changes to JobController.cs.
+However, if we want to run our method on demand, we work on a new thread with the help of the Task.Run() method, so we do not need to make any changes to JobController.cs.
 
 ### Pros
 
@@ -171,9 +168,7 @@ However, if we want to run our method on demand, we work on a new thread with th
 *   It does not have a system for on demand operation.
 *   What happens if an error is received while running the Method?
 
-
 ## Hangfire
-
 
 Hangfire makes our job much easier to manage on demand and recurring jobs through a single system. With the Job Storage system, which is not available in the other two methods, if the application is not running at that moment but the cron job has expired, it automatically runs the relevant job. We can run specific jobs and delete that job with the ID information provided during job creation. Additionally, we can monitor currently running jobs via a dashboard at /hangfire.
 
@@ -321,7 +316,7 @@ public class JobController : ControllerBase
 }
 ```
 
-Finally, error management, which is not in our toolkit previously with Task.Run and Hosted service but with Hangfire if an error occurs while running a method, Hangfire runs that method 10 more times with the same parameters at certain time intervals. As an example, we add a method called ThrowRandomly to our TestService class. With this method, we simply add a system that will throw an exception from the method that works with probability 1/2, but Hangfire will try to get successful results by re-running the methods that get errors for us. But errors that catches successfully cannot trigger the retry system. Therefore in the end of catch block we throw again.
+Finally, error management, which is not in our toolkit previously with Task.Run() and Hosted service but with Hangfire if an error occurs while running a method, Hangfire runs that method 10 more times with the same parameters at certain time intervals. As an example, we add a method called ThrowRandomly to our TestService class. With this method, we simply add a system that will throw an exception from the method that works with probability 1/2, but Hangfire will try to get successful results by re-running the methods that get errors for us. But errors that catches successfully cannot trigger the retry system. Therefore in the end of catch block we throw again.
 
 ```cs
 // TestService.cs  
@@ -381,14 +376,14 @@ Also Hangfire runs on a seperate service, this can be good or bad depending on y
 
 ### Pros
 
-*   Can manage on demand and recurring jobs together with a powerful abstraction
-*   We can adjust cron job timing dynamically and its timing is very precise.
-*   We can monitor our employee and cron jobs with Dashborad.
-*   There is no imposed interface implementation or any other special implementation, we can only manage our jobs by using the methods provided by Hangfire.
+- Can manage on demand and recurring jobs together with a powerful abstraction
+- We can adjust cron job timing dynamically and its timing is very precise.
+- We can monitor our employee and cron jobs with Dashborad.
+- There is no imposed interface implementation or any other special implementation, we can only manage our jobs by using the methods provided by Hangfire.
 
 ### Cons
 
-*   External storage is required, works with SQL Server by default.
+- External storage is required, works with SQL Server by default.
 
 
 ---

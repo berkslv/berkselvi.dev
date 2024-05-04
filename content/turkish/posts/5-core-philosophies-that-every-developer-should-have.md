@@ -4,7 +4,7 @@ date = "2022-03-09T11:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["öğrenme", "çalışma", "bilgi"]
-description = "Öğrenmeyi öğrendiğinizde, neredeyse tüm dünyadaki olanakları bilgiyle açarsınız."
+description = "Bu makalede yazılım geliştirmenin felsefi temellerini keşfedin. Kodlamada sorumluluk, kusurları benimsemek, sürekli öğrenme ve topluluk oluşturma gibi temel ilkeleri öğrenin. Başarı için yeni bir zihniyet benimsemeye hazır mısınız?"
 showFullContent = false
 readingTime = true
 +++

@@ -4,7 +4,7 @@ date = "2021-09-26T11:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["learning", "study", "knowledge"]
-description = "When you learn how to learn, you unlock almost all the possibilities in the world with knowledge."
+description = "Explore the philosophical foundations of software development in this article. Learn key principles like responsibility in coding, embracing imperfection, continuous learning, and community building. Ready to adopt a new mindset for success?"
 showFullContent = false
 readingTime = true
 +++
