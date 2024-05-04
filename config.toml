@@ -1,10 +1,12 @@
 baseURL = 'https://berkselvi.dev'
 languageCode = 'en-us'
 defaultContentLanguage = 'en'
-title = "Berk Selvi | Web Dev"
 theme = "terminal"
-paginate = 5
+paginate = 10
 googleAnalytics = 'G-W0L24EMSQ5'
+
+[markup.goldmark.renderer]
+  unsafe = true
 
 [params]
   # dir name of your main content (default is `content/posts`).
@@ -36,7 +38,7 @@ googleAnalytics = 'G-W0L24EMSQ5'
   showLastUpdated = false
 
   # set a custom favicon (default is a `themeColor` square)
-  # favicon = "favicon.ico"
+  favicon = "/icon/favicon.ico"
 
   # Provide a string as a prefix for the last update date. By default, it looks like this: 2020-xx-xx [Updated: 2020-xx-xx] :: Author
   # updatedDatePrefix = "Updated"
@@ -65,7 +67,7 @@ googleAnalytics = 'G-W0L24EMSQ5'
 [languages]
   [languages.en]
     disabled = false
-    languageName = "English"
+    languageName = "english"
     languageCode = 'en-US'
     contentDir = 'content/english'
     weight = 1
@@ -85,10 +87,17 @@ googleAnalytics = 'G-W0L24EMSQ5'
     [languages.en.params.logo]
       logoText = "Berk Selvi"
       logoHomeLink = "/"
-  
+
+    [languages.en.menu]
+      [[languages.en.menu.main]]
+        identifier = "home"
+        name = "home"
+        url = "/"
+        weight = 1
+
   [languages.tr]
     disabled = false
-    languageName = "Türkçe"
+    languageName = "türkçe"
     languageCode = 'tr-TR'
     contentDir = 'content/turkish'
     weight = 2
@@ -108,3 +117,11 @@ googleAnalytics = 'G-W0L24EMSQ5'
     [languages.tr.params.logo]
       logoText = "Berk Selvi"
       logoHomeLink = "/"
+
+    [languages.tr.menu]
+      [[languages.tr.menu.main]]
+        identifier = "home"
+        name = "home"
+        url = "/"
+        weight = 1
+

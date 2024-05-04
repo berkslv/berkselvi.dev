@@ -3,10 +3,8 @@ title = "5 Core Philosophies That Every Developer Should Have"
 date = "2022-03-09T11:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-tags = ["learning", "study", "knowledge"]
 keywords = ["learning", "study", "knowledge"]
 description = "When you learn how to learn, you unlock almost all the possibilities in the world with knowledge."
-canonicalUrl = "https://medium.com/@berkselvi/5-core-philosophies-that-every-developer-should-have-45d1c12a838b"
 showFullContent = false
 readingTime = true
 +++
@@ -14,6 +12,7 @@ readingTime = true
 I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.
 
 ##  Table of Contents
+
 - Be a responsible person
 - Don’t ruin anything in your code
 - Don’t be a perfectionist
@@ -88,7 +87,6 @@ A good idea is an orphan when you don’t have effective communication. As devel
 
 ---
 
-
 ## Conclusion
 
-This information that I am trying to convey to you has emerged as a result of the blending of my own experiences and the first part of the Pragmatic Programmer book. If there is anything you would like to add or correct, mention it in the comments and you should subscribe to the email if you find this information valuable. Thanks so much for your time! 🥳
+Thank you for reading 🎉 Don't miss out on the latest updates and insights in the world of software development. Follow me on [@berkslv](https://x.com/berkslv) to stay connected and join the conversation

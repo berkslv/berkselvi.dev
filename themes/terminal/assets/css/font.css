@@ -1,17 +1,17 @@
 @font-face {
   font-display: swap;
-  font-family: 'Fira Code';
+  font-family: 'Ubuntu';
   font-style:  normal;
   font-weight: 400;
-  src: url("../fonts/FiraCode-Regular.woff") format("woff");
+  src: url("../fonts/Ubuntu-Regular.woff") format("woff");
   font-display: swap;
 }
 
 @font-face {
   font-display: swap;
-  font-family: 'Fira Code';
+  font-family: 'Ubuntu';
   font-style:  normal;
   font-weight: 800;
-  src: url("../fonts/FiraCode-Bold.woff") format("woff");
+  src: url("../fonts/Ubuntu-Bold.woff") format("woff");
   font-display: swap;
 }

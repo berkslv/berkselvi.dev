@@ -33,7 +33,7 @@
     }
 
     & > *:first-child:not(:only-child) {
-      margin-right: 10px;
+      /*margin-right: 10px;*/
 
        @media (--tablet) {
         border: none;

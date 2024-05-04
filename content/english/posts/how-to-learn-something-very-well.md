@@ -3,7 +3,6 @@ title = "How to learn something very well"
 date = "2022-03-09T10:01:10+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-tags = ["development", "software"]
 keywords = ["development", "software"]
 description = "Basic 5 skills that every software developer should have before writing code."
 showFullContent = false
@@ -28,6 +27,7 @@ Don’t go ahead without testing yourself, you might think you learned that way,
 
 
 ## Things to do
+
 Recalling from memory is a much more wonderful method compared to methods such as repeated reading. When reading articles, pause at the beginning of sentences or paragraphs and ask, “What is the main idea? What is the message you want to give?” asking questions like this is a great practice for our callback method. In this way, mental connections related to the subjects learned will be strengthened.
 
 End-of-chapter questions and self-created questions are great learning methods. It can be used here in quizzes and exams, Using Quizzes as a learning tool may be unorthodox in terms of danger, but works very well for recall and your answers to the questions are important. You can reveal your shortcomings in this way and completing these areas will move you forward.
@@ -48,4 +48,4 @@ Blend recall and detailing. After a topic or class, ask yourself, “How did it 
 
 ## Conclusion
 
-This information that I am trying to convey to you has emerged as a result of the blending of my own experiences and Make it Stick book. If there is anything you would like to add or correct, mention it in the comments and you should subscribe to the email if you find this information valuable. Thanks so much for your time! 🥳
+Thank you for reading 🎉 Don't miss out on the latest updates and insights in the world of software development. Follow me on [@berkslv](https://x.com/berkslv) to stay connected and join the conversation
