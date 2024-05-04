@@ -548,233 +548,7 @@ In this blog post, we will explore a comprehensive solution for securing microse
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-ocelot-and-keycloak">GitHub - berkslv/lecture-ocelot-and-keycloak&lt;/a>&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading 🎉 Don&amp;rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> to stay connected and join the conversation&lt;/p></content></item><item><title>How to Secure Dotnet &amp; Vue.js Application with Keycloak</title><link>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</link><pubDate>Mon, 21 Aug 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</guid><description>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.
-First, we run our keycloak application using docker, if you publish this application using Azure or a similar cloud provider, you can easily use it in your production applications.
-docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.1 start-dev After Keycloak is running, we create realm for our application from the left side after logging in from localhost:8080/admin with username: admin and password: admin.</description><content>&lt;p>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.&lt;/p>
-&lt;p>First, we run our keycloak application using docker, if you publish this application using Azure or a similar cloud provider, you can easily use it in your production applications.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker run -p 8080:8080 -e KEYCLOAK_ADMIN&lt;span style="color:#f92672">=&lt;/span>admin -e KEYCLOAK_ADMIN_PASSWORD&lt;span style="color:#f92672">=&lt;/span>admin quay.io/keycloak/keycloak:22.0.1 start-dev
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After Keycloak is running, we create realm for our application from the left side after logging in from localhost:8080/admin with username: admin and password: admin. Since master realm is assigned to keycloak’s own use, we need to work on another realm.&lt;/p>
-&lt;img src="https://berkselvi.dev/img/how-to-secure-dotnet-vue-application-with-keycloak/create-realm.webp" alt="Create realm" loading="lazy" />
-&lt;p class="image-sub-title">Create realm&lt;/p>
-&lt;img src="https://berkselvi.dev/img/how-to-secure-dotnet-vue-application-with-keycloak/create-realm-confirmation.webp" alt="Create realm confirmation" loading="lazy" />
-&lt;p class="image-sub-title">Create realm confirmation&lt;/p>
-&lt;p>After creating the realm, we create a client called vue from the client section. Our redirect urls are the url of our Vue app. You may need to make additional updates for production.&lt;/p>
-&lt;p>We can create users under dotnet-vue realm from the Users menu to be used in our vue application.&lt;/p>
-&lt;p>If we want to create a user for our application, we can enable our users to register with keycloak by turning on this option in realm settings.&lt;/p>
-&lt;h2 id="vue">Vue&lt;/h2>
-&lt;p>After completing these configurations, we are done with the keycloak admin panel, when an unauthorized request comes to our vue application, we have to redirect it to our keycloak login page. For this, we use the medium article &lt;a href="https://medium.com/keycloak/secure-vue-js-app-with-keycloak-94814181e344">Secure Vue.js app with Keycloak&lt;/a>&lt;/p>
-&lt;p>We can create our Vue application using vite as follows, you can choose Vue and Javascript from the questions asked and continue.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm create vite@latest vue
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd vue
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm install
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm run dev
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then we update the main.js content as follows. This script simply redirects the unauthorized requests to login and updates the token with the refresh token if the token expires with onTokenExpired. After this process, if we run the application with npm run dev and go to http://localhost:5173, the keycloak login url will be redirected. If we log in with the user information we have created, we will be logged into our system.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> { &lt;span style="color:#a6e22e">createApp&lt;/span> } &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;vue&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./style.css&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">App&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./App.vue&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;keycloak-js&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">initOptions&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;http://localhost:8080&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">realm&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;dotnet-vue&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">clientId&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;vue&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">onLoad&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;login-required&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span>(&lt;span style="color:#a6e22e">initOptions&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">keycloak&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">init&lt;/span>({ &lt;span style="color:#a6e22e">onLoad&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#a6e22e">initOptions&lt;/span>.&lt;span style="color:#a6e22e">onLoad&lt;/span> })
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">then&lt;/span>((&lt;span style="color:#a6e22e">auth&lt;/span>) =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#f92672">!&lt;/span>&lt;span style="color:#a6e22e">auth&lt;/span>) {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> window.&lt;span style="color:#a6e22e">location&lt;/span>.&lt;span style="color:#a6e22e">reload&lt;/span>();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">else&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Authenticated&amp;#34;&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">createApp&lt;/span>(&lt;span style="color:#a6e22e">App&lt;/span>).&lt;span style="color:#a6e22e">mount&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;#app&amp;#34;&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#66d9ef">catch&lt;/span>((&lt;span style="color:#a6e22e">error&lt;/span>) =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">error&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">error&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Authenticated Failed&amp;#34;&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">onTokenExpired&lt;/span> &lt;span style="color:#f92672">=&lt;/span> () =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Token expired&amp;#34;&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keycloak&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">updateToken&lt;/span>(&lt;span style="color:#ae81ff">30&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">60&lt;/span>)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">then&lt;/span>(() =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Token renewed&amp;#34;&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#66d9ef">catch&lt;/span>(() =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">login&lt;/span>()
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span>;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="dotnet">Dotnet&lt;/h2>
-&lt;p>We can create a webapi project using Dotnet 6 as follows.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>cd dotnet
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new sln -n Secured
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new webapi -o Secured.API
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd Secured.API
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet watch run
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Thanks to the standards supported by Keycloak and Dotnet, we can only authorize with the configurations we will make in Program.cs without writing a special code. In this code, we verify where the token came from with the issuer, and thanks to IssuerSigningKey, we can verify the generated token without going to the keycloak.&lt;/p>
-&lt;p>RequireHttpsMetadata should only be used for development enviroment, if you have an application running in production enviroment you can delete this line and its value will evaluate to true.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>builder.Services.AddSwaggerGen();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> issuer = builder.Configuration[&lt;span style="color:#e6db74">&amp;#34;Jwt:Issuer&amp;#34;&lt;/span>];
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> key = builder.Configuration[&lt;span style="color:#e6db74">&amp;#34;Jwt:Key&amp;#34;&lt;/span>];
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddAuthentication(options =&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddJwtBearer(o =&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.Authority = issuer;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.RequireHttpsMetadata = &lt;span style="color:#66d9ef">true&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.TokenValidationParameters = &lt;span style="color:#66d9ef">new&lt;/span> Microsoft.IdentityModel.Tokens.TokenValidationParameters
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateIssuer = &lt;span style="color:#66d9ef">true&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateAudience = &lt;span style="color:#66d9ef">false&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateLifetime = &lt;span style="color:#66d9ef">true&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateIssuerSigningKey = &lt;span style="color:#66d9ef">true&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidIssuer = issuer,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> IssuerSigningKey = &lt;span style="color:#66d9ef">new&lt;/span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthentication();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthorization();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can access it at builder.Configuration by keeping the data as below in the appsettings.json file. You can access the RSA256 key from the RSA256 Kid value in the Keys tab in the Realm settings menu under the relevant realm in the keycloak admin panel.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&amp;#34;Jwt&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">:&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Issuer&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://localhost:8080/realms/dotnet-vue&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Key&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;secret-rsa-key&amp;#34;&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;span style="color:#960050;background-color:#1e0010">,&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="consuming-dotnet-api-from-vue-app">Consuming Dotnet API from Vue app&lt;/h2>
-&lt;p>First we add CORS settings and Authorize attributes in our dotnet project. For this, we edit &lt;code>Program.cs&lt;/code> as follows.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddCors(options =&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.AddDefaultPolicy(
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> policy =&amp;gt; policy.WithOrigins(&lt;span style="color:#e6db74">&amp;#34;http://localhost:5137&amp;#34;&lt;/span>)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyHeader()
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyMethod()
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyOrigin()
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> );
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// app.UseHttpsRedirection(); &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseCors();
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The WeatherForecastController.cs file provides security with the following attribute.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Authorize]&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">WeatherForecastController&lt;/span> : ControllerBase
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then, we install the axios library in our vue application with the following command.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm install axios
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After installation, we create a folder named services and make axios configurations in our file named &lt;code>base.api.js&lt;/code>.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;axios&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;../main&amp;#34;&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span>.&lt;span style="color:#a6e22e">create&lt;/span>({
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">baseURL&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;http://localhost:5050&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">headers&lt;/span>&lt;span style="color:#f92672">:&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;Content-Type&amp;#34;&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;application/json&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">interceptors&lt;/span>.&lt;span style="color:#a6e22e">request&lt;/span>.&lt;span style="color:#a6e22e">use&lt;/span>(
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">config&lt;/span>) =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">token&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">localStorage&lt;/span>.&lt;span style="color:#a6e22e">getItem&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;vue-token&amp;#34;&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">config&lt;/span>.&lt;span style="color:#a6e22e">headers&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Authorization&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">`Bearer &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">token&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">`&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Accept&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;application/json&amp;#34;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">config&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> (&lt;span style="color:#a6e22e">error&lt;/span>) =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Promise.&lt;span style="color:#a6e22e">reject&lt;/span>(&lt;span style="color:#a6e22e">error&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>To use the WeatherForecast endpoint, which is an example endpoint, we create the &lt;code>weather.api.js&lt;/code> file in the same directory.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./base.api&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">getWeather&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> () =&amp;gt; {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span>.&lt;span style="color:#a6e22e">get&lt;/span>(&lt;span style="color:#e6db74">`/WeatherForecast`&lt;/span>);
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span>.&lt;span style="color:#a6e22e">data&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We display the data by making our API request in &lt;code>App.vue&lt;/code>, here we can log out with the logout method.&lt;/p>
-&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-vue" data-lang="vue">&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#f92672">script&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#39;./main&amp;#39;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> { &lt;span style="color:#a6e22e">getWeather&lt;/span> } &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#39;./service/weather.api&amp;#39;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">name&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#39;App&amp;#39;&lt;/span>,
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">data&lt;/span>() {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">weathers&lt;/span>&lt;span style="color:#f92672">:&lt;/span> []
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">async&lt;/span> &lt;span style="color:#a6e22e">mounted&lt;/span>() {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">weathers&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">await&lt;/span> &lt;span style="color:#a6e22e">getWeather&lt;/span>();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">methods&lt;/span>&lt;span style="color:#f92672">:&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">logout&lt;/span>() {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Keycloak&lt;/span>.&lt;span style="color:#a6e22e">logout&lt;/span>();
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/&lt;span style="color:#f92672">script&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#f92672">template&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">button&lt;/span> &lt;span style="color:#f92672">@click&lt;/span>&lt;span style="color:#e6db74">=&amp;#34;logout&amp;#34;&lt;/span> &lt;span style="color:#a6e22e">style&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;margin-bottom: 30px;&amp;#34;&lt;/span>&amp;gt;&lt;span style="color:#a6e22e">Logout&lt;/span>&amp;lt;/&lt;span style="color:#f92672">button&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">table&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">th&lt;/span>&amp;gt;Date&amp;lt;/&lt;span style="color:#f92672">th&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">th&lt;/span>&amp;gt;&lt;span style="color:#a6e22e">Summary&lt;/span>&amp;lt;/&lt;span style="color:#f92672">th&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">tr&lt;/span> &lt;span style="color:#f92672">v-for&lt;/span>&lt;span style="color:#e6db74">=&amp;#34;weather in weathers&amp;#34;&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">td&lt;/span>&amp;gt;{{ &lt;span style="color:#a6e22e">weather&lt;/span>.&lt;span style="color:#a6e22e">date&lt;/span> }}&amp;lt;/&lt;span style="color:#f92672">td&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">td&lt;/span>&amp;gt;{{ &lt;span style="color:#a6e22e">weather&lt;/span>.&lt;span style="color:#a6e22e">summary&lt;/span> }}&amp;lt;/&lt;span style="color:#f92672">td&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">table&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/&lt;span style="color:#f92672">template&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you want to access the source code, you can find the whole project on my GitHub account:&lt;/p>
-&lt;p>&lt;a href="https://github.com/berkslv/lecture-dotnet-vue-keycloak">GitHub - berkslv/lecture-dotnet-vue-keycloak&lt;/a>&lt;/p>
-&lt;hr>
-&lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading 🎉 Don&amp;rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> to stay connected and join the conversation&lt;/p></content></item><item><title>Achieving Zero Downtime: Azure App Service Deployment using Azure DevOps and Deployment Slots</title><link>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</link><pubDate>Sun, 21 May 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</guid><description>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.</description><content>&lt;p>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.&lt;/p>
+&lt;p>Thank you for reading 🎉 Don&amp;rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> to stay connected and join the conversation&lt;/p></content></item><item><title>Achieving Zero Downtime: Azure App Service Deployment using Azure DevOps and Deployment Slots</title><link>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</link><pubDate>Tue, 21 Nov 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</guid><description>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.</description><content>&lt;p>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.&lt;/p>
 &lt;p>We can use the deployment slots feature to solve this problem specifically for the app service. With this feature, 2 different instances, usually staging and production applications, are running in a single app service plan as a separate instances, and when switching to production, the swap operation is managed by the app service and no downtime is experienced.&lt;/p>
 &lt;p>In this post, we will create a very simple Dotnet Web API project, host it in the Azure DevOps repository, deploy it to Azure App Service by creating a CI/CD pipeline with the Azure DevOps pipeline, and perform zero downtime deployment with the deployment slots feature. We will complete the entire process in 5 steps as follows. Let’s begin.&lt;/p>
 &lt;ol>
@@ -1057,6 +831,232 @@ docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If we try a similar process in an app service deployment that does not implement deployment slots, we will receive an error as follows.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>2023-11-14T12:28:39.506Z, &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health error is request to &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health failed, reason: connect ETIMEDOUT 100.100.100.100:443
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>Thank you for reading 🎉 Don&amp;rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> to stay connected and join the conversation&lt;/p></content></item><item><title>How to Secure Dotnet &amp; Vue.js Application with Keycloak</title><link>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</link><pubDate>Mon, 21 Aug 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</guid><description>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.
+First, we run our keycloak application using docker, if you publish this application using Azure or a similar cloud provider, you can easily use it in your production applications.
+docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.1 start-dev After Keycloak is running, we create realm for our application from the left side after logging in from localhost:8080/admin with username: admin and password: admin.</description><content>&lt;p>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.&lt;/p>
+&lt;p>First, we run our keycloak application using docker, if you publish this application using Azure or a similar cloud provider, you can easily use it in your production applications.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker run -p 8080:8080 -e KEYCLOAK_ADMIN&lt;span style="color:#f92672">=&lt;/span>admin -e KEYCLOAK_ADMIN_PASSWORD&lt;span style="color:#f92672">=&lt;/span>admin quay.io/keycloak/keycloak:22.0.1 start-dev
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After Keycloak is running, we create realm for our application from the left side after logging in from localhost:8080/admin with username: admin and password: admin. Since master realm is assigned to keycloak’s own use, we need to work on another realm.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-secure-dotnet-vue-application-with-keycloak/create-realm.webp" alt="Create realm" loading="lazy" />
+&lt;p class="image-sub-title">Create realm&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-secure-dotnet-vue-application-with-keycloak/create-realm-confirmation.webp" alt="Create realm confirmation" loading="lazy" />
+&lt;p class="image-sub-title">Create realm confirmation&lt;/p>
+&lt;p>After creating the realm, we create a client called vue from the client section. Our redirect urls are the url of our Vue app. You may need to make additional updates for production.&lt;/p>
+&lt;p>We can create users under dotnet-vue realm from the Users menu to be used in our vue application.&lt;/p>
+&lt;p>If we want to create a user for our application, we can enable our users to register with keycloak by turning on this option in realm settings.&lt;/p>
+&lt;h2 id="vue">Vue&lt;/h2>
+&lt;p>After completing these configurations, we are done with the keycloak admin panel, when an unauthorized request comes to our vue application, we have to redirect it to our keycloak login page. For this, we use the medium article &lt;a href="https://medium.com/keycloak/secure-vue-js-app-with-keycloak-94814181e344">Secure Vue.js app with Keycloak&lt;/a>&lt;/p>
+&lt;p>We can create our Vue application using vite as follows, you can choose Vue and Javascript from the questions asked and continue.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm create vite@latest vue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd vue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm install
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm run dev
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then we update the main.js content as follows. This script simply redirects the unauthorized requests to login and updates the token with the refresh token if the token expires with onTokenExpired. After this process, if we run the application with npm run dev and go to http://localhost:5173, the keycloak login url will be redirected. If we log in with the user information we have created, we will be logged into our system.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> { &lt;span style="color:#a6e22e">createApp&lt;/span> } &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;vue&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./style.css&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">App&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./App.vue&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;keycloak-js&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">initOptions&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;http://localhost:8080&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">realm&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;dotnet-vue&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">clientId&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;vue&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">onLoad&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;login-required&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span>(&lt;span style="color:#a6e22e">initOptions&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">keycloak&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">init&lt;/span>({ &lt;span style="color:#a6e22e">onLoad&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#a6e22e">initOptions&lt;/span>.&lt;span style="color:#a6e22e">onLoad&lt;/span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">then&lt;/span>((&lt;span style="color:#a6e22e">auth&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#f92672">!&lt;/span>&lt;span style="color:#a6e22e">auth&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> window.&lt;span style="color:#a6e22e">location&lt;/span>.&lt;span style="color:#a6e22e">reload&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Authenticated&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">createApp&lt;/span>(&lt;span style="color:#a6e22e">App&lt;/span>).&lt;span style="color:#a6e22e">mount&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;#app&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#66d9ef">catch&lt;/span>((&lt;span style="color:#a6e22e">error&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">error&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">error&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Authenticated Failed&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">onTokenExpired&lt;/span> &lt;span style="color:#f92672">=&lt;/span> () =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Token expired&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keycloak&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">updateToken&lt;/span>(&lt;span style="color:#ae81ff">30&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">60&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">then&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Token renewed&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#66d9ef">catch&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">login&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="dotnet">Dotnet&lt;/h2>
+&lt;p>We can create a webapi project using Dotnet 6 as follows.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>cd dotnet
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new sln -n Secured
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new webapi -o Secured.API
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd Secured.API
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet watch run
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Thanks to the standards supported by Keycloak and Dotnet, we can only authorize with the configurations we will make in Program.cs without writing a special code. In this code, we verify where the token came from with the issuer, and thanks to IssuerSigningKey, we can verify the generated token without going to the keycloak.&lt;/p>
+&lt;p>RequireHttpsMetadata should only be used for development enviroment, if you have an application running in production enviroment you can delete this line and its value will evaluate to true.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>builder.Services.AddSwaggerGen();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> issuer = builder.Configuration[&lt;span style="color:#e6db74">&amp;#34;Jwt:Issuer&amp;#34;&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> key = builder.Configuration[&lt;span style="color:#e6db74">&amp;#34;Jwt:Key&amp;#34;&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddAuthentication(options =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddJwtBearer(o =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.Authority = issuer;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.RequireHttpsMetadata = &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.TokenValidationParameters = &lt;span style="color:#66d9ef">new&lt;/span> Microsoft.IdentityModel.Tokens.TokenValidationParameters
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateIssuer = &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateAudience = &lt;span style="color:#66d9ef">false&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateLifetime = &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateIssuerSigningKey = &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidIssuer = issuer,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> IssuerSigningKey = &lt;span style="color:#66d9ef">new&lt;/span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthentication();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthorization();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can access it at builder.Configuration by keeping the data as below in the appsettings.json file. You can access the RSA256 key from the RSA256 Kid value in the Keys tab in the Realm settings menu under the relevant realm in the keycloak admin panel.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&amp;#34;Jwt&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Issuer&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://localhost:8080/realms/dotnet-vue&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Key&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;secret-rsa-key&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;span style="color:#960050;background-color:#1e0010">,&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="consuming-dotnet-api-from-vue-app">Consuming Dotnet API from Vue app&lt;/h2>
+&lt;p>First we add CORS settings and Authorize attributes in our dotnet project. For this, we edit &lt;code>Program.cs&lt;/code> as follows.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddCors(options =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.AddDefaultPolicy(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> policy =&amp;gt; policy.WithOrigins(&lt;span style="color:#e6db74">&amp;#34;http://localhost:5137&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyHeader()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyMethod()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyOrigin()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// app.UseHttpsRedirection(); &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseCors();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The WeatherForecastController.cs file provides security with the following attribute.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Authorize]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">WeatherForecastController&lt;/span> : ControllerBase
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then, we install the axios library in our vue application with the following command.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm install axios
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After installation, we create a folder named services and make axios configurations in our file named &lt;code>base.api.js&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;axios&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;../main&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span>.&lt;span style="color:#a6e22e">create&lt;/span>({
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">baseURL&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;http://localhost:5050&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">headers&lt;/span>&lt;span style="color:#f92672">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;Content-Type&amp;#34;&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;application/json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">interceptors&lt;/span>.&lt;span style="color:#a6e22e">request&lt;/span>.&lt;span style="color:#a6e22e">use&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">config&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">token&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">localStorage&lt;/span>.&lt;span style="color:#a6e22e">getItem&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;vue-token&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">config&lt;/span>.&lt;span style="color:#a6e22e">headers&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Authorization&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">`Bearer &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">token&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">`&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Accept&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;application/json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">config&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> (&lt;span style="color:#a6e22e">error&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Promise.&lt;span style="color:#a6e22e">reject&lt;/span>(&lt;span style="color:#a6e22e">error&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>To use the WeatherForecast endpoint, which is an example endpoint, we create the &lt;code>weather.api.js&lt;/code> file in the same directory.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./base.api&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">getWeather&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> () =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span>.&lt;span style="color:#a6e22e">get&lt;/span>(&lt;span style="color:#e6db74">`/WeatherForecast`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span>.&lt;span style="color:#a6e22e">data&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We display the data by making our API request in &lt;code>App.vue&lt;/code>, here we can log out with the logout method.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-vue" data-lang="vue">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#f92672">script&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#39;./main&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> { &lt;span style="color:#a6e22e">getWeather&lt;/span> } &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#39;./service/weather.api&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">name&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#39;App&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">data&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">weathers&lt;/span>&lt;span style="color:#f92672">:&lt;/span> []
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">async&lt;/span> &lt;span style="color:#a6e22e">mounted&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">weathers&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">await&lt;/span> &lt;span style="color:#a6e22e">getWeather&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">methods&lt;/span>&lt;span style="color:#f92672">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">logout&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Keycloak&lt;/span>.&lt;span style="color:#a6e22e">logout&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/&lt;span style="color:#f92672">script&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#f92672">template&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">button&lt;/span> &lt;span style="color:#f92672">@click&lt;/span>&lt;span style="color:#e6db74">=&amp;#34;logout&amp;#34;&lt;/span> &lt;span style="color:#a6e22e">style&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;margin-bottom: 30px;&amp;#34;&lt;/span>&amp;gt;&lt;span style="color:#a6e22e">Logout&lt;/span>&amp;lt;/&lt;span style="color:#f92672">button&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">table&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">th&lt;/span>&amp;gt;Date&amp;lt;/&lt;span style="color:#f92672">th&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">th&lt;/span>&amp;gt;&lt;span style="color:#a6e22e">Summary&lt;/span>&amp;lt;/&lt;span style="color:#f92672">th&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">tr&lt;/span> &lt;span style="color:#f92672">v-for&lt;/span>&lt;span style="color:#e6db74">=&amp;#34;weather in weathers&amp;#34;&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">td&lt;/span>&amp;gt;{{ &lt;span style="color:#a6e22e">weather&lt;/span>.&lt;span style="color:#a6e22e">date&lt;/span> }}&amp;lt;/&lt;span style="color:#f92672">td&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">td&lt;/span>&amp;gt;{{ &lt;span style="color:#a6e22e">weather&lt;/span>.&lt;span style="color:#a6e22e">summary&lt;/span> }}&amp;lt;/&lt;span style="color:#f92672">td&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">table&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/&lt;span style="color:#f92672">template&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you want to access the source code, you can find the whole project on my GitHub account:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-dotnet-vue-keycloak">GitHub - berkslv/lecture-dotnet-vue-keycloak&lt;/a>&lt;/p>
+&lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
 &lt;p>Thank you for reading 🎉 Don&amp;rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> to stay connected and join the conversation&lt;/p></content></item><item><title>How to Deploy a React App with Nginx using Docker with react-router-dom</title><link>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</link><pubDate>Sat, 21 Jan 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</guid><description>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app.</description><content>&lt;p>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app. Finally, we&amp;rsquo;ll build a Docker image of our app and run a Docker container to deploy the app.&lt;/p>
 &lt;h1 id="prerequisites">Prerequisites:&lt;/h1>
