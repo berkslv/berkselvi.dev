@@ -1,5 +1,6 @@
 {{ define "main" }}
 <div class="post">
+  {{ partial "i18nlist.html" . }}
   <h1 class="post-title">
     <a href="{{ .Permalink }}">{{ .Title | markdownify }}</a></h1>
   <div class="post-meta">

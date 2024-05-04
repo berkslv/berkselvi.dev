@@ -1,0 +1,6 @@
+{{ if .IsTranslated }}
+<h4>{{ $.Site.Params.Translations | default "Translations;" }}</h4>
+  {{ range .Translations }}
+    <a href="{{ .RelPermalink }}">{{ .LinkTitle }}{{ if .IsPage }} ({{ i18n "wordCount" . }}){{ end }}</a>
+  {{ end }}
+{{ end }}

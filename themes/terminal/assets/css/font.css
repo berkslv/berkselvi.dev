@@ -3,7 +3,7 @@
   font-family: 'Ubuntu';
   font-style:  normal;
   font-weight: 400;
-  src: url("../fonts/Ubuntu-Regular.woff") format("woff");
+  src: url("../fonts/Ubuntu-Regular.ttf") format("ttf");
   font-display: swap;
 }
 
@@ -12,6 +12,6 @@
   font-family: 'Ubuntu';
   font-style:  normal;
   font-weight: 800;
-  src: url("../fonts/Ubuntu-Bold.woff") format("woff");
+  src: url("../fonts/Ubuntu-Bold.ttf") format("ttf");
   font-display: swap;
 }
