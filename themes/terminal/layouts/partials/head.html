@@ -5,8 +5,6 @@
 <meta name="robots" content="noodp" />
 <link rel="canonical" href="{{ .Permalink }}" />
 
-{{ template "_internal/google_analytics.html" . }}
-
 <!-- Theme CSS -->
 <link rel="stylesheet" href="{{ "assets/style.css" | absURL }}">
 {{ if (isset .Params "color") }}
@@ -93,6 +91,4 @@
 <!-- Extended head section-->
 {{ partial "extended_head.html" . }}
 
-{{ template "_internal/google_analytics.html" . }} 
-{{ template "_internal/google_analytics_async.html" . }}
 <link href="{{ .Site.BaseURL }}css/custom.css" rel="stylesheet">
