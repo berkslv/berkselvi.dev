@@ -1,0 +1,228 @@
+<!doctype html><html lang=tr><head><title>Ocelot ve Keycloak'i birlikte kullanarak API Gateway'den Mikroservis güvenliğini nasıl sağlarız? :: Berk Selvi | Software Developer</title>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Mikroservis mimarisinin dinamik dünyasında, güçlü bir güvenliğe olan ihtiyaç çok daha önemli hale gelmiştir. Kuruluşlar uygulamalarını daha küçük, bağımsız bir şekilde deploy edilebilir servislere böldükçe…"><meta name=keywords content="keycloak,ocelot,microservices,api gateway,oauth"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/tr/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/tr/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="tr"><meta property="og:type" content="article"><meta property="og:title" content="Ocelot ve Keycloak'i birlikte kullanarak API Gateway'den Mikroservis güvenliğini nasıl sağlarız?"><meta property="og:description" content="Mikroservis mimarisinin dinamik dünyasında, güçlü bir güvenliğe olan ihtiyaç çok daha önemli hale gelmiştir. Kuruluşlar uygulamalarını daha küçük, bağımsız bir şekilde deploy edilebilir servislere böldükçe…"><meta property="og:url" content="https://berkselvi.dev/tr/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/icon/favicon.ico"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2024-01-30 00:00:00 +0300 +0300"><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/>home</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>türkçe ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/>home</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h1 class=post-title><a href=https://berkselvi.dev/tr/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/>Ocelot ve Keycloak&rsquo;i birlikte kullanarak API Gateway&rsquo;den Mikroservis güvenliğini nasıl sağlarız?</a></h1><div class=post-meta><span class=post-date>30 Ocak 2024
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 6 min read (1199 words)</span></div><div class=post-content><div><p>Mikroservis mimarisinin dinamik dünyasında, güçlü bir güvenliğe olan ihtiyaç çok daha önemli hale gelmiştir. Kuruluşlar uygulamalarını daha küçük, bağımsız bir şekilde deploy edilebilir servislere böldükçe, bu servisler arasında alınan ve gönderilen verilerin bütünlüğünü ve gizliliğini sağlamak kritik bir önem haline gelir.</p><p>Bu blog yazısında, Ocelot&rsquo;u kullanan ve güçlü bir açık kaynak kimlik ve erişim yönetimi çözümü olan Keycloak ile mikroservisleri güvence altına almak için kapsamlı bir çözümü keşfedeceğiz. Keycloak&rsquo;u API Gateway&rsquo;in arkasına yerleştirerek, bu entegrasyonun kaynakları koruduğunu, diğer hizmetlere yönelik istekleri kimlik doğruladığını ve taleplere erişimi yetkilendirdiğini claim yapılarını kullanarak sunar. Bu, mikroservis ekosisteminiz için sorunsuz ve güvenli bir iletişim çerçevesi sunar. Başlayalım.</p><h2 id=create-keycloak-instance>Create Keycloak instance<a href=#create-keycloak-instance class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Docker içinde Keycloak&rsquo;u çalıştırmak çok kolaydır. Bu Docker dosyasını projenizin /Identity dizinine yerleştirin. Tüm kodları yazının sonundaki GitHub reposunda bulabilirsiniz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-Dockerfile data-lang=Dockerfile><span style=display:flex><span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> quay.io/keycloak/keycloak:latest as builder  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e># Enable health and metrics support  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENV</span> KC_HEALTH_ENABLED<span style=color:#f92672>=</span>true  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>ENV</span> KC_METRICS_ENABLED<span style=color:#f92672>=</span>true  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e># Configure a database vendor  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENV</span> KC_DB<span style=color:#f92672>=</span>postgres  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>WORKDIR</span><span style=color:#e6db74> /opt/keycloak  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e># for demonstration purposes only, please make sure to use proper certificates in production instead  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize <span style=color:#ae81ff>2048</span> -dname <span style=color:#e6db74>&#34;CN=server&#34;</span> -alias server -ext <span style=color:#e6db74>&#34;SAN:c=DNS:localhost,IP:127.0.0.1&#34;</span> -keystore conf/server.keystore  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> /opt/keycloak/bin/kc.sh build  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> quay.io/keycloak/keycloak:latest  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> --from<span style=color:#f92672>=</span>builder /opt/keycloak/ /opt/keycloak/  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e># change these values to point to a running postgres instance  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENTRYPOINT</span> [<span style=color:#e6db74>&#34;/opt/keycloak/bin/kc.sh&#34;</span>]<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p>And create docker-compose.yml file that access /Identity/Dockerfile and builds image from it. We can use base image rather than custom Dockerfile but with this approach you can customize much more features of Keycloak like frontend theme and secret keys.</p><p>/Identity/Dockerfile dosyasına erişen ve ondan bir image oluşturan docker-compose.yml dosyasını oluşturun. Özel Docker dosyası yerine bir temel image kullanabiliriz, ancak bu yaklaşımla Keycloak&rsquo;un frontend teması ve secret key bilgileri gibi çok daha fazla özelliğini özelleştirebilirsiniz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#34;3&#34;</span>  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>services</span>:  
+</span></span><span style=display:flex><span>  <span style=color:#75715e># PostgreSQL for keycloak  </span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-identity-db</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>secured-identity-db  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>postgres:16-alpine  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>6063</span>:<span style=color:#ae81ff>5432</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>expose</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>6063</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./data/secured-identity-db:/var/lib/postgresql/data  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>always  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>environment</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>POSTGRES_PASSWORD=myStrongPassword123  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>POSTGRES_USER=keycloak  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>POSTGRES_DB=keycloak  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>secured-network  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  <span style=color:#75715e># Keycloak  </span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-identity</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>secured-identity  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>build</span>: <span style=color:#ae81ff>./Keycloak  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>command</span>: [<span style=color:#e6db74>&#34;start-dev&#34;</span>]  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>5053</span>:<span style=color:#ae81ff>8080</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>expose</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>environment</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KEYCLOAK_ADMIN=admin  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KEYCLOAK_ADMIN_PASSWORD=admin  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_HOSTNAME_URL=http://localhost:5050/identity  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB=postgres  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB_USERNAME=keycloak  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB_PASSWORD=myStrongPassword123  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB_URL=jdbc:postgresql://secured-identity-db:5432/keycloak  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>depends_on</span>:   
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>secured-identity-db  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>secured-network  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>networks</span>:  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-network</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>driver</span>: <span style=color:#ae81ff>bridge  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>volumes</span>:  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-data</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>driver</span>: <span style=color:#ae81ff>local</span>
+</span></span></code></pre></div><p>Ve sadece bu docker-compose.yml dosyasından docker&rsquo;ı çalıştırmamız yeterlidir.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>docker compose build  
+</span></span><span style=display:flex><span>docker compose up -d
+</span></span></code></pre></div><h2 id=put-keycloak-behind-ocelot-api-gateway-to-protect-resources>Put keycloak behind Ocelot API Gateway to protect resources<a href=#put-keycloak-behind-ocelot-api-gateway-to-protect-resources class=hanchor arialabel=Anchor>&#8983;</a></h2><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/Microservice-architecture-with-Ocelot-and-Keycloak.webp alt="Microservice architecture with Ocelot and Keycloak" loading=lazy><p class=image-sub-title>Microservice architecture with Ocelot and Keycloak</p><p>Kimlik hizmetinizin (keycloak) güvenliğini sağlamak ve diğer hizmetler gibi istek alabilecek uç noktaları sınırlandırarak saldırı vektörünü azaltmak önemlidir. Keycloak admin paneline harici bir ağdan erişilmemelidir, bu özelliğe yalnızca bu ağdaki kişiler erişebilir. Daha fazla bilgi edinmek için <a href=https://www.keycloak.org/server/reverseproxy>reverse proxy kullanma</a> hakkındaki Keycloak dökümantasyonunu göz atın.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/Exposed-path-recommendations.webp alt="Exposed path recommendations" loading=lazy><p class=image-sub-title>Exposed path recommendations</p><p>Öncelikle Ocelot projesini oluşturalım. Burada .NET 8 kullanıyorum</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>dotnet new sln -n Secured  
+</span></span><span style=display:flex><span>dotnet new webapi -o Secured.ApiGateway  
+</span></span><span style=display:flex><span>cd Secured.ApiGateway/  
+</span></span><span style=display:flex><span>dotnet add package Ocelot --version 22.0.1
+</span></span></code></pre></div><p>Projeyi başarıyla oluşturduktan sonra Program.cs dosyasını aşağıdaki gibi değiştirip root dizinde ocelot.json dosyasını oluşturun.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Configuration.AddJsonFile(<span style=color:#e6db74>&#34;ocelot.json&#34;</span>, optional: <span style=color:#66d9ef>false</span>, reloadOnChange: <span style=color:#66d9ef>true</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddOcelot(builder.Configuration);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.UseOcelot();  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.RunAsync();
+</span></span></code></pre></div><p>Bundan sonra bu ocelot.json dosyasını localhost:5053 üzerinde çalışan keycloak uygulamamıza erişimi sınırlamak için kullanabiliriz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;Routes&#34;</span>: [  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/realms/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;http&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;localhost&#34;</span>,  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      ],  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/identity/realms/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span>, <span style=color:#e6db74>&#34;Post&#34;</span>, <span style=color:#e6db74>&#34;Put&#34;</span>, <span style=color:#e6db74>&#34;Delete&#34;</span> ]  
+</span></span><span style=display:flex><span>    },  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/resources/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;http&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;localhost&#34;</span>,  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      ],  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/identity/resources/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ]  
+</span></span><span style=display:flex><span>    },  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/js/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;http&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;localhost&#34;</span>,  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      ],  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/identity/js/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ]  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  ],  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;GlobalConfiguration&#34;</span>: {  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;BaseUrl&#34;</span>: <span style=color:#e6db74>&#34;https://localhost:5050&#34;</span>  
+</span></span><span style=display:flex><span>  }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Bu yapılandırmalardan sonra, API Gateway&rsquo;in adresi olan localhost:5050&rsquo;den keycloak&rsquo;a erişebilirsiniz. Ancak, bu adres aracılığıyla Keycloak yönetici paneline erişemezsiniz çünkü erişimi sınırladık.</p><p>Keycloak yapılandırmalarımızı yapmak için, hala local olarak erişilebilen keycloak adresinde, yani localhost:5053&rsquo;te yönetici paneline giriş yapabiliriz. Deployment senaryosunda, yalnızca Ocelot&rsquo;un harici internete erişimi olduğundan emin olacağız.</p><p>localhost:5053 adresine admin kullanıcı adı ve admin şifresiyle giriş yapabiliriz. Bu kimlik bilgilerini docker-compose.yml dosyasından değiştirebiliriz.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-1.webp alt=Keycloak loading=lazy><p>Giriş yaptıktan sonra, kullanıcıları yönetmek için yeni bir alan (realm) oluşturmak ve uygulamamız için istemci oluşturmak için bu açılır menüden yeni alan (realm) oluştur seçeneğine tıklıyoruz. &ldquo;Yeni alan (realm) oluştur&rdquo; düğmesine tıkladıktan sonra, basitçe <strong>secured</strong>&lsquo;ı alan (realm) adı olarak girin ve diğer her şeyi olduğu gibi bırakın.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-2.webp alt=Keycloak loading=lazy><p>Clients sekmesinde client oluştur&rsquo;a tıklayın. Client ID alanını <strong>postman</strong> olarak adlandırın ve geçerli redirect URL&rsquo;sini <a href=https://oauth.pstmn.io/v1/callback><strong>https://oauth.pstmn.io/v1/callback</strong></a> olarak adlandırın. diğer şeyleri olduğu gibi bırakın.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-3.webp alt=Keycloak loading=lazy><p>Kullanıcılar sekmesinde Keycloak&rsquo;ta oturum açacak kullanıcıları ekleyin.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-4.webp alt=Keycloak loading=lazy><p>Bu adımlardan sonra, yeni oluşturulan kullanıcıyla Keycloak&rsquo;a giriş yaparak erişim belirteci alabiliriz. API gateway&rsquo;e erişmek için Postman kullanıyorum. Postman&rsquo;de Keycloak ile oturum açabilirsiniz. Yetkilendirme bölümünde OAuth 2.0&rsquo;ı seçin ve aşağıdaki gibi yapılandırın ve Yeni Erişim Belgesi Al&rsquo;a tıklayın. Postman, tarayıcı penceresini açacak ve sizi Keycloak giriş sayfasına yönlendirecektir, yeni kullanıcınızın kimlik bilgilerini girin. Admin kimlik bilgilerini girmeyin, bu kimlik bilgileri yalnızca ana (master) alan için geçerlidir.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-txt data-lang=txt><span style=display:flex><span>Grant type: Authorization code  
+</span></span><span style=display:flex><span>Auth URL: http://localhost:5050/identity/realms/secured/protocol/openid-connect/auth  
+</span></span><span style=display:flex><span>Access Token URL: http://localhost:5050/identity/realms/secured/protocol/openid-connect/token  
+</span></span><span style=display:flex><span>Client ID: postman  
+</span></span><span style=display:flex><span>Scope: openid profile roles
+</span></span></code></pre></div><p>Her şeyi doğru yaptıysanız, Postman ile API Gateway&rsquo;in arkasındaki Keycloak&rsquo;a başarıyla kimlik doğrulaması yaptınız 🎉</p><h2 id=authenticate-requests-to-other-services>Authenticate requests to other services<a href=#authenticate-requests-to-other-services class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Ocelot&rsquo;ta bir isteğin kimliğini doğrulamak istiyorsanız Program.cs ve ocelot.json&rsquo;da aşağıdaki güncellemeleri yapın. MetadataAddress, JWT doğrulaması için gerekli anahtarları alır. Ancak ekstra network isteklerinden kaçınmak istiyorsanız anahtarları appsettings.json dosyasına yerleştirip kullanabilirsiniz.</p><p>Ocelot.json dosyasındaki AuthenticationOptions ile kimlik doğrulama tamamlandı, burada JWT tokenımızı Bearer önekiyle birlikte göndereceğimizi ve JWT token doğrulamasını Program.cs&rsquo;den yapılandırma ile yapacağımızı söylüyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services  
+</span></span><span style=display:flex><span>    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  
+</span></span><span style=display:flex><span>    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =&gt;  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        o.MetadataAddress = <span style=color:#e6db74>&#34;http://localhost:5050/identity/realms/secured/.well-known/openid-configuration&#34;</span>;  
+</span></span><span style=display:flex><span>        o.RequireHttpsMetadata = <span style=color:#66d9ef>false</span>;  
+</span></span><span style=display:flex><span>        o.Authority = <span style=color:#e6db74>&#34;http://localhost:5050/realms/secured&#34;</span>;  
+</span></span><span style=display:flex><span>        o.Audience = <span style=color:#e6db74>&#34;account&#34;</span>;  
+</span></span><span style=display:flex><span>    });  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Configuration.AddJsonFile(<span style=color:#e6db74>&#34;ocelot.json&#34;</span>, optional: <span style=color:#66d9ef>false</span>, reloadOnChange: <span style=color:#66d9ef>true</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddOcelot(builder.Configuration);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>app.UseAuthentication();  
+</span></span><span style=display:flex><span>app.UseAuthorization();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.UseOcelot();  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.RunAsync();
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Routes&#34;</span>: [  
+</span></span><span style=display:flex><span>      {  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/get&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;https&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>          {  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;httpbin.org&#34;</span>,  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>443</span>  
+</span></span><span style=display:flex><span>          }  
+</span></span><span style=display:flex><span>        ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/test&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;AuthenticationOptions&#34;</span>: {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;AuthenticationProviderKey&#34;</span>: <span style=color:#e6db74>&#34;Bearer&#34;</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      },  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>//...
+</span></span></span></code></pre></div><h2 id=authorize-requests-to-other-services>Authorize requests to other services<a href=#authorize-requests-to-other-services class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Yetkilendirme biraz daha zor ve ek çalışma gerektirir çünkü Keycloak, kullanıcı rollerini JWT yükünde nested yani iç içe geçmiş olarak yerleştirir. Aşağıdaki gibi bir şeydir. Görüldüğü gibi, roller alanı realm_access alanı altına yerleştirilir. Bu, Ocelot&rsquo;ta karışıklığa neden olur, çünkü Ocelot, talepleri string veya object değerleri olarak okur ve nested alanları değerlendirmez. Bu sorunu önlemek için Keycloak token eşlemesini yapılandırırız ve nested biçimi kullanmayız.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>  <span style=color:#75715e>//...  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#f92672>&#34;exp&#34;</span>: <span style=color:#ae81ff>1706600524</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;realm_access&#34;</span>: {  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;roles&#34;</span>: [  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;offline_access&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;default-roles-microcommerce&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;uma_authorization&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;customer&#34;</span>  
+</span></span><span style=display:flex><span>    ]  
+</span></span><span style=display:flex><span>  },  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;resource_access&#34;</span>: {  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;account&#34;</span>: {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;roles&#34;</span>: [  
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;manage-account&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;manage-account-links&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;view-profile&#34;</span>  
+</span></span><span style=display:flex><span>      ]  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  },  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;scope&#34;</span>: <span style=color:#e6db74>&#34;openid email profile&#34;</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;preferred_username&#34;</span>: <span style=color:#e6db74>&#34;berkslv&#34;</span>,  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Bu özel eşleme için sol menüden Client scopes&rsquo;a tıklayın ve rolleri seçin.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-5.webp alt=Keycloak loading=lazy><p>Rollerin altında, Mappers bölümünü seçin ve ardından realm roles&rsquo;a tıklayın.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-6.webp alt=Keycloak loading=lazy><p>Açılan menüde Token Claim Name seçeneğine realm_access.roles hali hazırda girilidir. Bunu <strong>realm_roles</strong> olarak güncelliyoruz.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-7.webp alt=Keycloak loading=lazy><p>Bu konfigürasyonları yaptıktan sonra Postman üzerinden tekrar giriş yaparak tokenımızı güncelliyoruz. Güncellenen token ile yaptığımız isteklerin Ocelot tarafından talep kontrolüne tabi olması için ocelot.json dosyasında aşağıdaki güncellemeyi yapıyoruz. Kullanıcımızda <strong>customer</strong> rolü yoksa 403 yanıtı alıyoruz. Keycloak yönetici panelinde özel rollerinizi oluşturabilir ve atayabilirsiniz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Routes&#34;</span>: [  
+</span></span><span style=display:flex><span>      {  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/get&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;https&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>          {  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;httpbin.org&#34;</span>,  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>443</span>  
+</span></span><span style=display:flex><span>          }  
+</span></span><span style=display:flex><span>        ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/test&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;AuthenticationOptions&#34;</span>: {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;AuthenticationProviderKey&#34;</span>: <span style=color:#e6db74>&#34;Bearer&#34;</span>  
+</span></span><span style=display:flex><span>        },  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;RouteClaimsRequirement&#34;</span>: {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;realm_roles&#34;</span>: <span style=color:#e6db74>&#34;customer&#34;</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      },  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>//...
+</span></span></span></code></pre></div><p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:</p><p><a href=https://github.com/berkslv/lecture-ocelot-and-keycloak>GitHub - berkslv/lecture-ocelot-and-keycloak</a></p><hr><h2 id=sonuç>Sonuç<a href=#sonuç class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek <a href=https://x.com/berkslv>@berkslv</a> ile bağlantıda ve iletişimde kalın.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Diğer yazıları oku</span><hr></div><div class=pagination__buttons><span class="button previous"><a href=https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/><span class=button__icon>←</span>
+<span class=button__text>RSA ile JavaScript'te Şifreleme ve .NET'te Şifre Çözme Nasıl Yapılır</span>
+</a></span><span class="button next"><a href=https://berkselvi.dev/tr/posts/how-to-secure-dotnet-vue-application-with-keycloak/><span class=button__text>Dotnet ve Vue.js uygulamasını Keycloak ile nasıl güvenliği sağlanır?</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>

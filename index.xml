@@ -921,7 +921,7 @@ docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddJwtBearer(o =&amp;gt;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.Authority = issuer;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.RequireHttpsMetadata = &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.RequireHttpsMetadata = &lt;span style="color:#66d9ef">false&lt;/span>;
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.TokenValidationParameters = &lt;span style="color:#66d9ef">new&lt;/span> Microsoft.IdentityModel.Tokens.TokenValidationParameters
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateIssuer = &lt;span style="color:#66d9ef">true&lt;/span>,
@@ -1059,12 +1059,12 @@ docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
 &lt;p>Thank you for reading 🎉 Don&amp;rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> to stay connected and join the conversation&lt;/p></content></item><item><title>How to Deploy a React App with Nginx using Docker with react-router-dom</title><link>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</link><pubDate>Sat, 21 Jan 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</guid><description>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app.</description><content>&lt;p>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app. Finally, we&amp;rsquo;ll build a Docker image of our app and run a Docker container to deploy the app.&lt;/p>
-&lt;h1 id="prerequisites">Prerequisites:&lt;/h1>
+&lt;h2 id="prerequisites">Prerequisites:&lt;/h2>
 &lt;ul>
 &lt;li>A basic understanding of Docker&lt;/li>
 &lt;li>A React app to deploy&lt;/li>
 &lt;/ul>
-&lt;h1 id="step-1-create-a-dockerfile">Step 1: Create a Dockerfile&lt;/h1>
+&lt;h2 id="step-1-create-a-dockerfile">Step 1: Create a Dockerfile&lt;/h2>
 &lt;p>The first step is to create a Dockerfile for our React app. This file will contain instructions on how to build a Docker image of our app. Here is an example Dockerfile for a React app with Nginx:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-Dockerfile" data-lang="Dockerfile">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Use an official Node runtime as a parent image&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> node:19-alpine as build&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
@@ -1099,7 +1099,7 @@ docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Start Nginx when the container starts&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">CMD&lt;/span> [&lt;span style="color:#e6db74">&amp;#34;nginx&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;-g&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;daemon off;&amp;#34;&lt;/span>]&lt;span style="color:#960050;background-color:#1e0010">
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This Dockerfile uses the official Node runtime as the parent image to install and build the React app. It then uses the official Nginx runtime as the parent image to serve the React app.&lt;/p>
-&lt;h1 id="step-2-create-an-nginx-configuration-file">Step 2: Create an Nginx configuration file&lt;/h1>
+&lt;h2 id="step-2-create-an-nginx-configuration-file">Step 2: Create an Nginx configuration file&lt;/h2>
 &lt;p>Next, we need to create an Nginx configuration file to tell Nginx how to serve our React app. Here is an example configuration file:&lt;/p>
 &lt;pre tabindex="0">&lt;code class="language-conf" data-lang="conf">server {
 listen 80;
@@ -1111,16 +1111,16 @@ try_files $uri $uri/ /index.html;
 }
 }
 &lt;/code>&lt;/pre>&lt;p>&lt;strong>You must create this &lt;code>nginx.conf&lt;/code> file in the same directory with Dockerfile.&lt;/strong> This configuration file sets up Nginx to listen on port 80 and serve the React app. The try_files directive tells Nginx to try serving the requested file, then the directory containing the file, and finally fall back to serving the index.html file if the requested file or directory doesn&amp;rsquo;t exist.&lt;/p>
-&lt;h1 id="step-3-build-the-docker-image">Step 3: Build the Docker image&lt;/h1>
+&lt;h2 id="step-3-build-the-docker-image">Step 3: Build the Docker image&lt;/h2>
 &lt;p>With the Dockerfile and Nginx configuration file created, we can now build the Docker image. Navigate to the directory containing the Dockerfile and run the following command:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker build -t my-react-app .
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command tells Docker to build an image using the Dockerfile in the current directory and tag it with the name my-react-app. The . at the end of the command tells Docker to use the current directory as the build context.&lt;/p>
-&lt;h1 id="step-4-run-the-docker-container">Step 4: Run the Docker container&lt;/h1>
+&lt;h2 id="step-4-run-the-docker-container">Step 4: Run the Docker container&lt;/h2>
 &lt;p>With the Docker image built, we can now run a container using the following command:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker run -p 80:80 my-react-app
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command creates a container from the my-react-app Docker image and maps port 80 in the container to port 80 on the host machine. You can then access your React app by navigating to http://localhost in your web browser.&lt;/p>
 &lt;p>Congratulations, you have successfully deployed a React app with Nginx using Docker! You can now use this method to easily deploy your React apps to any server or hosting platform that supports Docker.&lt;/p>
-&lt;h1 id="step-5-use-docker-compose-to-deploy-the-app">Step 5: Use Docker Compose to deploy the app&lt;/h1>
+&lt;h2 id="step-5-use-docker-compose-to-deploy-the-app">Step 5: Use Docker Compose to deploy the app&lt;/h2>
 &lt;p>If you prefer a more streamlined approach to deploying your app, you can use Docker Compose to manage your containers. Docker Compose is a tool that allows you to define and run multi-container Docker applications.&lt;/p>
 &lt;p>To use Docker Compose, you&amp;rsquo;ll need to create a docker-compose.yml file in the root directory of your project. Here&amp;rsquo;s an example docker-compose.yml file that you can use with the Dockerfile provided earlier:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">version&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;3&amp;#39;&lt;/span>

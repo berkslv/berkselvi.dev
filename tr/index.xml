@@ -1,4 +1,782 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Sun, 21 May 2023 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/index.xml" rel="self" type="application/rss+xml"/><item><title>Zero downtime ile Deployment: Azure DevOps Deployment Slots Kullanarak Azure App Service Deployment işlemi</title><link>https://berkselvi.dev/tr/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</link><pubDate>Sun, 21 May 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</guid><description>Selamlar! Azure App Service&amp;rsquo;te tek instance olarak çalışan uygulamamızı Azure DevOps işlem hatlarını kullanarak dağıtırken büyük olasılıkla birkaç saniyelik kesinti yaşanacaktır. Çünkü tek instance olarak çalışan uygulamanın yeni sürüme güncellenmesi için yeniden başlatılması gerekecektir. En kötü senaryoda, uygulama sürümlerimizin geçişinde bir hata oluşması durumunda geri alma nedeniyle kesinti süresi uzayacaktır.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Tue, 17 Sep 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/index.xml" rel="self" type="application/rss+xml"/><item><title>RSA ile JavaScript'te Şifreleme ve .NET'te Şifre Çözme Nasıl Yapılır</title><link>https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</link><pubDate>Thu, 07 Mar 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</guid><description>Dijital dünyada, farklı sistemler arasındaki iletişimin güvence altına alınması çok önemlidir. RSA şifreleme, iki adet anahtar kullanarak şifreleme ve şifre çözme için sağlam bir yol sağlar. Öte yandan, AES gibi simetrik şifreleme algoritmaları, şifreleme ve şifre çözme için tek bir anahtar kullanır. Bu nedenlerle, anahtarı halka açık olarak kullanmak ve hatta bir saldırganın eline geçse bile sorunları önlemek için asimetrik şifreleme algoritmalarından olan RSA tercih edilebilir.
+Bu blog yazısında, OpenSSL ile RSA anahtar oluşturmayı, JavaScript&amp;rsquo;te şifrelemeyi ve .</description><content>&lt;p>Dijital dünyada, farklı sistemler arasındaki iletişimin güvence altına alınması çok önemlidir. RSA şifreleme, iki adet anahtar kullanarak şifreleme ve şifre çözme için sağlam bir yol sağlar. Öte yandan, AES gibi simetrik şifreleme algoritmaları, şifreleme ve şifre çözme için tek bir anahtar kullanır. Bu nedenlerle, anahtarı halka açık olarak kullanmak ve hatta bir saldırganın eline geçse bile sorunları önlemek için asimetrik şifreleme algoritmalarından olan RSA tercih edilebilir.&lt;/p>
+&lt;p>Bu blog yazısında, OpenSSL ile RSA anahtar oluşturmayı, JavaScript&amp;rsquo;te şifrelemeyi ve .NET&amp;rsquo;te şifre çözmeyi, bir frontend uygulaması ile bir backend servisi arasında güvenli veri alışverişi sağlayacak uygulamayı ele alacağım.&lt;/p>
+&lt;h2 id="understanding-rsa-encryption">Understanding RSA Encryption&lt;/h2>
+&lt;p>RSA (Rivest-Shamir-Adleman), güvenli veri iletimi için yaygın olarak kullanılan ilk açık anahtarlı kriptosistemlerden biridir. İki anahtarı içerir: açık anahtar, mesajları şifrelemek için açıkça paylaşılabilen ve onları şifrelemek için gizli tutulması gereken bir özel anahtar. RSA&amp;rsquo;nın gücü, iki büyük asal sayının çarpımını faktörleme zorluğunda yatar, bu da güvenliğini destekler.&lt;/p>
+&lt;h2 id="generation-of-publicprivate-key-pairs-with-openssl">Generation of Public/Private key pairs with OpenSSL&lt;/h2>
+&lt;p>RSA şifreleme ve şifre çözmenin uygulanmasındaki temel adımlardan biri, açık ve özel anahtar çiftlerinin oluşturulmasıdır. OpenSSL, kriptografi için sağlam bir açık kaynaklı araç olan bu anahtarları oluşturmanın basit bir yolunu sunar. Ancak, bu adım isteğe bağlıdır. .NET kütüphaneleri başarılı bir şekilde RSA anahtarları oluşturur. Ancak, bu gibi açık kaynaklı araçları kullanmak bize standartların güvencesini sağlar. Bu bölüm, OpenSSL&amp;rsquo;i kullanarak RSA açık/özel anahtar çifti oluşturma sürecini adım adım ele alacaktır.&lt;/p>
+&lt;p>Private anahtar oluşturma işlemiyle başlayabiliriz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>$ openssl genrsa -out privatekey.pem &lt;span style="color:#ae81ff">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ cat privatekey.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-----BEGIN PRIVATE KEY-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDuOitcIPd5UpGN
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>/4GEwNhc4fAmGP6fREJJk/byRgiLiWcyXwdoPwXdXjKSjkSIcETdz/hLAlb6+zNY
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Gi4Ap0S5flZSRiKh60xWRA4vZVgsLqhEi2IsclSlWu3R7KD5dkBGsyf5xlCfNSs4
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>DbYYMgrXXZxXQ0c4qCikpnEB6OpqSzm19Cwrdq9GwophoAPxnf00d7S+y5QpRa+l
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Ca70xQ42FxBpMuK76a1g6i+JtmPgTYqXZ0FCMnUEzBq+u3N8LKoNzcSNdrLgvmHQ
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>oOLFA/9BPe34YgLxoCUi+HhEiLSnvgz/Kn1yprvsz37baYizU/YWFG8s80SPmFsY
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>JARxvZiJAgMBAAECggEAEboc42Jln+7Lu34NmIAUKZc7fE5EVjwpVZnP2Lfq510+
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Y2JsZe64pEAf8cVp5qA6E6pn3scKC2uZZr8t+Kj5xXbX/A/RgGyGte2jA5ZeQQ1o
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wo7/q3CHiXVyeHpMATwyLMCkoyLFeY9mi6mDiRniMiP6YAj22gmzWoszIhH/rZCO
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>NjdpWRsIkFp8jIiyRhhoaBoJtZ1qV3twk8HH590rgjS7QUGJWK9uUsi5SDh69MsR
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>r/SJ00gTMYFozFd6dB29aKj/p8fSk6qzh2noxU37AuiVc1A2H8Z6SAfRUDSvPkxA
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>FdqVr62iLWmypBX2VYQ2p1pH1N0v8oG7NTxtrxgRTQKBgQD3YdxKNT0dWZJRGPFC
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>DIRZVn86UgDAHRw29aToLARnepE5XOrLSmlGMqbK8vzRyUnlctJyG7x5ure2BMp4
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>gKSLuhz48n7ZvpHyCVnNsqqkc21iM/whL/yKiI11Jz5koXmRDltz9IioQH/PwXvD
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>RJbjxISHjG5YEKlVmztWtTup/QKBgQD2hqouE8JLePAUzK3SlfgVTlmaHDUeJev4
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>u95RWPnMNOOwLUWbGYiKBoJ8uc2nSHmxIvEvEPGNwafR6etf0YocpwDfF5pnPDjk
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>yA4hOdZrCyYa/UDqkB5pHTOZj5iVct1hBNbiANz6kL7Pl+H221U+HxD9rhaDPDez
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>gdYPhLF4fQKBgQCdi2QomlkufOHS5eiXoLMU1iI2eQzjTGawlaYM+iNf503fU05w
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>YxZCT3WroC3kSKXYC1T8uK9CcugWclyje4HPPpq+7GhesZ/unYfkmRlVm/EYbnTu
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>icnyS96Ssohou/FYsOULJrt1M4ZyQA1aoS7bJUclsAiB6zJ8Q1z57ndt3QKBgEwa
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>9p6S6wBxrWw+Y8sHETdCoNa6rotIGbkIBnIGjddE3KWe1EY1c7lomQ/4LEzgSvEs
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>YFivWmLwzeY32LoT7hc6V0KH/tqv9MBsIjCPsmoJXxIl7Mx9AWZh5XQaqHg6pa01
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2UCcE5wm40EjGlcjDwXGgXBPNhP9mxSHmJXh2QfhAoGANouUrF3qv8ofb1HGrUXx
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>DO/WkGMzwbkNmwwdgcGYVsGr3Dv/zx1y3TJEvqNh0ViVgmfdYveCo3VrSawq890U
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>GJZXld2KFE1icEJpNoURkM9okZMzTDIMs+r4vq5Or2jB04mMuoCbG6rjfqUMtkll
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>oAIFOSKH+F3TrXjNgy4/juo&lt;span style="color:#f92672">=&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-----END PRIVATE KEY-----
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Başarıyla private anahtarı oluşturduktan sonra, oluşturduğumuz private anahtar ile public anahtarı oluşturabiliriz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>$ openssl rsa -in privatekey.pem -outform PEM -pubout -out publickey.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ cat privatekey.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-----BEGIN PUBLIC KEY-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7jorXCD3eVKRjf+BhMDY
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>XOHwJhj+n0RCSZP28kYIi4lnMl8HaD8F3V4yko5EiHBE3c/4SwJW+vszWBouAKdE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uX5WUkYioetMVkQOL2VYLC6oRItiLHJUpVrt0eyg+XZARrMn+cZQnzUrOA22GDIK
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>112cV0NHOKgopKZxAejqaks5tfQsK3avRsKKYaAD8Z39NHe0vsuUKUWvpQmu9MUO
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>NhcQaTLiu+mtYOovibZj4E2Kl2dBQjJ1BMwavrtzfCyqDc3EjXay4L5h0KDixQP/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>QT3t+GIC8aAlIvh4RIi0p74M/yp9cqa77M9+22mIs1P2FhRvLPNEj5hbGCQEcb2Y
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>iQIDAQAB
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-----END PUBLIC KEY-----
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="setting-up-the-environment-for-net-rsa-decryption">Setting Up the Environment for .NET RSA Decryption&lt;/h2>
+&lt;p>.NET şifre çözme için .NET 8&amp;rsquo;i kullanacağım ve System.Security.Cryptography ad alanınından faydalanacağım. RSA şifre çözme için başka bir nuget paketine ihtiyacımız yoktur, bunun için şöyle bir Helper sınıf oluşturdum.&lt;/p>
+&lt;p>RsaKey&amp;rsquo;i appsettings.json dosyasından okuyoruz. RsaKey alanında yeni satırlar için \n eklemeniz gerekir. Bu anahtarı appsettings.json dosyasına koyduk çünkü her istekte aynı anahtarı kullanmak istiyoruz. Ancak .NET kütüphanesinin sorumluluğuna bırakırsanız, her başlangıçta yeni bir anahtar oluşturulacaktır.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// appsettings.json
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Logging&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;LogLevel&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Default&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Information&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Microsoft.AspNetCore&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Warning&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;AllowedHosts&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;*&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;RsaKey&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCuan+y++Eqc2Vx3QIt9gv0r6rzfcxpsBRubcWCmI+8tqb40oflv5dViPSiCSWNgg5xKk7K8WTeEQQ6NDg1IJ2OwoQ2dfzat5qlpfV9EeF3u8iTY/hyQaaYFwB77cV9t5Czb8oG/+IIOByorJVds9tAoKjssKUZ3W9IU7ffElZjZrbjoiy/H4z8u9fOq8IL9Zf3pHgzv2FxF4BPJamqr4s1VtMqGJ5g18wV1OD9gcz9pJOHHUVieZ0+xP4WD4+1wCv/uwEgIcqmEs0os6birHZL1X/CSqBSPc8e/+kkZyyzoF+MBWPzvAwmW32alIxz2ZV0Z+jJtoOrh/qVqbrGAf+RAgMBAAECggEAEWYu4IJHg0ZZOZtgRwj7RtjKXzluraFi3GRHdoB1IFCBRiOsamMrO91qeAqdDCmL+saLbyvXEd8VMqA4djZPeWkWqt8ozwHPY9RzMZuZyCm7t9Zad71sWtI6mmJNF/46qWfOudWHbSX51+rFiMAzMFaGm3wAsFyaaBbv6gkohIhVrrMvpIuV8X8JNI8/VNlOR6vExHd/3uWKi8vPrFEFTNQ1UE+WJDkVojcmx0t63jlP8C/O4ofaJeCYRkAaM9+FXnM+jVNf0qZU+3JGYmy1R/B7L+LyrbG2uYTaBa1Ba9zGsXD1HQ4dctK+MltBd4p+MWgHAQV+xuVmGGDkylpb8QKBgQDP9zY4UzLmnt0werJF9SGmAJU51Y/+gannUC/+XYqnK/NA5iUDR86rlYCJbqQCceyMYJSYuePumygWOVL9rHnu1/fTMG/sXnRktmTSFemgeCYfPyn8/KeZKn6E5xw8GbtfLJLA8uM4DakDf9vSpilKDYT4UbZyKgq7/yodPXbgCQKBgQDWs4gL4yOtDLAY/OQKZvoyXClapldkVFRzf97pBJQGLYfdTzkVFviWsgI/yrA+t5tlzaWtZieuv2KsSmazVyO2W5ei9HILx4yRFK7K56OM5o7wqjN62ZmF0R+422YNaAyqYAd9nhLjgdsrmZ9FTxhQ91asBSH1AO3j6xaZUvh1SQKBgAZuo/ur/xgI89hrAxaM1WSYAgWO6Gw7wHCKF2HrrL0s69InDCAE2YyPDDGz/ViiA2n4FsB+h2E65UuCrGFyMzdC8MRUbDHIXhs7VPT2fopbDPrMblUHz3s6SD1+FG57cUMpUsSq/oIeUgrsqnTidMZ4kpNHm7f+OuTDqJ7M5t9ZAoGAAfm2570YR/BU8nXpNztJVAtLCh17sl2gRUvI5kX3grMKi/u9n7cNZH2Qzbt0sa8Iy///ZUAKX249Xy50EXRczMG8/G/ZWMhmP7N8BDvrYlGAwTAftyKnafbJnu7N2pO5ghvOFdbNf7BjLtyD/aRDqgMMlhqZ/GIczjsMgy6jQJkCgYATxkjdW/mnWLDDZAYm1V10Gnm7YDMwX3gKdhpoYleeeapZiDlurkR3YAEvQezcnhv3NpjaKQtF1/3Q0fZJ0wBc5FflaevHRjHTa0IrU5QIa48dLDx+jxn+cUCFx9kirkb7JcfJLZWtToPMLfCZt324P2ogZgWBwweVPiz1/voEXw==\n-----END PRIVATE KEY-----&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Helpers/RsaEncryptionHelper.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">RsaEncryptionHelper&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> RSA _rsa = RSA.Create();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> RsaEncryptionHelper(IConfiguration configuration)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> privateKeyPem = configuration[&lt;span style="color:#e6db74">&amp;#34;RsaKey&amp;#34;&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#66d9ef">string&lt;/span>.IsNullOrEmpty(privateKeyPem)) &lt;span style="color:#66d9ef">throw&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> ArgumentNullException(nameof(privateKeyPem));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ImportKey(privateKeyPem);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> ImportKey(&lt;span style="color:#66d9ef">string&lt;/span> privateKey)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _rsa.ImportFromPem(privateKey.ToCharArray());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> GetPublicKey()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> publicKey = _rsa.ExportSubjectPublicKeyInfoPem();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> publicKey;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> GetPrivateKey()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> privateKey = _rsa.ExportPkcs8PrivateKeyPem();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> privateKey;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> Encrypt(&lt;span style="color:#66d9ef">string&lt;/span> data)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> dataBytes = Encoding.UTF8.GetBytes(data);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> encryptedData = _rsa.Encrypt(dataBytes, RSAEncryptionPadding.OaepSHA256);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Convert.ToBase64String(encryptedData);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> Decrypt(&lt;span style="color:#66d9ef">string&lt;/span> data)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> dataBytes = Convert.FromBase64String(data);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> decryptedData = _rsa.Decrypt(dataBytes, RSAEncryptionPadding.OaepSHA256);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Encoding.UTF8.GetString(decryptedData);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ve bu helper sınıfı EncryptionController içinde kullanarak helper sınıfın methodlarını kullanın. Production ortamlarında, PrivateKey&amp;rsquo;in kimseye açığa çıkarılmaması gerekir. Bu gizli tutulmalıdır.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Controllers/EncryptionController.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[ApiController]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Route(&amp;#34;api/[controller]&lt;/span>&lt;span style="color:#e6db74">&amp;#34;)]
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&lt;/span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">EncryptionController&lt;/span> : ControllerBase
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> RsaEncryptionHelper _rsaEncryptionHelper;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> EncryptionController(RsaEncryptionHelper rsaEncryptionHelper)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _rsaEncryptionHelper = rsaEncryptionHelper;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpPost(&amp;#34;Encrypt&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> Encrypt([FromBody] EncryptionRequest request)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> _rsaEncryptionHelper.Encrypt(request.Data);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpPost(&amp;#34;Decrypt&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> Decrypt([FromBody] EncryptionRequest request)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> _rsaEncryptionHelper.Decrypt(request.Data);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;PublicKey&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> PublicKey()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> _rsaEncryptionHelper.GetPublicKey();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;PrivateKey&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> PrivateKey()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> _rsaEncryptionHelper.GetPrivateKey();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpPost(&amp;#34;ImportKey&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> ImportKey([FromBody] ImportKeyRequest request)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _rsaEncryptionHelper.ImportKey(request.PrivateKey);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">record&lt;/span> &lt;span style="color:#a6e22e">ImportKeyRequest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> PrivateKey { &lt;span style="color:#66d9ef">get&lt;/span>; &lt;span style="color:#66d9ef">init&lt;/span>; } = &lt;span style="color:#66d9ef">null&lt;/span>!;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">record&lt;/span> &lt;span style="color:#a6e22e">EncryptionRequest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> Data { &lt;span style="color:#66d9ef">get&lt;/span>; &lt;span style="color:#66d9ef">init&lt;/span>; } = &lt;span style="color:#66d9ef">null&lt;/span>!;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu backend tarafında yaptığımız geliştirmelerden sonra JavaScript tarafına geçerek devam edebiliriz. Yaptıklarımız sayesinde, public anahtarımızı istemciyle endpoint&amp;rsquo;ten paylaşabiliriz, ardından istemciler bu public anahtarı kullanarak verilerini güvenli iletişim için şifreleyebilirler.&lt;/p>
+&lt;h2 id="setting-up-the-development-environment-for-javascript-rsa-encryption">Setting Up the Development environment for JavaScript RSA Encryption&lt;/h2>
+&lt;p>rnekte, modern tarayıcılara yerleşik olan ve RSA şifrelemeyi içeren kriptografik işlemleri sağlayan Web Crypto API&amp;rsquo;sini kullanacağız. Bu nedenle, herhangi bir npm paketi indirmenize gerek yoktur.&lt;/p>
+&lt;p>JavaScript ile tarayıcı uygulaması geliştireceksem genellikle Vite ile başlarım. Bunu yapmak için, aşağıdaki komutu girerek vanilla js veya React ile bir proje başlatabiliriz. Gösterim amaçlı küçük bir React projesi geliştireceğim, ancak vanilla js ile devam etmeniz durumda bile yeterli olacaktır.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm create vite@latest
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bundan sonra src/utils/RsaEncryptionHelper.js dosyasını oluşturup o dosyayı aşağıdaki gibi dolduracağım. Bu dosyanın method&amp;rsquo;larıyla RSA algoritması ile şifreleyebilir ve şifresini çözebilirsiniz, ancak şifre çözme genellikle backend sorumluluğundadır çünkü şifre çözme private anahtar gerektirir ve güvenlik nedenlerinden dolayı javascript istemcisinin private anahtarları herkese açık olarak saklamaması veya private anahtarlara erişmemesi gerekir. Ancak SSL&amp;rsquo;deki gibi iki yönlü anahtar şifrelemeye benzer bir şey denemek isteyen olursa diye bunuda paylaşıyorum.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// src/utils/RsaEncryptionHelper.js
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">encryptAlgorithm&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">name&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;RSA-OAEP&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">modulusLength&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#ae81ff">2048&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">publicExponent&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Uint8Array&lt;/span>([&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">0&lt;/span>, &lt;span style="color:#ae81ff">1&lt;/span>]),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">extractable&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">hash&lt;/span>&lt;span style="color:#f92672">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">name&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;SHA-256&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">arrayBufferToBase64&lt;/span>(&lt;span style="color:#a6e22e">arrayBuffer&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">byteArray&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Uint8Array&lt;/span>(&lt;span style="color:#a6e22e">arrayBuffer&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">byteString&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#a6e22e">byteArray&lt;/span>.&lt;span style="color:#a6e22e">byteLength&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span>&lt;span style="color:#f92672">++&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">byteString&lt;/span> &lt;span style="color:#f92672">+=&lt;/span> String.&lt;span style="color:#a6e22e">fromCharCode&lt;/span>(&lt;span style="color:#a6e22e">byteArray&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">b64&lt;/span> &lt;span style="color:#f92672">=&lt;/span> window.&lt;span style="color:#a6e22e">btoa&lt;/span>(&lt;span style="color:#a6e22e">byteString&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">b64&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">base64StringToArrayBuffer&lt;/span>(&lt;span style="color:#a6e22e">b64str&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">byteStr&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">atob&lt;/span>(&lt;span style="color:#a6e22e">b64str&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">bytes&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Uint8Array&lt;/span>(&lt;span style="color:#a6e22e">byteStr&lt;/span>.&lt;span style="color:#a6e22e">length&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#a6e22e">byteStr&lt;/span>.&lt;span style="color:#a6e22e">length&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span>&lt;span style="color:#f92672">++&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">bytes&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>] &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">byteStr&lt;/span>.&lt;span style="color:#a6e22e">charCodeAt&lt;/span>(&lt;span style="color:#a6e22e">i&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">bytes&lt;/span>.&lt;span style="color:#a6e22e">buffer&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">function&lt;/span> &lt;span style="color:#a6e22e">convertPemToArrayBuffer&lt;/span>(&lt;span style="color:#a6e22e">pem&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">lines&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">pem&lt;/span>.&lt;span style="color:#a6e22e">split&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;\n&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">encoded&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">for&lt;/span> (&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span> &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#a6e22e">lines&lt;/span>.&lt;span style="color:#a6e22e">length&lt;/span>; &lt;span style="color:#a6e22e">i&lt;/span>&lt;span style="color:#f92672">++&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">trim&lt;/span>().&lt;span style="color:#a6e22e">length&lt;/span> &lt;span style="color:#f92672">&amp;gt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">indexOf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;-----BEGIN RSA PRIVATE KEY-----&amp;#34;&lt;/span>) &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">indexOf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;-----BEGIN PRIVATE KEY-----&amp;#34;&lt;/span>) &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">indexOf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;-----BEGIN PUBLIC KEY-----&amp;#34;&lt;/span>) &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">indexOf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;-----END RSA PRIVATE KEY-----&amp;#34;&lt;/span>) &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">indexOf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;-----END PRIVATE KEY-----&amp;#34;&lt;/span>) &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">indexOf&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;-----END PUBLIC KEY-----&amp;#34;&lt;/span>) &lt;span style="color:#f92672">&amp;lt;&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">encoded&lt;/span> &lt;span style="color:#f92672">+=&lt;/span> &lt;span style="color:#a6e22e">lines&lt;/span>[&lt;span style="color:#a6e22e">i&lt;/span>].&lt;span style="color:#a6e22e">trim&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">base64StringToArrayBuffer&lt;/span>(&lt;span style="color:#a6e22e">encoded&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">encryptRsa&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">str&lt;/span>, &lt;span style="color:#a6e22e">pemString&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// convert string into ArrayBuffer
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">encodedPlaintext&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">TextEncoder&lt;/span>().&lt;span style="color:#a6e22e">encode&lt;/span>(&lt;span style="color:#a6e22e">str&lt;/span>).&lt;span style="color:#a6e22e">buffer&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">keyArrayBuffer&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">convertPemToArrayBuffer&lt;/span>(&lt;span style="color:#a6e22e">pemString&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// import public key
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">secretKey&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">crypto&lt;/span>.&lt;span style="color:#a6e22e">subtle&lt;/span>.&lt;span style="color:#a6e22e">importKey&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;spki&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keyArrayBuffer&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">encryptAlgorithm&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#e6db74">&amp;#34;encrypt&amp;#34;&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// encrypt the text with the public key
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">encrypted&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">crypto&lt;/span>.&lt;span style="color:#a6e22e">subtle&lt;/span>.&lt;span style="color:#a6e22e">encrypt&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">name&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;RSA-OAEP&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">secretKey&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">encodedPlaintext&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// store data into base64 string
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">arrayBufferToBase64&lt;/span>(&lt;span style="color:#a6e22e">encrypted&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (&lt;span style="color:#a6e22e">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">error&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Encryption Error:&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">error&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">decryptRsa&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">str&lt;/span>, &lt;span style="color:#a6e22e">pemString&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// convert base64 encoded input string into ArrayBuffer
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">encodedPlaintext&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">base64StringToArrayBuffer&lt;/span>(&lt;span style="color:#a6e22e">str&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">keyArrayBuffer&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">convertPemToArrayBuffer&lt;/span>(&lt;span style="color:#a6e22e">pemString&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// import private key
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">secretKey&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">crypto&lt;/span>.&lt;span style="color:#a6e22e">subtle&lt;/span>.&lt;span style="color:#a6e22e">importKey&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;pkcs8&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keyArrayBuffer&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">encryptAlgorithm&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#e6db74">&amp;#34;decrypt&amp;#34;&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// decrypt the text with the public key
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">decrypted&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">crypto&lt;/span>.&lt;span style="color:#a6e22e">subtle&lt;/span>.&lt;span style="color:#a6e22e">decrypt&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">name&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;RSA-OAEP&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">secretKey&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">encodedPlaintext&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// decode the decrypted ArrayBuffer output
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">uint8Array&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Uint8Array&lt;/span>(&lt;span style="color:#a6e22e">decrypted&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">textDecoder&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">TextDecoder&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">decodedString&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">textDecoder&lt;/span>.&lt;span style="color:#a6e22e">decode&lt;/span>(&lt;span style="color:#a6e22e">uint8Array&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">decodedString&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (&lt;span style="color:#a6e22e">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">error&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Decryption Error:&amp;#34;&lt;/span>, &lt;span style="color:#a6e22e">error&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu yardımcı yöntemleri kullanarak küçük bir React projesi geliştirdim. Verileri şifrelemek ve şifresini çözmek için .NET API&amp;rsquo;den paylaşılacak genel ve özel anahtarlarınızı kullanabilirsiniz, ancak şifre çözme işleminin arka uçta gizli tutulan özel anahtarla yapılması gerektiğini unutmayın.&lt;/p>
+&lt;a href="https://lecture-rsa-dotnet-javascript.vercel.app" target="_blank">
+&lt;img src="https://berkselvi.dev/img/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/rsa-encryption.webp" alt="RSA Encryption (lecture-rsa-dotnet-javascript.vercel.app)" loading="lazy" />
+&lt;p class="image-sub-title">RSA Encryption (lecture-rsa-dotnet-javascript.vercel.app)&lt;/p>
+&lt;/a>
+&lt;p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-rsa-dotnet-javascript">GitHub - berkslv/lecture-rsa-dotnet-javascript&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>Ocelot ve Keycloak'i birlikte kullanarak API Gateway'den Mikroservis güvenliğini nasıl sağlarız?</title><link>https://berkselvi.dev/tr/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/</link><pubDate>Tue, 30 Jan 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/</guid><description>Mikroservis mimarisinin dinamik dünyasında, güçlü bir güvenliğe olan ihtiyaç çok daha önemli hale gelmiştir. Kuruluşlar uygulamalarını daha küçük, bağımsız bir şekilde deploy edilebilir servislere böldükçe, bu servisler arasında alınan ve gönderilen verilerin bütünlüğünü ve gizliliğini sağlamak kritik bir önem haline gelir.
+Bu blog yazısında, Ocelot&amp;rsquo;u kullanan ve güçlü bir açık kaynak kimlik ve erişim yönetimi çözümü olan Keycloak ile mikroservisleri güvence altına almak için kapsamlı bir çözümü keşfedeceğiz. Keycloak&amp;rsquo;u API Gateway&amp;rsquo;in arkasına yerleştirerek, bu entegrasyonun kaynakları koruduğunu, diğer hizmetlere yönelik istekleri kimlik doğruladığını ve taleplere erişimi yetkilendirdiğini claim yapılarını kullanarak sunar.</description><content>&lt;p>Mikroservis mimarisinin dinamik dünyasında, güçlü bir güvenliğe olan ihtiyaç çok daha önemli hale gelmiştir. Kuruluşlar uygulamalarını daha küçük, bağımsız bir şekilde deploy edilebilir servislere böldükçe, bu servisler arasında alınan ve gönderilen verilerin bütünlüğünü ve gizliliğini sağlamak kritik bir önem haline gelir.&lt;/p>
+&lt;p>Bu blog yazısında, Ocelot&amp;rsquo;u kullanan ve güçlü bir açık kaynak kimlik ve erişim yönetimi çözümü olan Keycloak ile mikroservisleri güvence altına almak için kapsamlı bir çözümü keşfedeceğiz. Keycloak&amp;rsquo;u API Gateway&amp;rsquo;in arkasına yerleştirerek, bu entegrasyonun kaynakları koruduğunu, diğer hizmetlere yönelik istekleri kimlik doğruladığını ve taleplere erişimi yetkilendirdiğini claim yapılarını kullanarak sunar. Bu, mikroservis ekosisteminiz için sorunsuz ve güvenli bir iletişim çerçevesi sunar. Başlayalım.&lt;/p>
+&lt;h2 id="create-keycloak-instance">Create Keycloak instance&lt;/h2>
+&lt;p>Docker içinde Keycloak&amp;rsquo;u çalıştırmak çok kolaydır. Bu Docker dosyasını projenizin /Identity dizinine yerleştirin. Tüm kodları yazının sonundaki GitHub reposunda bulabilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-Dockerfile" data-lang="Dockerfile">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> quay.io/keycloak/keycloak:latest as builder &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Enable health and metrics support &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">ENV&lt;/span> KC_HEALTH_ENABLED&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">ENV&lt;/span> KC_METRICS_ENABLED&lt;span style="color:#f92672">=&lt;/span>true
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Configure a database vendor &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">ENV&lt;/span> KC_DB&lt;span style="color:#f92672">=&lt;/span>postgres
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">WORKDIR&lt;/span>&lt;span style="color:#e6db74"> /opt/keycloak &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># for demonstration purposes only, please make sure to use proper certificates in production instead &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize &lt;span style="color:#ae81ff">2048&lt;/span> -dname &lt;span style="color:#e6db74">&amp;#34;CN=server&amp;#34;&lt;/span> -alias server -ext &lt;span style="color:#e6db74">&amp;#34;SAN:c=DNS:localhost,IP:127.0.0.1&amp;#34;&lt;/span> -keystore conf/server.keystore &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> /opt/keycloak/bin/kc.sh build &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> quay.io/keycloak/keycloak:latest &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> --from&lt;span style="color:#f92672">=&lt;/span>builder /opt/keycloak/ /opt/keycloak/ &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># change these values to point to a running postgres instance &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">ENTRYPOINT&lt;/span> [&lt;span style="color:#e6db74">&amp;#34;/opt/keycloak/bin/kc.sh&amp;#34;&lt;/span>]&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And create docker-compose.yml file that access /Identity/Dockerfile and builds image from it. We can use base image rather than custom Dockerfile but with this approach you can customize much more features of Keycloak like frontend theme and secret keys.&lt;/p>
+&lt;p>/Identity/Dockerfile dosyasına erişen ve ondan bir image oluşturan docker-compose.yml dosyasını oluşturun. Özel Docker dosyası yerine bir temel image kullanabiliriz, ancak bu yaklaşımla Keycloak&amp;rsquo;un frontend teması ve secret key bilgileri gibi çok daha fazla özelliğini özelleştirebilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">version&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;3&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># PostgreSQL for keycloak &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">secured-identity-db&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">container_name&lt;/span>: &lt;span style="color:#ae81ff">secured-identity-db &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">postgres:16-alpine &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">6063&lt;/span>:&lt;span style="color:#ae81ff">5432&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">expose&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">6063&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">./data/secured-identity-db:/var/lib/postgresql/data &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">restart&lt;/span>: &lt;span style="color:#ae81ff">always &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">environment&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">POSTGRES_PASSWORD=myStrongPassword123 &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">POSTGRES_USER=keycloak &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">POSTGRES_DB=keycloak &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">secured-network &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># Keycloak &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">secured-identity&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">container_name&lt;/span>: &lt;span style="color:#ae81ff">secured-identity &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">build&lt;/span>: &lt;span style="color:#ae81ff">./Keycloak &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">command&lt;/span>: [&lt;span style="color:#e6db74">&amp;#34;start-dev&amp;#34;&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">5053&lt;/span>:&lt;span style="color:#ae81ff">8080&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">expose&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">5053&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">environment&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">KEYCLOAK_ADMIN=admin &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">KEYCLOAK_ADMIN_PASSWORD=admin &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">KC_HOSTNAME_URL=http://localhost:5050/identity &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">KC_DB=postgres &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">KC_DB_USERNAME=keycloak &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">KC_DB_PASSWORD=myStrongPassword123 &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">KC_DB_URL=jdbc:postgresql://secured-identity-db:5432/keycloak &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">depends_on&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">secured-identity-db &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">secured-network &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">secured-network&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">driver&lt;/span>: &lt;span style="color:#ae81ff">bridge &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">secured-data&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">driver&lt;/span>: &lt;span style="color:#ae81ff">local&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ve sadece bu docker-compose.yml dosyasından docker&amp;rsquo;ı çalıştırmamız yeterlidir.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker compose build
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>docker compose up -d
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="put-keycloak-behind-ocelot-api-gateway-to-protect-resources">Put keycloak behind Ocelot API Gateway to protect resources&lt;/h2>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/Microservice-architecture-with-Ocelot-and-Keycloak.webp" alt="Microservice architecture with Ocelot and Keycloak" loading="lazy" />
+&lt;p class="image-sub-title">Microservice architecture with Ocelot and Keycloak&lt;/p>
+&lt;p>Kimlik hizmetinizin (keycloak) güvenliğini sağlamak ve diğer hizmetler gibi istek alabilecek uç noktaları sınırlandırarak saldırı vektörünü azaltmak önemlidir. Keycloak admin paneline harici bir ağdan erişilmemelidir, bu özelliğe yalnızca bu ağdaki kişiler erişebilir. Daha fazla bilgi edinmek için &lt;a href="https://www.keycloak.org/server/reverseproxy">reverse proxy kullanma&lt;/a> hakkındaki Keycloak dökümantasyonunu göz atın.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/Exposed-path-recommendations.webp" alt="Exposed path recommendations" loading="lazy" />
+&lt;p class="image-sub-title">Exposed path recommendations&lt;/p>
+&lt;p>Öncelikle Ocelot projesini oluşturalım. Burada .NET 8 kullanıyorum&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>dotnet new sln -n Secured
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new webapi -o Secured.ApiGateway
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd Secured.ApiGateway/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package Ocelot --version 22.0.1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Projeyi başarıyla oluşturduktan sonra Program.cs dosyasını aşağıdaki gibi değiştirip root dizinde ocelot.json dosyasını oluşturun.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Configuration.AddJsonFile(&lt;span style="color:#e6db74">&amp;#34;ocelot.json&amp;#34;&lt;/span>, optional: &lt;span style="color:#66d9ef">false&lt;/span>, reloadOnChange: &lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddOcelot(builder.Configuration);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> app.UseOcelot();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> app.RunAsync();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bundan sonra bu ocelot.json dosyasını localhost:5053 üzerinde çalışan keycloak uygulamamıza erişimi sınırlamak için kullanabiliriz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Routes&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/realms/{everything}&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamScheme&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;http&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamHostAndPorts&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Host&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;localhost&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Port&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">5053&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/identity/realms/{everything}&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamHttpMethod&amp;#34;&lt;/span>: [ &lt;span style="color:#e6db74">&amp;#34;Get&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Post&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Put&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Delete&amp;#34;&lt;/span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/resources/{everything}&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamScheme&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;http&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamHostAndPorts&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Host&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;localhost&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Port&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">5053&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/identity/resources/{everything}&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamHttpMethod&amp;#34;&lt;/span>: [ &lt;span style="color:#e6db74">&amp;#34;Get&amp;#34;&lt;/span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/js/{everything}&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamScheme&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;http&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamHostAndPorts&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Host&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;localhost&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Port&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">5053&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/identity/js/{everything}&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamHttpMethod&amp;#34;&lt;/span>: [ &lt;span style="color:#e6db74">&amp;#34;Get&amp;#34;&lt;/span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;GlobalConfiguration&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;BaseUrl&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://localhost:5050&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu yapılandırmalardan sonra, API Gateway&amp;rsquo;in adresi olan localhost:5050&amp;rsquo;den keycloak&amp;rsquo;a erişebilirsiniz. Ancak, bu adres aracılığıyla Keycloak yönetici paneline erişemezsiniz çünkü erişimi sınırladık.&lt;/p>
+&lt;p>Keycloak yapılandırmalarımızı yapmak için, hala local olarak erişilebilen keycloak adresinde, yani localhost:5053&amp;rsquo;te yönetici paneline giriş yapabiliriz. Deployment senaryosunda, yalnızca Ocelot&amp;rsquo;un harici internete erişimi olduğundan emin olacağız.&lt;/p>
+&lt;p>localhost:5053 adresine admin kullanıcı adı ve admin şifresiyle giriş yapabiliriz. Bu kimlik bilgilerini docker-compose.yml dosyasından değiştirebiliriz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-1.webp" alt="Keycloak" loading="lazy" />
+&lt;p>Giriş yaptıktan sonra, kullanıcıları yönetmek için yeni bir alan (realm) oluşturmak ve uygulamamız için istemci oluşturmak için bu açılır menüden yeni alan (realm) oluştur seçeneğine tıklıyoruz. &amp;ldquo;Yeni alan (realm) oluştur&amp;rdquo; düğmesine tıkladıktan sonra, basitçe &lt;strong>secured&lt;/strong>&amp;lsquo;ı alan (realm) adı olarak girin ve diğer her şeyi olduğu gibi bırakın.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-2.webp" alt="Keycloak" loading="lazy" />
+&lt;p>Clients sekmesinde client oluştur&amp;rsquo;a tıklayın. Client ID alanını &lt;strong>postman&lt;/strong> olarak adlandırın ve geçerli redirect URL&amp;rsquo;sini &lt;a href="https://oauth.pstmn.io/v1/callback">&lt;strong>https://oauth.pstmn.io/v1/callback&lt;/strong>&lt;/a> olarak adlandırın. diğer şeyleri olduğu gibi bırakın.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-3.webp" alt="Keycloak" loading="lazy" />
+&lt;p>Kullanıcılar sekmesinde Keycloak&amp;rsquo;ta oturum açacak kullanıcıları ekleyin.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-4.webp" alt="Keycloak" loading="lazy" />
+&lt;p>Bu adımlardan sonra, yeni oluşturulan kullanıcıyla Keycloak&amp;rsquo;a giriş yaparak erişim belirteci alabiliriz. API gateway&amp;rsquo;e erişmek için Postman kullanıyorum. Postman&amp;rsquo;de Keycloak ile oturum açabilirsiniz. Yetkilendirme bölümünde OAuth 2.0&amp;rsquo;ı seçin ve aşağıdaki gibi yapılandırın ve Yeni Erişim Belgesi Al&amp;rsquo;a tıklayın. Postman, tarayıcı penceresini açacak ve sizi Keycloak giriş sayfasına yönlendirecektir, yeni kullanıcınızın kimlik bilgilerini girin. Admin kimlik bilgilerini girmeyin, bu kimlik bilgileri yalnızca ana (master) alan için geçerlidir.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-txt" data-lang="txt">&lt;span style="display:flex;">&lt;span>Grant type: Authorization code
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Auth URL: http://localhost:5050/identity/realms/secured/protocol/openid-connect/auth
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Access Token URL: http://localhost:5050/identity/realms/secured/protocol/openid-connect/token
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Client ID: postman
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scope: openid profile roles
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Her şeyi doğru yaptıysanız, Postman ile API Gateway&amp;rsquo;in arkasındaki Keycloak&amp;rsquo;a başarıyla kimlik doğrulaması yaptınız 🎉&lt;/p>
+&lt;h2 id="authenticate-requests-to-other-services">Authenticate requests to other services&lt;/h2>
+&lt;p>Ocelot&amp;rsquo;ta bir isteğin kimliğini doğrulamak istiyorsanız Program.cs ve ocelot.json&amp;rsquo;da aşağıdaki güncellemeleri yapın. MetadataAddress, JWT doğrulaması için gerekli anahtarları alır. Ancak ekstra network isteklerinden kaçınmak istiyorsanız anahtarları appsettings.json dosyasına yerleştirip kullanabilirsiniz.&lt;/p>
+&lt;p>Ocelot.json dosyasındaki AuthenticationOptions ile kimlik doğrulama tamamlandı, burada JWT tokenımızı Bearer önekiyle birlikte göndereceğimizi ve JWT token doğrulamasını Program.cs&amp;rsquo;den yapılandırma ile yapacağımızı söylüyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.MetadataAddress = &lt;span style="color:#e6db74">&amp;#34;http://localhost:5050/identity/realms/secured/.well-known/openid-configuration&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.RequireHttpsMetadata = &lt;span style="color:#66d9ef">false&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.Authority = &lt;span style="color:#e6db74">&amp;#34;http://localhost:5050/realms/secured&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.Audience = &lt;span style="color:#e6db74">&amp;#34;account&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Configuration.AddJsonFile(&lt;span style="color:#e6db74">&amp;#34;ocelot.json&amp;#34;&lt;/span>, optional: &lt;span style="color:#66d9ef">false&lt;/span>, reloadOnChange: &lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddOcelot(builder.Configuration);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthentication();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthorization();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> app.UseOcelot();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> app.RunAsync();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Routes&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/get&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamScheme&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamHostAndPorts&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Host&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;httpbin.org&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Port&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">443&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/test&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamHttpMethod&amp;#34;&lt;/span>: [ &lt;span style="color:#e6db74">&amp;#34;Get&amp;#34;&lt;/span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;AuthenticationOptions&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;AuthenticationProviderKey&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Bearer&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="authorize-requests-to-other-services">Authorize requests to other services&lt;/h2>
+&lt;p>Yetkilendirme biraz daha zor ve ek çalışma gerektirir çünkü Keycloak, kullanıcı rollerini JWT yükünde nested yani iç içe geçmiş olarak yerleştirir. Aşağıdaki gibi bir şeydir. Görüldüğü gibi, roller alanı realm_access alanı altına yerleştirilir. Bu, Ocelot&amp;rsquo;ta karışıklığa neden olur, çünkü Ocelot, talepleri string veya object değerleri olarak okur ve nested alanları değerlendirmez. Bu sorunu önlemek için Keycloak token eşlemesini yapılandırırız ve nested biçimi kullanmayız.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">//...
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#f92672">&amp;#34;exp&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">1706600524&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;realm_access&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;roles&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;offline_access&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;default-roles-microcommerce&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;uma_authorization&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;customer&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;resource_access&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;account&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;roles&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;manage-account&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;manage-account-links&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;view-profile&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;scope&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;openid email profile&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;preferred_username&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;berkslv&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu özel eşleme için sol menüden Client scopes&amp;rsquo;a tıklayın ve rolleri seçin.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-5.webp" alt="Keycloak" loading="lazy" />
+&lt;p>Rollerin altında, Mappers bölümünü seçin ve ardından realm roles&amp;rsquo;a tıklayın.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-6.webp" alt="Keycloak" loading="lazy" />
+&lt;p>Açılan menüde Token Claim Name seçeneğine realm_access.roles hali hazırda girilidir. Bunu &lt;strong>realm_roles&lt;/strong> olarak güncelliyoruz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-7.webp" alt="Keycloak" loading="lazy" />
+&lt;p>Bu konfigürasyonları yaptıktan sonra Postman üzerinden tekrar giriş yaparak tokenımızı güncelliyoruz. Güncellenen token ile yaptığımız isteklerin Ocelot tarafından talep kontrolüne tabi olması için ocelot.json dosyasında aşağıdaki güncellemeyi yapıyoruz. Kullanıcımızda &lt;strong>customer&lt;/strong> rolü yoksa 403 yanıtı alıyoruz. Keycloak yönetici panelinde özel rollerinizi oluşturabilir ve atayabilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Routes&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/get&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamScheme&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamHostAndPorts&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Host&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;httpbin.org&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Port&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">443&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/test&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamHttpMethod&amp;#34;&lt;/span>: [ &lt;span style="color:#e6db74">&amp;#34;Get&amp;#34;&lt;/span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;AuthenticationOptions&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;AuthenticationProviderKey&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Bearer&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;RouteClaimsRequirement&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;realm_roles&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;customer&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-ocelot-and-keycloak">GitHub - berkslv/lecture-ocelot-and-keycloak&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>Dotnet ve Vue.js uygulamasını Keycloak ile nasıl güvenliği sağlanır?</title><link>https://berkselvi.dev/tr/posts/how-to-secure-dotnet-vue-application-with-keycloak/</link><pubDate>Mon, 21 Aug 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-secure-dotnet-vue-application-with-keycloak/</guid><description>Bu yazıda, dotnet ve vue uygulamalarımızı keycloak kullanarak nasıl güvence altına alabileceğimizi konuşacağım.
+Öncelikle, Keycloak uygulamamızı docker kullanarak çalıştırıyoruz, bu uygulamayı Azure veya benzeri bir bulut sağlayıcısında yayınlarsanız, production uygulamalarınızda kolayca kullanabilirsiniz.
+docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.1 start-dev Keycloak çalıştıktan sonra, localhost:8080/admin adresine kullanıcı adı: admin ve şifre: admin ile giriş yaptıktan sonra sol taraftan uygulamamız için bir alan (realm) oluştururuz. Ana (master) alan keycloak&amp;rsquo;un kendi kullanımına atandığından, başka bir realm üzerinde çalışmamız gerekmektedir.</description><content>&lt;p>Bu yazıda, dotnet ve vue uygulamalarımızı keycloak kullanarak nasıl güvence altına alabileceğimizi konuşacağım.&lt;/p>
+&lt;p>Öncelikle, Keycloak uygulamamızı docker kullanarak çalıştırıyoruz, bu uygulamayı Azure veya benzeri bir bulut sağlayıcısında yayınlarsanız, production uygulamalarınızda kolayca kullanabilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker run -p 8080:8080 -e KEYCLOAK_ADMIN&lt;span style="color:#f92672">=&lt;/span>admin -e KEYCLOAK_ADMIN_PASSWORD&lt;span style="color:#f92672">=&lt;/span>admin quay.io/keycloak/keycloak:22.0.1 start-dev
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Keycloak çalıştıktan sonra, localhost:8080/admin adresine kullanıcı adı: admin ve şifre: admin ile giriş yaptıktan sonra sol taraftan uygulamamız için bir alan (realm) oluştururuz. Ana (master) alan keycloak&amp;rsquo;un kendi kullanımına atandığından, başka bir realm üzerinde çalışmamız gerekmektedir.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-secure-dotnet-vue-application-with-keycloak/create-realm.webp" alt="Create realm" loading="lazy" />
+&lt;p class="image-sub-title">Create realm&lt;/p>
+&lt;img src="https://berkselvi.dev/img/how-to-secure-dotnet-vue-application-with-keycloak/create-realm-confirmation.webp" alt="Create realm confirmation" loading="lazy" />
+&lt;p class="image-sub-title">Create realm confirmation&lt;/p>
+&lt;p>Realm’i oluşturduktan sonra client kısmından vue adında bir client oluşturuyoruz. Yönlendirme URL&amp;rsquo;lerimiz Vue uygulamamızın URL&amp;rsquo;sidir. production ortamı için ek güncellemeler yapmanız gerekebilir.&lt;/p>
+&lt;p>Vue uygulamamızda kullanmak üzere Kullanıcılar menüsünden dotnet-vue realm altında kullanıcılar oluşturabiliriz.&lt;/p>
+&lt;p>Uygulamamız için kullanıcı oluşturmak istiyorsak realm ayarlarında bu seçeneği açarak kullanıcılarımızın keycloak&amp;rsquo;a kayıt olmalarını sağlayabiliriz.&lt;/p>
+&lt;h2 id="vue">Vue&lt;/h2>
+&lt;p>Bu konfigürasyonları tamamladıktan sonra keycloak admin paneli ile işimiz bitiyor, vue uygulamamıza yetkisiz bir istek geldiğinde onu keycloak giriş sayfamıza yönlendirmemiz gerekiyor. Bunun için &lt;a href="https://medium.com/keycloak/secure-vue-js-app-with-keycloak-94814181e344">Secure Vue.js app with Keycloak&lt;/a> makalesinden yararlanıyoruz.&lt;/p>
+&lt;p>Vue uygulamamızı vite kullanarak şu şekilde oluşturabiliriz, sorulan sorulardan Vue ve Javascript seçip devam edebilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm create vite@latest vue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd vue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm install
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm run dev
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Daha sonra main.js içeriğini aşağıdaki gibi güncelliyoruz. Bu komut dosyası, yetkisiz oturum açma isteklerini yeniden yönlendirir ve token&amp;rsquo;ın süresinin onTokenExpired ile sona ermesi durumunda token&amp;rsquo;ı refrest token kullanarak günceller. Bu işlem sonrasında uygulamayı npm run dev ile çalıştırıp http://localhost:5173 adresine gidersek keycloak giriş url’si yönlendirilecektir. Oluşturduğumuz kullanıcı bilgileriyle giriş yaparsak sistemimize giriş yapmış olacağız.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> { &lt;span style="color:#a6e22e">createApp&lt;/span> } &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;vue&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./style.css&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">App&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./App.vue&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;keycloak-js&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">initOptions&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;http://localhost:8080&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">realm&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;dotnet-vue&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">clientId&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;vue&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">onLoad&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;login-required&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span>(&lt;span style="color:#a6e22e">initOptions&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">keycloak&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">init&lt;/span>({ &lt;span style="color:#a6e22e">onLoad&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#a6e22e">initOptions&lt;/span>.&lt;span style="color:#a6e22e">onLoad&lt;/span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">then&lt;/span>((&lt;span style="color:#a6e22e">auth&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#f92672">!&lt;/span>&lt;span style="color:#a6e22e">auth&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> window.&lt;span style="color:#a6e22e">location&lt;/span>.&lt;span style="color:#a6e22e">reload&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Authenticated&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">createApp&lt;/span>(&lt;span style="color:#a6e22e">App&lt;/span>).&lt;span style="color:#a6e22e">mount&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;#app&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#66d9ef">catch&lt;/span>((&lt;span style="color:#a6e22e">error&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#a6e22e">error&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">error&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Authenticated Failed&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">onTokenExpired&lt;/span> &lt;span style="color:#f92672">=&lt;/span> () =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Token expired&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keycloak&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">updateToken&lt;/span>(&lt;span style="color:#ae81ff">30&lt;/span> &lt;span style="color:#f92672">*&lt;/span> &lt;span style="color:#ae81ff">60&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">then&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;Token renewed&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#66d9ef">catch&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">login&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="net">.NET&lt;/h2>
+&lt;p>.NET 6 ile aşağıdaki gibi bir webapi projesi oluşturabiliriz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>cd dotnet
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new sln -n Secured
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new webapi -o Secured.API
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd Secured.API
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet watch run
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Keycloak ve .NET&amp;rsquo;in desteklediği standartlar sayesinde Program.cs&amp;rsquo;de yapacağımız konfigürasyonlarla özel bir kod yazmadan sadece yetkilendirebiliyoruz. Bu kodda, ihraççı ile tokenın nereden geldiğini doğruluyoruz ve IssuerSigningKey sayesinde keycloak&amp;rsquo;a gitmeden oluşturulan tokenı doğrulayabiliyoruz.&lt;/p>
+&lt;p>RequireHttpsMetadata yalnızca geliştirme ortamı için kullanılmalıdır; production ortamında çalışan bir uygulamanız varsa bu satırı silebilirsiniz; değeri true olarak değerlendirilecektir.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>builder.Services.AddSwaggerGen();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> issuer = builder.Configuration[&lt;span style="color:#e6db74">&amp;#34;Jwt:Issuer&amp;#34;&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> key = builder.Configuration[&lt;span style="color:#e6db74">&amp;#34;Jwt:Key&amp;#34;&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddAuthentication(options =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddJwtBearer(o =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.Authority = issuer;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.RequireHttpsMetadata = &lt;span style="color:#66d9ef">false&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> o.TokenValidationParameters = &lt;span style="color:#66d9ef">new&lt;/span> Microsoft.IdentityModel.Tokens.TokenValidationParameters
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateIssuer = &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateAudience = &lt;span style="color:#66d9ef">false&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateLifetime = &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidateIssuerSigningKey = &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ValidIssuer = issuer,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> IssuerSigningKey = &lt;span style="color:#66d9ef">new&lt;/span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthentication();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseAuthorization();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Appsettings.json dosyasındaki verileri aşağıdaki gibi tutarak builder.Configuration adresinden erişebiliriz. RSA256 anahtarına keycloak admin panelinde ilgili realm altında Realm ayarları menüsündeki Keys sekmesindeki RSA256 Kid değerinden ulaşabilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&amp;#34;Jwt&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Issuer&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://localhost:8080/realms/dotnet-vue&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Key&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;secret-rsa-key&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;span style="color:#960050;background-color:#1e0010">,&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="consuming-net-api-from-vue-app">Consuming .NET API from Vue app&lt;/h2>
+&lt;p>Öncelikle .NET projemize CORS ayarlarını ve Authorize niteliklerini ekliyoruz. Bunun için &lt;code>Program.cs&lt;/code>yi aşağıdaki gibi düzenliyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddCors(options =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.AddDefaultPolicy(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> policy =&amp;gt; policy.WithOrigins(&lt;span style="color:#e6db74">&amp;#34;http://localhost:5137&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyHeader()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyMethod()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AllowAnyOrigin()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> );
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// app.UseHttpsRedirection(); &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseCors();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>WeatherForecastController.cs dosyası aşağıdaki attirbute ile yetkilendirme gerektirir.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Authorize]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">WeatherForecastController&lt;/span> : ControllerBase
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Daha sonra aşağıdaki komutla vue uygulamamıza axios kütüphanesini kuruyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>npm install axios
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kurulumdan sonra services isimli bir klasör oluşturup &lt;code>base.api.js&lt;/code> isimli dosyamızda axios konfigürasyonlarını yapıyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;axios&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;../main&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span>.&lt;span style="color:#a6e22e">create&lt;/span>({
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">baseURL&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;http://localhost:5050&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">headers&lt;/span>&lt;span style="color:#f92672">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;Content-Type&amp;#34;&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;application/json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">interceptors&lt;/span>.&lt;span style="color:#a6e22e">request&lt;/span>.&lt;span style="color:#a6e22e">use&lt;/span>(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">config&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">token&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">localStorage&lt;/span>.&lt;span style="color:#a6e22e">getItem&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;vue-token&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">config&lt;/span>.&lt;span style="color:#a6e22e">headers&lt;/span> &lt;span style="color:#f92672">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Authorization&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">`Bearer &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">keycloak&lt;/span>.&lt;span style="color:#a6e22e">token&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">`&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Accept&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;application/json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">config&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> (&lt;span style="color:#a6e22e">error&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Promise.&lt;span style="color:#a6e22e">reject&lt;/span>(&lt;span style="color:#a6e22e">error&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> &lt;span style="color:#a6e22e">http&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Örnek bir endpoint olan WeatherForecast&amp;rsquo;e erişmek için, aynı dizine &lt;code>weather.api.js&lt;/code> dosyasını oluşturuyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;./base.api&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">getWeather&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> () =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">axios&lt;/span>.&lt;span style="color:#a6e22e">get&lt;/span>(&lt;span style="color:#e6db74">`/WeatherForecast`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span>.&lt;span style="color:#a6e22e">data&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>App.vue&lt;/code>da API isteğimizi yaparak verileri görüntülüyoruz, burada logout yöntemi ile çıkış yapabiliyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-vue" data-lang="vue">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#f92672">script&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">Keycloak&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#39;./main&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> { &lt;span style="color:#a6e22e">getWeather&lt;/span> } &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#39;./service/weather.api&amp;#39;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">export&lt;/span> &lt;span style="color:#66d9ef">default&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">name&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#39;App&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">data&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">weathers&lt;/span>&lt;span style="color:#f92672">:&lt;/span> []
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">async&lt;/span> &lt;span style="color:#a6e22e">mounted&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">this&lt;/span>.&lt;span style="color:#a6e22e">weathers&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#a6e22e">await&lt;/span> &lt;span style="color:#a6e22e">getWeather&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">methods&lt;/span>&lt;span style="color:#f92672">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">logout&lt;/span>() {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">Keycloak&lt;/span>.&lt;span style="color:#a6e22e">logout&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/&lt;span style="color:#f92672">script&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#f92672">template&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">button&lt;/span> &lt;span style="color:#f92672">@click&lt;/span>&lt;span style="color:#e6db74">=&amp;#34;logout&amp;#34;&lt;/span> &lt;span style="color:#a6e22e">style&lt;/span>&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;margin-bottom: 30px;&amp;#34;&lt;/span>&amp;gt;&lt;span style="color:#a6e22e">Logout&lt;/span>&amp;lt;/&lt;span style="color:#f92672">button&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">table&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">th&lt;/span>&amp;gt;Date&amp;lt;/&lt;span style="color:#f92672">th&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">th&lt;/span>&amp;gt;&lt;span style="color:#a6e22e">Summary&lt;/span>&amp;lt;/&lt;span style="color:#f92672">th&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">tr&lt;/span> &lt;span style="color:#f92672">v-for&lt;/span>&lt;span style="color:#e6db74">=&amp;#34;weather in weathers&amp;#34;&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">td&lt;/span>&amp;gt;{{ &lt;span style="color:#a6e22e">weather&lt;/span>.&lt;span style="color:#a6e22e">date&lt;/span> }}&amp;lt;/&lt;span style="color:#f92672">td&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;&lt;span style="color:#f92672">td&lt;/span>&amp;gt;{{ &lt;span style="color:#a6e22e">weather&lt;/span>.&lt;span style="color:#a6e22e">summary&lt;/span> }}&amp;lt;/&lt;span style="color:#f92672">td&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">tr&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/&lt;span style="color:#f92672">table&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/&lt;span style="color:#f92672">template&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-dotnet-vue-keycloak">GitHub - berkslv/lecture-dotnet-vue-keycloak&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>Zero downtime ile Deployment: Azure DevOps Deployment Slots Kullanarak Azure App Service Deployment işlemi</title><link>https://berkselvi.dev/tr/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</link><pubDate>Sun, 21 May 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</guid><description>Selamlar! Azure App Service&amp;rsquo;te tek instance olarak çalışan uygulamamızı Azure DevOps işlem hatlarını kullanarak dağıtırken büyük olasılıkla birkaç saniyelik kesinti yaşanacaktır. Çünkü tek instance olarak çalışan uygulamanın yeni sürüme güncellenmesi için yeniden başlatılması gerekecektir. En kötü senaryoda, uygulama sürümlerimizin geçişinde bir hata oluşması durumunda geri alma nedeniyle kesinti süresi uzayacaktır.
 Bu özel sorunu app servisi için deployment slot özelliğini kullanarak çözebiliriz. Bu özellikle, genellikle ayrı örnekler olarak aynı app servis planında çalışan iki farklı örnek, genellikle staging ve production uygulamaları, birbirinden ayrı örnekler olarak çalışır ve production ortamına geçiş yapıldığında app servisi tarafından değiştirme işlemi yönetilir ve kesinti yaşanmaz.</description><content>&lt;p>Selamlar! Azure App Service&amp;rsquo;te tek instance olarak çalışan uygulamamızı Azure DevOps işlem hatlarını kullanarak dağıtırken büyük olasılıkla birkaç saniyelik kesinti yaşanacaktır. Çünkü tek instance olarak çalışan uygulamanın yeni sürüme güncellenmesi için yeniden başlatılması gerekecektir. En kötü senaryoda, uygulama sürümlerimizin geçişinde bir hata oluşması durumunda geri alma nedeniyle kesinti süresi uzayacaktır.&lt;/p>
 &lt;p>Bu özel sorunu app servisi için deployment slot özelliğini kullanarak çözebiliriz. Bu özellikle, genellikle ayrı örnekler olarak aynı app servis planında çalışan iki farklı örnek, genellikle staging ve production uygulamaları, birbirinden ayrı örnekler olarak çalışır ve production ortamına geçiş yapıldığında app servisi tarafından değiştirme işlemi yönetilir ve kesinti yaşanmaz.&lt;/p>
 &lt;p>Bu yazıda, çok basit bir Dotnet Web API projesi oluşturacak, Azure DevOps Repository kullanarak barındıracak, Azure DevOps pipeline ile CI/CD pipeline oluşturarak Azure App Service&amp;rsquo;e dağıtacak ve deployment slot özelliği ile kesintisiz deployment yapacağız. Aşağıdaki adımları takip ederek süreci 5 adımda tamamlayacağız. Başlayalım.&lt;/p>
@@ -283,6 +1061,91 @@ Bu özel sorunu app servisi için deployment slot özelliğini kullanarak çöze
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>2023-11-14T12:28:39.506Z, &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health error is request to &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health failed, reason: connect ETIMEDOUT 100.100.100.100:443
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
 &lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>React-router-dom kullanarak bir React uygulamasını Docker ile Nginx'e nasıl deploy ederiz?</title><link>https://berkselvi.dev/tr/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</link><pubDate>Sat, 21 Jan 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</guid><description>Bir React uygulamasını deploy etmek istiyorsanız, web sunucusuna deployment veya Docker gibi bir container aracı kullanma gibi birkaç seçenek mevcuttur. Bu kılavuzda, bir React uygulamasını Nginx kullanarak Docker ile nasıl deploy edebileceğimizi göreceğiz. Nginx, yüksek performansı ve düşük kaynak kullanımı ile tanınan popüler bir açık kaynaklı web sunucusudur. React uygulamamız için bir Docker dosyası oluşturacağız ve uygulamayı sunmak için Nginx&amp;rsquo;i kullanacağız. Ayrıca, Nginx&amp;rsquo;e uygulamayı nasıl sunacağını söylemek için bir Nginx yapılandırma dosyası da oluşturacağız.</description><content>&lt;p>Bir React uygulamasını deploy etmek istiyorsanız, web sunucusuna deployment veya Docker gibi bir container aracı kullanma gibi birkaç seçenek mevcuttur. Bu kılavuzda, bir React uygulamasını Nginx kullanarak Docker ile nasıl deploy edebileceğimizi göreceğiz. Nginx, yüksek performansı ve düşük kaynak kullanımı ile tanınan popüler bir açık kaynaklı web sunucusudur. React uygulamamız için bir Docker dosyası oluşturacağız ve uygulamayı sunmak için Nginx&amp;rsquo;i kullanacağız. Ayrıca, Nginx&amp;rsquo;e uygulamayı nasıl sunacağını söylemek için bir Nginx yapılandırma dosyası da oluşturacağız. Son olarak, uygulamamızın bir Docker image&amp;rsquo;ini oluşturacak ve uygulamayı deploy etmek için bir Docker container çalıştıracağız.&lt;/p>
+&lt;h2 id="önkoşullar">Önkoşullar:&lt;/h2>
+&lt;ul>
+&lt;li>Docker hakkında temel bir bilgi&lt;/li>
+&lt;li>Deploy edilecek bir React uygulaması&lt;/li>
+&lt;/ul>
+&lt;h2 id="step-1-create-a-dockerfile">Step 1: Create a Dockerfile&lt;/h2>
+&lt;p>İlk adım, React uygulamamız için bir Docker dosyası oluşturmaktır. Bu dosya, uygulamamızın bir Docker görüntüsünü nasıl oluşturacağımıza dair talimatlar içerecektir. İşte Nginx ile bir React uygulaması için bir Docker dosyası örneği:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-Dockerfile" data-lang="Dockerfile">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Use an official Node runtime as a parent image&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> node:19-alpine as build&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Set the working directory to /app&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">WORKDIR&lt;/span>&lt;span style="color:#e6db74"> /app&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Copy the package.json and package-lock.json to the container&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> package*.json ./&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Install dependencies&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> npm install&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Copy the rest of the application code to the container&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> . .&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Build the React app&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> npm run build&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Use an official Nginx runtime as a parent image&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> nginx:1.21.0-alpine&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Copy the ngnix.conf to the container&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> ngnix.conf /etc/nginx/conf.d/default.conf&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Copy the React app build files to the container&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> --from&lt;span style="color:#f92672">=&lt;/span>build /app/build /usr/share/nginx/html&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Expose port 80 for Nginx&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">EXPOSE&lt;/span>&lt;span style="color:#e6db74"> 80&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Start Nginx when the container starts&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">CMD&lt;/span> [&lt;span style="color:#e6db74">&amp;#34;nginx&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;-g&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;daemon off;&amp;#34;&lt;/span>]&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu Docker dosyası, offical Node runtime ana image&amp;rsquo;i olarak kullanarak React uygulamasını kurmak ve derlemek için kullanır. Daha sonra React uygulamasını sunmak için resmi Nginx runtime ana image&amp;rsquo;ini base olarak kullanır.&lt;/p>
+&lt;h1 id="step-2-create-an-nginx-configuration-file">Step 2: Create an Nginx configuration file&lt;/h1>
+&lt;p>Sonraki adım olarak, Nginx&amp;rsquo;e uygulamamızı nasıl sunacağını söylemek için bir Nginx yapılandırma dosyası oluşturmamız gerekiyor. İşte bir örnek yapılandırma dosyası:&lt;/p>
+&lt;pre tabindex="0">&lt;code class="language-conf" data-lang="conf">server {
+listen 80;
+server_name example.com;
+root /usr/share/nginx/html;
+index index.html;
+location / {
+try_files $uri $uri/ /index.html;
+}
+}
+&lt;/code>&lt;/pre>&lt;p>&lt;strong>Bu &lt;code>nginx.conf&lt;/code> dosyasını Dockerfile ile aynı dizine oluşturmalısınız.&lt;/strong> Bu yapılandırma dosyası, Nginx&amp;rsquo;in port 80&amp;rsquo;de dinlemesini ve React uygulamasını sunmasını sağlar. try_files yönergesi, Nginx&amp;rsquo;e istenen dosyayı sunmaya çalışmasını, ardından dosyayı içeren dizini ve son olarak istenen dosya veya dizin mevcut değilse index.html dosyasını sunmaya çalışmasını söyler.&lt;/p>
+&lt;h1 id="step-3-build-the-docker-image">Step 3: Build the Docker image&lt;/h1>
+&lt;p>Docker dosyası ve Nginx yapılandırma dosyası oluşturulduktan sonra, şimdi Docker image&amp;rsquo;i oluşturabiliriz. Docker dosyasını içeren dizine gidin ve aşağıdaki komutu çalıştırın:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker build -t my-react-app .
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu komut, Docker&amp;rsquo;a mevcut dizindeki Docker dosyasını kullanarak bir image oluşturmasını ve ona my-react-app adını etiketlemesini söyler. Komutun sonundaki nokta, Docker&amp;rsquo;ın oluşturma bağlamı olarak mevcut dizini kullanmasını sağlar.&lt;/p>
+&lt;h1 id="step-4-run-the-docker-container">Step 4: Run the Docker container&lt;/h1>
+&lt;p>Oluşturulan Docker görüntüsüyle şimdi aşağıdaki komutu kullanarak bir container çalıştırabiliriz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker run -p 80:80 my-react-app
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu komut, my-react-app Docker görüntüsünden bir konteyner oluşturur ve konteynerdeki 80 numaralı bağlantı noktasını ana makinedeki 80 numaralı bağlantı noktasına eşler. Ardından, web tarayıcınızda http://localhost adresine giderek React uygulamanıza erişebilirsiniz.&lt;/p>
+&lt;p>Tebrikler, bir React uygulamasını Nginx kullanarak Docker ile başarıyla dağıttınız! Artık bu yöntemi kullanarak React uygulamalarınızı Docker&amp;rsquo;ı destekleyen herhangi bir sunucuya veya sunucu platformuna kolayca deploy edebilirsiniz.&lt;/p>
+&lt;h1 id="step-5-use-docker-compose-to-deploy-the-app">Step 5: Use Docker Compose to deploy the app&lt;/h1>
+&lt;p>Uygulamanızı deploy etmek için daha basit bir yaklaşımı tercih ediyorsanız, container&amp;rsquo;larınızı yönetmek için Docker Compose&amp;rsquo;u kullanabilirsiniz. Docker Compose, çoklu container Docker uygulamalarını tanımlamanıza ve çalıştırmanıza olanak tanıyan bir araçtır.&lt;/p>
+&lt;p>Docker Compose&amp;rsquo;u kullanmak için, projenizin root dizininde bir docker-compose.yml dosyası oluşturmanız gerekecektir. İşte önceki Docker dosyasıyla kullanabileceğiniz bir örnek docker-compose.yml dosyası:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">version&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;3&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">my-react-app&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">build&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">context&lt;/span>: &lt;span style="color:#ae81ff">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">dockerfile&lt;/span>: &lt;span style="color:#ae81ff">Dockerfile&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;80:80&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">./ngnix.conf:/etc/nginx/conf.d/default.conf&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu docker-compose.yml dosyasında, my-react-app adında tek bir servis tanımlıyoruz. Oluşturma bağlamını (.) ve Docker dosyasının adını Dockerfile olarak belirtiyoruz. Ayrıca, konteynerdeki 80 numaralı bağlantı noktasını ana makinedeki 80 numaralı bağlantı noktasına ports yapılandırması kullanarak eşleriz.&lt;/p>
+&lt;p>Son olarak, ana makinedeki ngnix.conf dosyasını konteynerin Nginx yapılandırma dizinindeki default.conf dosyasına eşleyen bir volume bağlarız. Bu, Docker görüntüsünü yeniden oluşturmadan Nginx yapılandırmasını özelleştirmemizi sağlar.&lt;/p>
+&lt;p>Bu docker-compose.yml dosyasını kullanmak için, sadece dosyayı içeren dizine gidin ve aşağıdaki komutu çalıştırın:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>docker-compose up -d
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bu komut, Docker Compose&amp;rsquo;un my-react-app servisini Docker dosyasını kullanarak oluşturmasını ve bir konteyner çalıştırmasını söyler. -d bayrağı, konteynerin arka planda çalışmasını sağlayan detached modunda çalıştırır. Ardından, web tarayıcınızda http://localhost adresine giderek React uygulamanıza erişebilirsiniz.&lt;/p>
+&lt;p>Tebrikler! Bir React uygulamasını Nginx kullanarak Docker ve Docker Compose ile başarıyla dağıttınız. Artık React uygulamalarınızı Docker&amp;rsquo;ı destekleyen herhangi bir sunucuya veya barındırma platformuna kolayca dağıtabilirsiniz.&lt;/p>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
 &lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>Her Geliştiricinin Sahip Olması Gereken 5 Temel Felsefe</title><link>https://berkselvi.dev/tr/posts/5-core-philosophies-that-every-developer-should-have/</link><pubDate>Wed, 09 Mar 2022 11:01:10 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/5-core-philosophies-that-every-developer-should-have/</guid><description>Ben kendim, yazılımın bir işten önce bir yaşam felsefesi olduğunu düşünüyorum ve çoğu sorunu bir yazılım geliştirici olarak yaklaşarak ve bu şekilde çözerek büyük keyif alıyorum. Bu makalede, bu felsefenin temel taşlarından bahsedeceğim.
 İçindekiler Sorumlu bir kişi olun Kodunuzda hiçbir şeyi mahvetmeyin Mükemmeliyetçi olmayın Varlığınız bilginizdir Topluluğunuzu geliştirin! Sorumlu bir kişi olun Bir programcı olarak, yazdığınız JavaScript kodunda bir hata varsa, bu hatanın nedeninin C++ derleyicisi olduğunu söyleyemezsiniz. Bu saçma gelebilir, ancak bu durumu kendinize uyarlamayı düşünün!</description><content>&lt;p>Ben kendim, yazılımın bir işten önce bir yaşam felsefesi olduğunu düşünüyorum ve çoğu sorunu bir yazılım geliştirici olarak yaklaşarak ve bu şekilde çözerek büyük keyif alıyorum. Bu makalede, bu felsefenin temel taşlarından bahsedeceğim.&lt;/p>
 &lt;h2 id="içindekiler">İçindekiler&lt;/h2>
@@ -362,6 +1225,27 @@ Bu özel sorunu app servisi için deployment slot özelliğini kullanarak çöze
 &lt;p>İnsanları bekletmeyin, size geri döneceğim, en kısa sürede cevaplayacağım gibi şeyler söyleyerek insanları bekletmeyin.&lt;/p>
 &lt;/li>
 &lt;/ol>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>Bir şey nasıl çok iyi öğrenilir</title><link>https://berkselvi.dev/tr/posts/how-to-learn-something-very-well/</link><pubDate>Wed, 09 Mar 2022 10:01:10 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-learn-something-very-well/</guid><description>Nasıl öğreneceğinizi öğrendiğinizde, bilgi ile dünyadaki hemen hemen tüm olasılıkların kilidini açarsınız. Bazılarınız pratiğin bilgiden daha önemli olduğunu düşünebilir, ama inanın bana, çalışma alanınız hakkında bir şey bilmiyorsanız, pratik yapamazsınız ve yapabilirseniz de işe yaramaz çünkü altta yatan süreçleri bilmiyorsunuzdur.
+Bu kılavuz basit ve sonuç odaklıdır, bu harika kitapla konu hakkında daha fazla bilgi edinebilirsiniz.
+Öğrenmeden önce Zihin sabit değildir ve geliştirilebilir, sadece zihin ve IQ değil, entelektüel beceriler de çalışarak geliştirilebilir.</description><content>&lt;p>Nasıl öğreneceğinizi öğrendiğinizde, bilgi ile dünyadaki hemen hemen tüm olasılıkların kilidini açarsınız. Bazılarınız pratiğin bilgiden daha önemli olduğunu düşünebilir, ama inanın bana, çalışma alanınız hakkında bir şey bilmiyorsanız, pratik yapamazsınız ve yapabilirseniz de işe yaramaz çünkü altta yatan süreçleri bilmiyorsunuzdur.&lt;/p>
+&lt;p>Bu kılavuz basit ve sonuç odaklıdır, &lt;a href="https://www.goodreads.com/book/show/18770267-make-it-stick">bu harika kitapla&lt;/a> konu hakkında daha fazla bilgi edinebilirsiniz.&lt;/p>
+&lt;h2 id="öğrenmeden-önce">Öğrenmeden önce&lt;/h2>
+&lt;p>Zihin sabit değildir ve geliştirilebilir, sadece zihin ve IQ değil, entelektüel beceriler de çalışarak geliştirilebilir. Her şeyden önce sağlam bir öz disipline sahip olmalısınız, bu farklı şekillerde kazanılabilir, ancak kendi yolunuzu bulmalı ve izlemelisiniz. Dilerseniz askeri disiplin yöntemlerini takip edebilir, dilerseniz Uzakdoğu felsefelerine sadık kalabilirsiniz. Tamamen size kalmış.&lt;/p>
+&lt;p>Ve unutmayın, para gibi değerli şeyler birikir. Buna bilgi de dahildir ve ne kadar çok yeni şeyler öğrenirseniz, yeni şeyleri öğrenmek ve anlamlandırmak o kadar kolay olur.&lt;/p>
+&lt;h2 id="öğrenmek-değil">Öğrenmek değil&lt;/h2>
+&lt;p>Aynı konuyu tekrar tekrar çalışmak, aynı şeyleri tekrar tekrar okumak öğrenme hissi yaratabilir ama bu büyük ihtimalle yanlış bir duygudur. öğrenme duygusu ve akıcılık birbiriyle kolayca karıştırılabilir.&lt;/p>
+&lt;p>Kendinizi test etmeden devam etmeyin, bu şekilde öğrendiğinizi düşünebilirsiniz, ancak büyük olasılıkla bu da yanlış bir duygu olacaktır.&lt;/p>
+&lt;h2 id="yapılacak-şeyler">Yapılacak şeyler&lt;/h2>
+&lt;p>Hafızadan hatırlama, tekrarlı okuma gibi yöntemlere göre çok daha harika bir yöntemdir. Makaleleri okurken cümlelerin veya paragrafların başında durun ve “Ana fikir nedir? Vermek istediğiniz mesaj nedir?” Bunun gibi sorular sormak, geri arama yöntemimiz için harika bir uygulamadır. Bu sayede öğrenilen konularla ilgili zihinsel bağlantılar güçlendirilecektir.&lt;/p>
+&lt;p>Bölüm sonu soruları ve kendi oluşturduğunuz sorular harika öğrenme yöntemleridir. Burada quizlerde ve sınavlarda kullanılabilir, Quizleri bir öğrenme aracı olarak kullanmak tehlike açısından alışılmışın dışında olabilir, ancak hatırlama için çok iyi çalışır ve sorulara verdiğiniz cevaplar önemlidir. Eksiklerinizi bu şekilde ortaya koyabilirsiniz ve bu alanları tamamlamak sizi ileriye taşıyacaktır.&lt;/p>
+&lt;p>Bu iki yöntem tamamen geri arama (callback) ile ilgilidir. Geri çağırma konusundaki son söz, ne kadar zorlayıcı olursa, etkilerinin o kadar kalıcı olacağıdır.&lt;/p>
+&lt;p>Blok çalışmanın kısa vadeli faydalarını kullanmak yerine, konuya aralıklı çalışma ile yaklaşmak bilgiyi daha kalıcı hale getirecektir. Gerekli aralık, çalışılan konuya ve kişiye bağlıdır. 1 gün, 1 hafta, 1 ay gibi. Bir konuyu periyodik olarak hatırlamaya çalışmak, onu hafızada kalıcı kılar ve artık bir refleks gibi olur.&lt;/p>
+&lt;p>Bir matematik konusuyla ilgili benzer soruları arka arkaya çözmek aşinalık hissi yaratır, ancak uygulama sırasında aynı konudaki diğer sorularla farklılıkları ve benzerlikleri görmenize yardımcı olmaz. Soruları çözerken soru tekrarı yaptığınızı fark ederseniz hemen farklı soru türlerine geçin.&lt;/p>
+&lt;p>Öğrendiğiniz konuya yeni anlam katmanları eklemek detaylandırmadır. Buna bir örnek, bir konuyu not alırken kendi cümlelerinizle ifade etmek ve gerçek hayatla ilişkisini incelemektir. Yeni öğrenilen konunun daha önce öğrendiklerinizle ilişkisini incelemek öğrenmeyi artırır. Konuyu kendiniz ve hayatınız ile ilişkilendirin.&lt;/p>
+&lt;p>Öğrenmeden önce üretin. Bir matematik sorusunu cevap verilmeden önce bildiklerinizle çözmeye çalışmak, çözüm anlatıldıktan sonra çözümü kavramanızı ve hatırlamanızı kolaylaştırır.&lt;/p>
+&lt;p>Geri çağırma ve detaylandırmayı harmanlayın. Bir konu veya dersten sonra kendinize sorun, “Nasıl gitti? Daha iyi olabilir mi? Bu sana geçmişten bir şey hatırlatıyor mu?” Bunun gibi sorular sormak öğrenmeye yardımcı olur ve buna &lt;strong>yansıtma&lt;/strong> denir.&lt;/p>
 &lt;hr>
 &lt;h2 id="sonuç">Sonuç&lt;/h2>
 &lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item></channel></rss>
