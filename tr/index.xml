@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Sun, 21 May 2023 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/index.xml" rel="self" type="application/rss+xml"/><item><title>Zero downtime ile Deployment: Azure DevOps Deployment Slots Kullanarak Azure App Service Deployment işlemi</title><link>https://berkselvi.dev/tr/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</link><pubDate>Sun, 21 May 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</guid><description>Selamlar! Azure App Service&amp;rsquo;te tek instance olarak çalışan uygulamamızı Azure DevOps işlem hatlarını kullanarak dağıtırken büyük olasılıkla birkaç saniyelik kesinti yaşanacaktır. Çünkü tek instance olarak çalışan uygulamanın yeni sürüme güncellenmesi için yeniden başlatılması gerekecektir. En kötü senaryoda, uygulama sürümlerimizin geçişinde bir hata oluşması durumunda geri alma nedeniyle kesinti süresi uzayacaktır.
+Bu özel sorunu app servisi için deployment slot özelliğini kullanarak çözebiliriz. Bu özellikle, genellikle ayrı örnekler olarak aynı app servis planında çalışan iki farklı örnek, genellikle staging ve production uygulamaları, birbirinden ayrı örnekler olarak çalışır ve production ortamına geçiş yapıldığında app servisi tarafından değiştirme işlemi yönetilir ve kesinti yaşanmaz.</description><content>&lt;p>Selamlar! Azure App Service&amp;rsquo;te tek instance olarak çalışan uygulamamızı Azure DevOps işlem hatlarını kullanarak dağıtırken büyük olasılıkla birkaç saniyelik kesinti yaşanacaktır. Çünkü tek instance olarak çalışan uygulamanın yeni sürüme güncellenmesi için yeniden başlatılması gerekecektir. En kötü senaryoda, uygulama sürümlerimizin geçişinde bir hata oluşması durumunda geri alma nedeniyle kesinti süresi uzayacaktır.&lt;/p>
+&lt;p>Bu özel sorunu app servisi için deployment slot özelliğini kullanarak çözebiliriz. Bu özellikle, genellikle ayrı örnekler olarak aynı app servis planında çalışan iki farklı örnek, genellikle staging ve production uygulamaları, birbirinden ayrı örnekler olarak çalışır ve production ortamına geçiş yapıldığında app servisi tarafından değiştirme işlemi yönetilir ve kesinti yaşanmaz.&lt;/p>
+&lt;p>Bu yazıda, çok basit bir Dotnet Web API projesi oluşturacak, Azure DevOps Repository kullanarak barındıracak, Azure DevOps pipeline ile CI/CD pipeline oluşturarak Azure App Service&amp;rsquo;e dağıtacak ve deployment slot özelliği ile kesintisiz deployment yapacağız. Aşağıdaki adımları takip ederek süreci 5 adımda tamamlayacağız. Başlayalım.&lt;/p>
+&lt;ol>
+&lt;li>Uygulamanın Oluşturulması&lt;/li>
+&lt;li>Azure DevOps Repo&lt;/li>
+&lt;li>Azure DevOps build pipeline&lt;/li>
+&lt;li>Azure App service&lt;/li>
+&lt;li>Zero downtime testing&lt;/li>
+&lt;/ol>
+&lt;p>## Uygulamanın Oluşturulması&lt;/p>
+&lt;p>Deploy etmek için basit bir Dotnet Web API projesi oluşturuyoruz. Bunun için aşağıdaki komutları kullanıyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>mkdir backend
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd ./backend
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new sln -n Slot
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet new webapi -n Slot.API
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet sln add ./Slot.API/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>properties/launchSetting.json dosyasındaki &lt;em>profiles.http&lt;/em> özelliğini aşağıdaki gibi güncelliyoruz. Burada yalnızca &lt;em>applicationUrl&lt;/em> ve &lt;em>launchBrowser&lt;/em> özelliklerini güncelledik.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#e6db74">&amp;#34;profiles&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;http&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;commandName&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Project&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;dotnetRunMessages&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;launchBrowser&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">false&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;launchUrl&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;swagger&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;applicationUrl&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;http://localhost:5050&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;environmentVariables&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;ASPNETCORE_ENVIRONMENT&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Development&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Aşağıdaki güncellemeyi Program.cs dosyasında yaparak, uygulamanın erişilebilir ve /health uç noktasına yapılan isteklere yanıt verebileceğini test edeceğiz. Uygulamanızda bir veritabanı kullanıyorsanız, &lt;a href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.entityframeworkcorehealthchecksbuilderextensions.adddbcontextcheck?view=dotnet-plat-ext-8.0">AddDbContextCheck&lt;/a> yöntemi ile veritabanına erişimde bir sorun olup olmadığını da test edebilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddHealthChecks();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// app.UseHttpsRedirection(); &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapControllers();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseHealthChecks(&lt;span style="color:#e6db74">&amp;#34;/health&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Uygulamamız için bu kadar! Şimdi şu komutları çalıştırarak localhost:5050/health adresine erişebiliriz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>cd ./Slot.API
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet run
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>curl -4 http://localhost:5050/health
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Healthy&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Daha sonra uygulamamızı dağıtmak için Docker kullanacağız, bu yüzden Dockerfile dosyamızı sln dosyamızla aynı dizine koyuyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-Dockerfile" data-lang="Dockerfile">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Build Stage &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS base &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">WORKDIR&lt;/span>&lt;span style="color:#e6db74"> /app &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">EXPOSE&lt;/span>&lt;span style="color:#e6db74"> 8080 &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#75715e"># Publish Stage &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> &lt;span style="color:#f92672">[&lt;/span>&lt;span style="color:#e6db74">&amp;#34;Slot.API/Slot.API.csproj&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Slot.API/&amp;#34;&lt;/span>&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> dotnet restore &lt;span style="color:#e6db74">&amp;#34;Slot.API/Slot.API.csproj&amp;#34;&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> . . &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">WORKDIR&lt;/span>&lt;span style="color:#e6db74"> &amp;#34;/Slot.API&amp;#34; &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> dotnet build &lt;span style="color:#e6db74">&amp;#34;Slot.API.csproj&amp;#34;&lt;/span> -c Release -o /app/build &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> build AS publish &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">RUN&lt;/span> dotnet publish &lt;span style="color:#e6db74">&amp;#34;Slot.API.csproj&amp;#34;&lt;/span> -c Release -o /app/publish /p:UseAppHost&lt;span style="color:#f92672">=&lt;/span>false &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span> &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">FROM&lt;/span>&lt;span style="color:#e6db74"> base AS final &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">WORKDIR&lt;/span>&lt;span style="color:#e6db74"> /app &lt;/span>&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">COPY&lt;/span> --from&lt;span style="color:#f92672">=&lt;/span>publish /app/publish . &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">ENV&lt;/span> ASPNETCORE_URLS&lt;span style="color:#f92672">=&lt;/span>http://*:8080 &lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#960050;background-color:#1e0010">&lt;/span>&lt;span style="color:#66d9ef">ENV&lt;/span> ASPNETCORE_ENVIRONMENT&lt;span style="color:#f92672">=&lt;/span>Production
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">ENTRYPOINT&lt;/span> [&lt;span style="color:#e6db74">&amp;#34;dotnet&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Slot.API.dll&amp;#34;&lt;/span>]&lt;span style="color:#960050;background-color:#1e0010">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Aşağıdaki iki komutu kullanarak imajı başarıyla oluşturup container&amp;rsquo;ı build edip çalıştırabiliriz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker build -t deployment-slots-demo .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>docker run -it -p 80:8080 deployment-slots-demo -n deployment-slots-demo-container
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="uygulamanın-çalışıyor-olduğunu-doğrulayın">Uygulamanın Çalışıyor Olduğunu Doğrulayın&lt;/h2>
+&lt;p>Önceki adımda sağlık kontrolü özelliği ile uygulamamızı oluşturduktan sonra, bu adrese her saniye bir istek yaparak uygulamanın erişilebilir olduğunu doğrulayabiliriz. Bu şekilde, Azure&amp;rsquo;a dağıtıldığında erişilebilir olduğunu doğrulamış olacağız.&lt;/p>
+&lt;p>Bu bölümde, uygulamanın her 50 milisaniyede bir istek yaparak erişilebilir olup olmadığını doğrulamak için basit bir Node.js script&amp;rsquo;i yazacağız. Bunun için aşağıdaki komutları kullanıyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>mkdir health-check
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm init -y
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>touch index.js
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>npm install node-fetch
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Aşağıdaki kısmı package.json dosyasına ekliyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>&lt;span style="color:#e6db74">&amp;#34;scripts&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;start&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;node index.js&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}&lt;span style="color:#960050;background-color:#1e0010">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&amp;#34;type&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;module&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>index.js dosyamızı aşağıdaki gibi oluşturabiliriz. Bu kod ile belirtilen url&amp;rsquo;e her 50 milisaniyede bir istek yapacak ve yanıtı konsola yazacaktır.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">fetch&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;node-fetch&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">check&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">url&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">fetch&lt;/span>(&lt;span style="color:#a6e22e">url&lt;/span>, {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">method&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;GET&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">result&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span>.&lt;span style="color:#a6e22e">text&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">result&lt;/span> &lt;span style="color:#f92672">!==&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Healthy&amp;#34;&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">`&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> Date().&lt;span style="color:#a6e22e">toISOString&lt;/span>()&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">, &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> result is not OK`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (&lt;span style="color:#a6e22e">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">`&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> Date().&lt;span style="color:#a6e22e">toISOString&lt;/span>()&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">, &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> error is &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">error&lt;/span>.&lt;span style="color:#a6e22e">message&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">setInterval&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">check&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;http://localhost:5050/health&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }, &lt;span style="color:#ae81ff">50&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">setInterval&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">check&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;http://localhost:5050/health&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }, &lt;span style="color:#ae81ff">50&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>})();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>API projemizde UseHttpsRedirection middleware&amp;rsquo;ini kapatmazsanız, geçersiz bir SSL sertifikası hatası alabilirsiniz. Bunu aşağıdaki gibi düzeltebilirsiniz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">fetch&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;node-fetch&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">https&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;https&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">httpsAgent&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">https&lt;/span>.&lt;span style="color:#a6e22e">Agent&lt;/span>({
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">rejectUnauthorized&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#66d9ef">false&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">check&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">url&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">fetch&lt;/span>(&lt;span style="color:#a6e22e">url&lt;/span>, {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">method&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;GET&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">agent&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#a6e22e">httpsAgent&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">result&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span>.&lt;span style="color:#a6e22e">text&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">result&lt;/span> &lt;span style="color:#f92672">!==&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Healthy&amp;#34;&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">`&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> Date().&lt;span style="color:#a6e22e">toISOString&lt;/span>()&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">, &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> result is not OK`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (&lt;span style="color:#a6e22e">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">`&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> Date().&lt;span style="color:#a6e22e">toISOString&lt;/span>()&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">, &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> error is &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">error&lt;/span>.&lt;span style="color:#a6e22e">message&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">setInterval&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">check&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;https://localhost:5051/health&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }, &lt;span style="color:#ae81ff">50&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">setInterval&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">check&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;https://localhost:5051/health&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }, &lt;span style="color:#ae81ff">50&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>})();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="azure-devops-repo">Azure DevOps Repo&lt;/h2>
+&lt;p>Azure DevOps hesabımıza giriş yapıyoruz ve aşağıdaki gibi yeni bir repo oluşturuyoruz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-1.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-2.webp" alt="Azure deployment" loading="lazy" />
+&lt;p>Bu repo&amp;rsquo;yu bilgisayarımıza klonluyoruz, yazdığımız kodu bu repo klasörüne taşıyoruz ve kodları origin&amp;rsquo;e iletiyoruz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-3.webp" alt="Azure deployment" loading="lazy" />
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>git add .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>git commit -m &lt;span style="color:#e6db74">&amp;#34;inital commit&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>git push origin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-4.webp" alt="Azure deployment" loading="lazy" />
+&lt;h2 id="azure-devops-build-pipeline">Azure DevOps build pipeline&lt;/h2>
+&lt;p>Pipeline ekranında, en sağ üstteki New pipeline düğmesine tıklıyoruz. Ardından aşağıdaki adımları izleyerek docker dosyasını oluşturup ve Azure Container Registry&amp;rsquo;e iteleriyoruz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-5.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-6.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-7.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-8.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-9.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-10.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-11.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-12.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-13.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-14.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-15.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-16.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-17.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-18.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-19.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-20.webp" alt="Azure deployment" loading="lazy" />
+&lt;p>Şimdi Azure Container Registry&amp;rsquo;de image deployment işlemimizin başarılı olduğunu kontrol ediyoruz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-21.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-22.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-23.webp" alt="Azure deployment" loading="lazy" />
+&lt;p>Görüldüğü gibi, boru hattı çalıştırıldığında, Docker image&amp;rsquo;i başarıyla Azure Container Registry&amp;rsquo;de oluşturulmuş ve kullanılmak üzere bizi bekliyor. Bu ayarların ardından, main branch&amp;rsquo;de /backend dizininde yapılan her değişiklik ile tetiklenerek yeni bir Docker image&amp;rsquo;i oluşturulacak.&lt;/p>
+&lt;h2 id="azure-app-service">Azure App service&lt;/h2>
+&lt;p>Azure App servisi, güvenlik, yük dengeleme, otomatik ölçeklendirme gibi özellikleriyle Azure tarafından yönetilen web uygulamalarını dağıtmamıza olanak tanır. Azure app servisleri ekranı üzerinden yeni bir app servisi oluşturabiliriz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-24.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-25.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-26.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-27.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-28.webp" alt="Azure deployment" loading="lazy" />
+&lt;p>App servisini oluşturduktan sonra, Container Registry şifresini yapılandırma sekmesinden güncellemeniz gerekebilir.&lt;/p>
+&lt;p>## Azure DevOps release pipeline&lt;/p>
+&lt;p>release pipeline ile, build pipeline tarafından oluşturulan Docker image&amp;rsquo;i kullanarak App servisine deploy edilir ve uygulamamızı yayınlamış oluruz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-29.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-30.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-31.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-32.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-33.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-34.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-35.webp" alt="Azure deployment" loading="lazy" />
+&lt;p>Staging dağıtımına girdiğimizde, staging versiyonumuz için dağıtım alırız ve Docker image&amp;rsquo;inde yaptığımız değişikliklerin canlı hale gelmesini sağlamak için uygulama servisimizi yeniden başlatırız.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-36.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-37.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-38.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-39.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-40.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-41.webp" alt="Azure deployment" loading="lazy" />
+&lt;p>production aşamasında, app service&amp;rsquo;de bir deployment yapmıyoruz, bunun yerine staging aşamasıyla değişim işlemini gerçekleştiriyoruz ve bu şekilde, production erişiminde herhangi bir kesinti yaşamadan staging&amp;rsquo;de çalışan uygulamamızı production ile değiştirdiğimiz için production uygulamamıza erişebiliyoruz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-42.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-43.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-44.webp" alt="Azure deployment" loading="lazy" />
+&lt;br/>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-45.webp" alt="Azure deployment" loading="lazy" />
+&lt;p>Şimdi, main bracnh&amp;rsquo;te yapılan herhangi bir değişiklik önce build pipeline (CI) ile geçecek, ardından release pipeline (CD) geçecek ve release, staging ortamına yapılacak. Production ortamına geçmek isterseniz, production deployment işlemi manuel olarak release ekranından tetiklenmelidir.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/azure-deployment-46.webp" alt="Azure deployment" loading="lazy" />
+&lt;h2 id="zero-downtime-testing">Zero downtime testing&lt;/h2>
+&lt;p>Uygulamamız için gerekli pipeline&amp;rsquo;ları başarıyla oluşturduk, bundan sonra release sırasında herhangi bir kesinti olup olmadığını test etmemiz gerekecek. Bunun için &lt;em>health-check/index.js&lt;/em> dosyamızı aşağıdaki gibi güncelliyorum ve uygulamayı npm run start komutuyla çalıştırıp pipeline&amp;rsquo;ı tetikliyorum. Ardından, konsolda herhangi bir hata mesajı almadan, yani herhangi bir kesinti olmadan deployment sürecini tamamlıyorum!&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">import&lt;/span> &lt;span style="color:#a6e22e">fetch&lt;/span> &lt;span style="color:#a6e22e">from&lt;/span> &lt;span style="color:#e6db74">&amp;#34;node-fetch&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">check&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> (&lt;span style="color:#a6e22e">url&lt;/span>) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">fetch&lt;/span>(&lt;span style="color:#a6e22e">url&lt;/span>, {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">method&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#e6db74">&amp;#34;GET&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">const&lt;/span> &lt;span style="color:#a6e22e">result&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#a6e22e">response&lt;/span>.&lt;span style="color:#a6e22e">text&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (&lt;span style="color:#a6e22e">result&lt;/span> &lt;span style="color:#f92672">!==&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Healthy&amp;#34;&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">`&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> Date().&lt;span style="color:#a6e22e">toISOString&lt;/span>()&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">, &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> result is not OK`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">catch&lt;/span> (&lt;span style="color:#a6e22e">error&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">console&lt;/span>.&lt;span style="color:#a6e22e">log&lt;/span>(&lt;span style="color:#e6db74">`&lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#66d9ef">new&lt;/span> Date().&lt;span style="color:#a6e22e">toISOString&lt;/span>()&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">, &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">url&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74"> error is &lt;/span>&lt;span style="color:#e6db74">${&lt;/span>&lt;span style="color:#a6e22e">error&lt;/span>.&lt;span style="color:#a6e22e">message&lt;/span>&lt;span style="color:#e6db74">}&lt;/span>&lt;span style="color:#e6db74">`&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">setInterval&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">check&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;https://deployment-slot-demo.azurewebsites.net/health&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }, &lt;span style="color:#ae81ff">50&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">setInterval&lt;/span>(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">check&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;https://deployment-slot-demo-staging.azurewebsites.net/health&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }, &lt;span style="color:#ae81ff">50&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>})();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Benzer bir işlemi deployment slots özelliği uygulamayan bir App Service ile denersek, aşağıdaki gibi bir hata alırız.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>2023-11-14T12:28:39.506Z, &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health error is request to &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health failed, reason: connect ETIMEDOUT 100.100.100.100:443
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>Her Geliştiricinin Sahip Olması Gereken 5 Temel Felsefe</title><link>https://berkselvi.dev/tr/posts/5-core-philosophies-that-every-developer-should-have/</link><pubDate>Wed, 09 Mar 2022 11:01:10 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/5-core-philosophies-that-every-developer-should-have/</guid><description>Ben kendim, yazılımın bir işten önce bir yaşam felsefesi olduğunu düşünüyorum ve çoğu sorunu bir yazılım geliştirici olarak yaklaşarak ve bu şekilde çözerek büyük keyif alıyorum. Bu makalede, bu felsefenin temel taşlarından bahsedeceğim.
+İçindekiler Sorumlu bir kişi olun Kodunuzda hiçbir şeyi mahvetmeyin Mükemmeliyetçi olmayın Varlığınız bilginizdir Topluluğunuzu geliştirin! Sorumlu bir kişi olun Bir programcı olarak, yazdığınız JavaScript kodunda bir hata varsa, bu hatanın nedeninin C++ derleyicisi olduğunu söyleyemezsiniz. Bu saçma gelebilir, ancak bu durumu kendinize uyarlamayı düşünün!</description><content>&lt;p>Ben kendim, yazılımın bir işten önce bir yaşam felsefesi olduğunu düşünüyorum ve çoğu sorunu bir yazılım geliştirici olarak yaklaşarak ve bu şekilde çözerek büyük keyif alıyorum. Bu makalede, bu felsefenin temel taşlarından bahsedeceğim.&lt;/p>
+&lt;h2 id="içindekiler">İçindekiler&lt;/h2>
+&lt;ul>
+&lt;li>Sorumlu bir kişi olun&lt;/li>
+&lt;li>Kodunuzda hiçbir şeyi mahvetmeyin&lt;/li>
+&lt;li>Mükemmeliyetçi olmayın&lt;/li>
+&lt;li>Varlığınız bilginizdir&lt;/li>
+&lt;li>Topluluğunuzu geliştirin!&lt;/li>
+&lt;/ul>
+&lt;h2 id="sorumlu-bir-kişi-olun">Sorumlu bir kişi olun&lt;/h2>
+&lt;p>Bir programcı olarak, yazdığınız JavaScript kodunda bir hata varsa, bu hatanın nedeninin C++ derleyicisi olduğunu söyleyemezsiniz. Bu saçma gelebilir, ancak bu durumu kendinize uyarlamayı düşünün!&lt;/p>
+&lt;p>Bir iş almadan önce, o işin gereksinimlerini iyi planlayın çünkü projede uzun bir yol kat ettiğinizde ve bir müşteriye veya patronunuza gittiğinizde size geçerli bir soru sorarlar, &amp;ldquo;neden bunu önceden düşünmediniz&amp;rdquo; Bu tür durumları göz önünde bulundurarak işe koyulursanız, karşılaşabileceğiniz herhangi bir soruya hazırlıklı olun. Ancak verdiğiniz cevap kesinlikle &amp;ldquo;bu imkansız yapılacak bir şey değil!&amp;rdquo; olmamalıdır. O problem için uygun farklı çözüm alternatifleri sunmaya çalışmalısınız.&lt;/p>
+&lt;h2 id="kodunuzda-hiçbir-şeyi-mahvetmeyin">Kodunuzda hiçbir şeyi mahvetmeyin&lt;/h2>
+&lt;p>Yazılımı bir bina gibi düşünün, bir apartmandaki bir pencere kırıldığında ve onarılmadığında, başka bir pencere kırıldığında ve kimse ilgilenmezse, bu böyle devam eder ve sonunda duvarlara grafiti yazılmaya başlar ve bina tamamen düzensiz hale gelir. Sonra; asla kırık bir camla yaşamayın. Bu yazılım için kırık cam örneği, gelecekteki hatalara yol açabilecek kötü tasarımı ve kötü bir kodu içerebilir.&lt;/p>
+&lt;p>Aslında bu durum oldukça bilimsel, fizikte entropiyi düşünürseniz, düzensizlik her zaman artmak ister. Bunu engellememek size bağlıdır. Yazılımda bir hata varsa, yeni bir özellik eklemeye odaklanmaktan önce onu düzeltmeye odaklanın ve devam edin. Bunu yapamam dediğinizde değil, yaptım dediğinizde durun.&lt;/p>
+&lt;h2 id="mükemmeliyetçi-olmayın">Mükemmeliyetçi olmayın&lt;/h2>
+&lt;p>Harika bir fikriniz varsa, üzerinde bir yıl veya iki yıl çalıştıktan ve yayınladıktan sonra, geri bildirimlerden öğrenmek çok hayal kırıklığı olabilir ve gerçekten değersiz bir fikir olduğunu öğrenmek. Herhangi bir projede kusursuz ilerlemeden önce, o projenin temel özelliklerine sahip bir MVP&amp;rsquo;ye sahip olmak ve onu yayınlamak, geri bildirimleri değerlendirmek ve her şey yolundaysa ilerlemek çok daha mantıklıdır.&lt;/p>
+&lt;p>Kısacası, mükemmeliyetçilik genellikle yazılım için işe yaramaz. Üründen emin olmak ve sonra onu mükemmelleştirmek daha iyi bir fikirdir. Sonuç olarak, dünya her gün değişiyor ve her dakika yeni teknolojiler ve ürünler ortaya çıkıyor!&lt;/p>
+&lt;h2 id="varlığınız-bilginizdir">Varlığınız bilginizdir&lt;/h2>
+&lt;p>Bilginiz ve deneyiminiz en önemli varlığınızdır. Ancak bu varlıklar zamanla eskimiş olabilir, özellikle teknoloji dünyasında, her şey çok hızlı bir şekilde değişiyor. Bir yıl önce sahip olduğunuz değerli varlıklar şimdi değersiz olabilir. Bu yüzden güncel kalmaya odaklanmalısınız.&lt;/p>
+&lt;p>Bir bilgi ve deneyim portföyünü yönetmek, finansal varlıkları yönetmek gibi belirli gereksinimlere sahiptir;&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>Ciddi yatırımcılar alışkanlık olarak düzenli olarak yatırım yaparlar: Düzenli olarak yatırım yaparsanız, ne kadar az veya çok kazanırsanız kazanın, toplamda büyük bir kar elde edersiniz.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Çeşitlendirme uzun vadeli başarının anahtarıdır: Ne kadar fazla teknolojiye hakim olursanız, değişime o kadar iyi adapte olabilirsiniz.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Akıllı yatırımcılar portföylerini düşük risk, düşük getiri ve yüksek risk, yüksek getiri yatırımları arasında dengelemektedir: Tüm varlığınızı (zaman ve çaba) gelecekte değerli olacağını düşündüğünüz yüksek getirili bir varlığa yatırmak yerine, varlığınızı güvenli dall&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>ara dalın ve varlığınızı aynı kutuya koymayın.&lt;/p>
+&lt;ol start="4">
+&lt;li>
+&lt;p>Yatırımcılar maksimum getiri için düşük al ve yüksek satın: Gelecekte değer kazanacağını düşündüğünüz varlıklara yatırım yapmak büyük getiriler sağlayabilir.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Portföyler periyodik olarak gözden geçirilmeli ve yeniden dengelenmelidir: Çok dalgalı bir endüstride iş yapıyoruz, bu yüzden yatırımlarınızı düzenli olarak gözden geçirmeli ve değer kaybeden varlıklara dikkat etmelisiniz.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>Ancak tüm bu hedeflerin en önemlisi ve vazgeçilmezi düzenli olarak yatırım yapmaktır. Yatırım yapmazsanız, nereye yatırım yaparsanız yapmanızın bir önemi yoktur. Bu hedeflere ulaşmanın bir aracı olarak kullanabileceğiniz birkaç araç aşağıda verilmiştir.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>Her yıl en az bir yeni dil öğrenin. Farklı diller aynı sorunları farklı yollarla çözer. Farklı yaklaşımları öğrenmek düşünme yeteneğinizi genişletebilir ve rutine sıkışıp kalmaktan kaçınmanıza yardımcı olabilir.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Her çeyrek teknik bir kitap okuyun. Alışkanlık kazandıktan sonra, ayda bir kitap okuyun. Kullanmakta olduğunuz teknolojileri öğrendikten sonra, farklı dallarda çalışın ve ilgisiz dallarda çalışın.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Teknik olmayan kitaplar da okuyun. Bilgisayarlar insanlar içindir ve insanları daha iyi anlarsanız, onların çözümlerine çok daha iyi yaklaşabilirsiniz.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Yerel kullanıcı gruplarına katılın. Sadece gitmeyin ve dinlemeyin, aktif olarak katılın. İzolasyon kariyerinize ölümcül olabilir.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>Bu teknolojilerden herhangi birini bir projede kullansanız veya hatta özgeçmişinize koyduğunuzda önemli değil. Bunları öğrenmek öğrenme yeteneğinizi artırır ve problem çözme yeteneğinize katkı sağlar.&lt;/p>
+&lt;p>Bir sorunla karşılaşırsanız ve bunun cevabını bilmiyorsanız, bu sorunu bir hedef olarak seçin ve öğrenmeye çalışın. Etrafınızda bir guruya sorun, etrafınızda yoksa çevrimiçi bir tane bulun. Bu hem sorunu yanıtlayacak hem de ağınızı genişletecektir. Sürekli olarak öğrenmeye devam edin. Otobüste seyahat ederken okuyacak bir şey taşıyın ve değerlendirin.&lt;/p>
+&lt;p>Bir kitapçının size pazarladığı ürünün en iyi ürünü olmadığı gibi, arama motorlarında ilk sıralara çıkan içeriğe güvenmeyin, doğruluğunu düşünün ve kafanızda tartın ve sorgusuz sualsiz kabul etmeyin.&lt;/p>
+&lt;h2 id="topluluğunuzu-geliştirin">Topluluğunuzu geliştirin!&lt;/h2>
+&lt;p>Etkili iletişiminiz olmadığında iyi bir fikir yetimdir. Geliştiriciler olarak, son kullanıcılarla iletişim kurarken veya belgeler oluştururken, patronlarımız veya üstlerimizle iletişim kurarken iletişim becerilerimizi kullanıyoruz. İletişim becerilerinizi güçlendirmenin birkaç yolu şunlardır;&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>Bir programcı olarak göreviniz kelime oyunları oynamak değil, istediğiniz bilgileri doğru ve net bir şekilde iletmektir. Ne demek istediğinizi planlayın. Bir taslak yazın. Sonra kendinize sorun, &amp;ldquo;Bu söylemek istediğim her şeyi kapsıyor mu?&amp;rdquo; Bu gereksinimi karşılayana kadar tekrarlayın. Bu planı sadece bir belge yazarken değil, toplantılar ve konuşmalar öncesinde, hatta önemsediğiniz müşterilerle buluşmadan önce yapın.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Bilgi aktarabiliyorsanız, doğru iletişimi sağlayabilirsiniz. Bu nedenle, diğer kişinin karşılayabileceği bilgi seviyesini belirlemelisiniz.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>İletişimin çeşitli yolları vardır. Bazı müşteriler e-posta ile bilgilendirilmek isteyebilirken, diğerleri telefonla aranmak isteyebilir.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>İnsanların sizi dinlemesini istiyorsanız, yapmanız gereken ilk şey onları dinlemektir. Bir toplantıyı diyaloga dönüştürebilirseniz, bundan daha iyisi yoktur.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>İnsanları bekletmeyin, size geri döneceğim, en kısa sürede cevaplayacağım gibi şeyler söyleyerek insanları bekletmeyin.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item></channel></rss>

@@ -1,0 +1,228 @@
+<!doctype html><html lang=en><head><title>How to use Ocelot and Keycloak together to secure Microservices from API Gateway :: Berk Selvi | Software Developer</title>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently…"><meta name=keywords content="keycloak,ocelot,microservices,api gateway,oauth"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="og:title" content="How to use Ocelot and Keycloak together to secure Microservices from API Gateway"><meta property="og:description" content="In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently…"><meta property="og:url" content="https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/icon/favicon.ico"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2024-01-30 00:00:00 +0300 +0300"><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/>home</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>english ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/>home</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h1 class=post-title><a href=https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/>How to use Ocelot and Keycloak together to secure Microservices from API Gateway</a></h1><div class=post-meta><span class=post-date>January 30, 2024
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 7 min read (1343 words)</span></div><div class=post-content><div><p>In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently deployable services, ensuring the integrity and confidentiality of data exchanged between these services becomes a critical concern.</p><p>In this blog post, we will explore a comprehensive solution for securing microservices using Ocelot, an API Gateway with Keycloak, a powerful open-source identity and access management solution. By placing Keycloak behind the API Gateway, we’ll delve into how this integration safeguards resources, authenticates requests to other services, and authorizes access using claims, offering a seamless and secure communication framework for your microservices ecosystem. Let’s get started.</p><h2 id=create-keycloak-instance>Create Keycloak instance<a href=#create-keycloak-instance class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Running keycloak within Docker is very easy. Just place this Dockerfile in /Identity directory in your project. You can find all of the codes in my repository from end of the post.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-Dockerfile data-lang=Dockerfile><span style=display:flex><span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> quay.io/keycloak/keycloak:latest as builder  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e># Enable health and metrics support  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENV</span> KC_HEALTH_ENABLED<span style=color:#f92672>=</span>true  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>ENV</span> KC_METRICS_ENABLED<span style=color:#f92672>=</span>true  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e># Configure a database vendor  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENV</span> KC_DB<span style=color:#f92672>=</span>postgres  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>WORKDIR</span><span style=color:#e6db74> /opt/keycloak  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e># for demonstration purposes only, please make sure to use proper certificates in production instead  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize <span style=color:#ae81ff>2048</span> -dname <span style=color:#e6db74>&#34;CN=server&#34;</span> -alias server -ext <span style=color:#e6db74>&#34;SAN:c=DNS:localhost,IP:127.0.0.1&#34;</span> -keystore conf/server.keystore  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> /opt/keycloak/bin/kc.sh build  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> quay.io/keycloak/keycloak:latest  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> --from<span style=color:#f92672>=</span>builder /opt/keycloak/ /opt/keycloak/  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e># change these values to point to a running postgres instance  </span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENTRYPOINT</span> [<span style=color:#e6db74>&#34;/opt/keycloak/bin/kc.sh&#34;</span>]<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p>And create docker-compose.yml file that access /Identity/Dockerfile and builds image from it. We can use base image rather than custom Dockerfile but with this approach you can customize much more features of Keycloak like frontend theme and secret keys.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#34;3&#34;</span>  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>services</span>:  
+</span></span><span style=display:flex><span>  <span style=color:#75715e># PostgreSQL for keycloak  </span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-identity-db</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>secured-identity-db  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>postgres:16-alpine  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>6063</span>:<span style=color:#ae81ff>5432</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>expose</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>6063</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./data/secured-identity-db:/var/lib/postgresql/data  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>always  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>environment</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>POSTGRES_PASSWORD=myStrongPassword123  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>POSTGRES_USER=keycloak  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>POSTGRES_DB=keycloak  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>secured-network  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  <span style=color:#75715e># Keycloak  </span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-identity</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>secured-identity  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>build</span>: <span style=color:#ae81ff>./Keycloak  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>command</span>: [<span style=color:#e6db74>&#34;start-dev&#34;</span>]  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>5053</span>:<span style=color:#ae81ff>8080</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>expose</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>environment</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KEYCLOAK_ADMIN=admin  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KEYCLOAK_ADMIN_PASSWORD=admin  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_HOSTNAME_URL=http://localhost:5050/identity  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB=postgres  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB_USERNAME=keycloak  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB_PASSWORD=myStrongPassword123  </span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>KC_DB_URL=jdbc:postgresql://secured-identity-db:5432/keycloak  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>depends_on</span>:   
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>secured-identity-db  </span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:  
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>secured-network  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>networks</span>:  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-network</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>driver</span>: <span style=color:#ae81ff>bridge  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>volumes</span>:  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>secured-data</span>:  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>driver</span>: <span style=color:#ae81ff>local</span>
+</span></span></code></pre></div><p>And we just need to run docker from this docker-compose.yml file.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>docker compose build  
+</span></span><span style=display:flex><span>docker compose up -d
+</span></span></code></pre></div><h2 id=put-keycloak-behind-ocelot-api-gateway-to-protect-resources>Put keycloak behind Ocelot API Gateway to protect resources<a href=#put-keycloak-behind-ocelot-api-gateway-to-protect-resources class=hanchor arialabel=Anchor>&#8983;</a></h2><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/Microservice-architecture-with-Ocelot-and-Keycloak.webp alt="Microservice architecture with Ocelot and Keycloak" loading=lazy><p class=image-sub-title>Microservice architecture with Ocelot and Keycloak</p><p>It is important to secure your identity service (keycloak) and reduce the attack vector by limiting the endpoints that can receive requests like other services. Keycloak admin panel should not be accessed from an external network, only people on this network can access this feature. For further readings consider visit Keycloak documentation about <a href=https://www.keycloak.org/server/reverseproxy>Using a reverse proxy</a>.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/Exposed-path-recommendations.webp alt="Exposed path recommendations" loading=lazy><p class=image-sub-title>Exposed path recommendations</p><p>First, let’s create Ocelot project. I use Dotnet 8</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>dotnet new sln -n Secured  
+</span></span><span style=display:flex><span>dotnet new webapi -o Secured.ApiGateway  
+</span></span><span style=display:flex><span>cd Secured.ApiGateway/  
+</span></span><span style=display:flex><span>dotnet add package Ocelot --version 22.0.1
+</span></span></code></pre></div><p>After we successfully created the project, modify Program.cs as follows and create ocelot.json file in root directory.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Configuration.AddJsonFile(<span style=color:#e6db74>&#34;ocelot.json&#34;</span>, optional: <span style=color:#66d9ef>false</span>, reloadOnChange: <span style=color:#66d9ef>true</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddOcelot(builder.Configuration);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.UseOcelot();  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.RunAsync();
+</span></span></code></pre></div><p>After that, we can use this ocelot.json file to limit access to our keycloak application running on localhost:5053.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;Routes&#34;</span>: [  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/realms/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;http&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;localhost&#34;</span>,  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      ],  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/identity/realms/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span>, <span style=color:#e6db74>&#34;Post&#34;</span>, <span style=color:#e6db74>&#34;Put&#34;</span>, <span style=color:#e6db74>&#34;Delete&#34;</span> ]  
+</span></span><span style=display:flex><span>    },  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/resources/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;http&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;localhost&#34;</span>,  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      ],  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/identity/resources/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ]  
+</span></span><span style=display:flex><span>    },  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/js/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;http&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;localhost&#34;</span>,  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>5053</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      ],  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/identity/js/{everything}&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ]  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  ],  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;GlobalConfiguration&#34;</span>: {  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;BaseUrl&#34;</span>: <span style=color:#e6db74>&#34;https://localhost:5050&#34;</span>  
+</span></span><span style=display:flex><span>  }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>After this configurations you can access keycloak from localhost:5050 that is the API Gateway’s address. After these configurations, you can access keycloak from localhost:5050, which is the address of the API Gateway, but you will not be able to access the Keycloak admin panel through this address because we have limited access.</p><p>For making our Keycloak configurations, we can log in to the admin panel at the keycloak address that is still accessible locally, that is, localhost:5053. Note that in the deployment scenario, we will ensure that only Ocelot has access to the external internet.</p><p>In localhost:5053 we can enter <strong>admin</strong> for username and <strong>admin</strong> for password. We can change this credentials from docker-compose.yml file.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-1.webp alt=Keycloak loading=lazy><p>After logged in we create new realm for managing users and client for our application from this dropdown menu. After clicking the Create realm button, simply enter the <strong>secured</strong> as the realm name and leave everything as is.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-2.webp alt=Keycloak loading=lazy><p>In clients tab click Create client. name Client ID as <strong>postman</strong> and valid redirect uri as <a href=https://oauth.pstmn.io/v1/callback><strong>https://oauth.pstmn.io/v1/callback</strong></a>. leave other things as is.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-3.webp alt=Keycloak loading=lazy><p>In the users tab, add users to log in to Keycloak.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-4.webp alt=Keycloak loading=lazy><p>After these steps we can login to our keycloak with newly created user to get access token. For accessing API gateway I use Postman. In postman you can logged in with Keycloak. In Authorization section select OAuth 2.0 and configure as follows and click Get New Access Token. Postman will open browser window and redirect you to Keycloak login page, enter credentials for your new user. Don’t enter admin credentials, this credentials only valid in master realm.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-txt data-lang=txt><span style=display:flex><span>Grant type: Authorization code  
+</span></span><span style=display:flex><span>Auth URL: http://localhost:5050/identity/realms/secured/protocol/openid-connect/auth  
+</span></span><span style=display:flex><span>Access Token URL: http://localhost:5050/identity/realms/secured/protocol/openid-connect/token  
+</span></span><span style=display:flex><span>Client ID: postman  
+</span></span><span style=display:flex><span>Scope: openid profile roles
+</span></span></code></pre></div><p>If you did everything right, you have successfully authenticated using Postaman with Keycloak behind the API Gateway 🎉</p><h2 id=authenticate-requests-to-other-services>Authenticate requests to other services<a href=#authenticate-requests-to-other-services class=hanchor arialabel=Anchor>&#8983;</a></h2><p>If you want to authenticate a request in Ocelot, make the following updates to Program.cs and ocelot.json. MetadataAddress gets the keys required for JWT validation. However, if you want to avoid extra network calls, you can place the keys in the appsettings.json file and use them.</p><p>Authentication completed with AuthenticationOptions in ocelot.json file, here we say that we will send our JWT token along with the Bearer prefix and JWT token validation done with configuration from Program.cs</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services  
+</span></span><span style=display:flex><span>    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  
+</span></span><span style=display:flex><span>    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, o =&gt;  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        o.MetadataAddress = <span style=color:#e6db74>&#34;http://localhost:5050/identity/realms/secured/.well-known/openid-configuration&#34;</span>;  
+</span></span><span style=display:flex><span>        o.RequireHttpsMetadata = <span style=color:#66d9ef>false</span>;  
+</span></span><span style=display:flex><span>        o.Authority = <span style=color:#e6db74>&#34;http://localhost:5050/realms/secured&#34;</span>;  
+</span></span><span style=display:flex><span>        o.Audience = <span style=color:#e6db74>&#34;account&#34;</span>;  
+</span></span><span style=display:flex><span>    });  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Configuration.AddJsonFile(<span style=color:#e6db74>&#34;ocelot.json&#34;</span>, optional: <span style=color:#66d9ef>false</span>, reloadOnChange: <span style=color:#66d9ef>true</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddOcelot(builder.Configuration);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>app.UseAuthentication();  
+</span></span><span style=display:flex><span>app.UseAuthorization();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.UseOcelot();  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.RunAsync();
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Routes&#34;</span>: [  
+</span></span><span style=display:flex><span>      {  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/get&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;https&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>          {  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;httpbin.org&#34;</span>,  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>443</span>  
+</span></span><span style=display:flex><span>          }  
+</span></span><span style=display:flex><span>        ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/test&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;AuthenticationOptions&#34;</span>: {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;AuthenticationProviderKey&#34;</span>: <span style=color:#e6db74>&#34;Bearer&#34;</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      },  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>//...
+</span></span></span></code></pre></div><h2 id=authorize-requests-to-other-services>Authorize requests to other services<a href=#authorize-requests-to-other-services class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Authorization is slightly more difficult and requires additional work because Keycloak place user roles in nested form in JWT payload. It is something like following. As you can see roles field is placed under realm_access field. This creates confusion in Ocelot, because Ocelot reads claims as string or object values and does not evaluate nested fields. To avoid this problem we configure Keycloak token mapper and don’t use nested form.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>  <span style=color:#75715e>//...  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#f92672>&#34;exp&#34;</span>: <span style=color:#ae81ff>1706600524</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;realm_access&#34;</span>: {  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;roles&#34;</span>: [  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;offline_access&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;default-roles-microcommerce&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;uma_authorization&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;customer&#34;</span>  
+</span></span><span style=display:flex><span>    ]  
+</span></span><span style=display:flex><span>  },  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;resource_access&#34;</span>: {  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;account&#34;</span>: {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;roles&#34;</span>: [  
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;manage-account&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;manage-account-links&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;view-profile&#34;</span>  
+</span></span><span style=display:flex><span>      ]  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  },  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;scope&#34;</span>: <span style=color:#e6db74>&#34;openid email profile&#34;</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;preferred_username&#34;</span>: <span style=color:#e6db74>&#34;berkslv&#34;</span>,  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>For this custom mapping, click Client scopes from left menu and select roles.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-5.webp alt=Keycloak loading=lazy><p>Under the roles, select Mappers section and then click realm roles.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-6.webp alt=Keycloak loading=lazy><p>In the menu that opens, realm_access.roles is entered in the Token Claim Name option. We update this to <strong>realm_roles</strong>.</p><img src=/img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/keycloak-7.webp alt=Keycloak loading=lazy><p>After making these configurations, we update our token by logging in again via Postman. We make the following update in the ocelot.json file so that the requests we make with the updated token are subject to claim control by Ocelot. If we don’t have <strong>customer</strong> role in our user we get 403 response. You can create and assing your custom roles in Keycloak admin panel.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Routes&#34;</span>: [  
+</span></span><span style=display:flex><span>      {  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/get&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;https&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [  
+</span></span><span style=display:flex><span>          {  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;httpbin.org&#34;</span>,  
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>443</span>  
+</span></span><span style=display:flex><span>          }  
+</span></span><span style=display:flex><span>        ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/test&#34;</span>,  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ],  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;AuthenticationOptions&#34;</span>: {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;AuthenticationProviderKey&#34;</span>: <span style=color:#e6db74>&#34;Bearer&#34;</span>  
+</span></span><span style=display:flex><span>        },  
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;RouteClaimsRequirement&#34;</span>: {  
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;realm_roles&#34;</span>: <span style=color:#e6db74>&#34;customer&#34;</span>  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>      },  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>//...
+</span></span></span></code></pre></div><p>If you want to access the source code, you can find the whole project on my GitHub account:</p><p><a href=https://github.com/berkslv/lecture-ocelot-and-keycloak>GitHub - berkslv/lecture-ocelot-and-keycloak</a></p><hr><h2 id=conclusion>Conclusion<a href=#conclusion class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Thank you for reading 🎉 Don&rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on <a href=https://x.com/berkslv>@berkslv</a> to stay connected and join the conversation</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Read other posts</span><hr></div><div class=pagination__buttons><span class="button previous"><a href=https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/><span class=button__icon>←</span>
+<span class=button__text>How to Use RSA for Encryption in JavaScript and Decryption in .NET</span>
+</a></span><span class="button next"><a href=https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/><span class=button__text>How to Secure Dotnet & Vue.js Application with Keycloak</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>

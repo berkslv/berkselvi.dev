@@ -1,0 +1,264 @@
+<!doctype html><html lang=en><head><title>How to Use RSA for Encryption in JavaScript and Decryption in .NET :: Berk Selvi | Software Developer</title>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of…"><meta name=keywords content="rsa,cryptography,.NET,security"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="og:title" content="How to Use RSA for Encryption in JavaScript and Decryption in .NET"><meta property="og:description" content="In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of…"><meta property="og:url" content="https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/icon/favicon.ico"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2024-03-07 00:00:00 +0300 +0300"><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/>home</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>english ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/>home</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h1 class=post-title><a href=https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/>How to Use RSA for Encryption in JavaScript and Decryption in .NET</a></h1><div class=post-meta><span class=post-date>March 7, 2024
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 7 min read (1366 words)</span></div><div class=post-content><div><p>In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of keys: one for encryption and one for decryption. On the other hand, symmetric encryption algorithms, such as AES, use a single key for encryption and decryption. For these reasons, asymmetric encryption algorithms may be preferred in order to use the key publicly and avoid problems even if it falls into the hands of an attacker.</p><p>In this blog post I will guide you through implementing RSA key generation with OpenSSL, encryption in JavaScript and decryption in .NET, ensuring secure data exchange between a frontend application and a backend service.</p><h2 id=understanding-rsa-encryption>Understanding RSA Encryption<a href=#understanding-rsa-encryption class=hanchor arialabel=Anchor>&#8983;</a></h2><p>RSA (Rivest-Shamir-Adleman) is one of the first public-key cryptosystems and is widely used for secure data transmission. It involves two keys: a public key, which can be shared openly, for encrypting messages, and a private key, must be kept secret, for decrypting them. The strength of RSA lies in the difficulty of factoring the product of two large prime numbers, which underpins its security.</p><h2 id=generation-of-publicprivate-key-pairs-with-openssl>Generation of Public/Private key pairs with OpenSSL<a href=#generation-of-publicprivate-key-pairs-with-openssl class=hanchor arialabel=Anchor>&#8983;</a></h2><p>One of the foundational steps in implementing RSA encryption and decryption is the generation of public and private key pairs. OpenSSL, a robust open-source tool for cryptography, offers a straightforward way to generate these keys. However, this step is optional. .NET libraries successfully generate RSA keys. However, using open source tools like this allows us to be ensure of the standards. This section will guide you through the process of generating an RSA public/private key pair using OpenSSL.</p><p>We can start with generation of private key as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ openssl genrsa -out privatekey.pem <span style=color:#ae81ff>2048</span>  
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$ cat privatekey.pem  
+</span></span><span style=display:flex><span>-----BEGIN PRIVATE KEY-----  
+</span></span><span style=display:flex><span>MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDuOitcIPd5UpGN  
+</span></span><span style=display:flex><span>/4GEwNhc4fAmGP6fREJJk/byRgiLiWcyXwdoPwXdXjKSjkSIcETdz/hLAlb6+zNY  
+</span></span><span style=display:flex><span>Gi4Ap0S5flZSRiKh60xWRA4vZVgsLqhEi2IsclSlWu3R7KD5dkBGsyf5xlCfNSs4  
+</span></span><span style=display:flex><span>DbYYMgrXXZxXQ0c4qCikpnEB6OpqSzm19Cwrdq9GwophoAPxnf00d7S+y5QpRa+l  
+</span></span><span style=display:flex><span>Ca70xQ42FxBpMuK76a1g6i+JtmPgTYqXZ0FCMnUEzBq+u3N8LKoNzcSNdrLgvmHQ  
+</span></span><span style=display:flex><span>oOLFA/9BPe34YgLxoCUi+HhEiLSnvgz/Kn1yprvsz37baYizU/YWFG8s80SPmFsY  
+</span></span><span style=display:flex><span>JARxvZiJAgMBAAECggEAEboc42Jln+7Lu34NmIAUKZc7fE5EVjwpVZnP2Lfq510+  
+</span></span><span style=display:flex><span>Y2JsZe64pEAf8cVp5qA6E6pn3scKC2uZZr8t+Kj5xXbX/A/RgGyGte2jA5ZeQQ1o  
+</span></span><span style=display:flex><span>wo7/q3CHiXVyeHpMATwyLMCkoyLFeY9mi6mDiRniMiP6YAj22gmzWoszIhH/rZCO  
+</span></span><span style=display:flex><span>NjdpWRsIkFp8jIiyRhhoaBoJtZ1qV3twk8HH590rgjS7QUGJWK9uUsi5SDh69MsR  
+</span></span><span style=display:flex><span>r/SJ00gTMYFozFd6dB29aKj/p8fSk6qzh2noxU37AuiVc1A2H8Z6SAfRUDSvPkxA  
+</span></span><span style=display:flex><span>FdqVr62iLWmypBX2VYQ2p1pH1N0v8oG7NTxtrxgRTQKBgQD3YdxKNT0dWZJRGPFC  
+</span></span><span style=display:flex><span>DIRZVn86UgDAHRw29aToLARnepE5XOrLSmlGMqbK8vzRyUnlctJyG7x5ure2BMp4  
+</span></span><span style=display:flex><span>gKSLuhz48n7ZvpHyCVnNsqqkc21iM/whL/yKiI11Jz5koXmRDltz9IioQH/PwXvD  
+</span></span><span style=display:flex><span>RJbjxISHjG5YEKlVmztWtTup/QKBgQD2hqouE8JLePAUzK3SlfgVTlmaHDUeJev4  
+</span></span><span style=display:flex><span>u95RWPnMNOOwLUWbGYiKBoJ8uc2nSHmxIvEvEPGNwafR6etf0YocpwDfF5pnPDjk  
+</span></span><span style=display:flex><span>yA4hOdZrCyYa/UDqkB5pHTOZj5iVct1hBNbiANz6kL7Pl+H221U+HxD9rhaDPDez  
+</span></span><span style=display:flex><span>gdYPhLF4fQKBgQCdi2QomlkufOHS5eiXoLMU1iI2eQzjTGawlaYM+iNf503fU05w  
+</span></span><span style=display:flex><span>YxZCT3WroC3kSKXYC1T8uK9CcugWclyje4HPPpq+7GhesZ/unYfkmRlVm/EYbnTu  
+</span></span><span style=display:flex><span>icnyS96Ssohou/FYsOULJrt1M4ZyQA1aoS7bJUclsAiB6zJ8Q1z57ndt3QKBgEwa  
+</span></span><span style=display:flex><span>9p6S6wBxrWw+Y8sHETdCoNa6rotIGbkIBnIGjddE3KWe1EY1c7lomQ/4LEzgSvEs  
+</span></span><span style=display:flex><span>YFivWmLwzeY32LoT7hc6V0KH/tqv9MBsIjCPsmoJXxIl7Mx9AWZh5XQaqHg6pa01  
+</span></span><span style=display:flex><span>2UCcE5wm40EjGlcjDwXGgXBPNhP9mxSHmJXh2QfhAoGANouUrF3qv8ofb1HGrUXx  
+</span></span><span style=display:flex><span>DO/WkGMzwbkNmwwdgcGYVsGr3Dv/zx1y3TJEvqNh0ViVgmfdYveCo3VrSawq890U  
+</span></span><span style=display:flex><span>GJZXld2KFE1icEJpNoURkM9okZMzTDIMs+r4vq5Or2jB04mMuoCbG6rjfqUMtkll  
+</span></span><span style=display:flex><span>oAIFOSKH+F3TrXjNgy4/juo<span style=color:#f92672>=</span>  
+</span></span><span style=display:flex><span>-----END PRIVATE KEY-----
+</span></span></code></pre></div><p>After we have successfully created the private key, we can create the public key with the private key we created.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ openssl rsa -in privatekey.pem -outform PEM -pubout -out publickey.pem  
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>$ cat privatekey.pem  
+</span></span><span style=display:flex><span>-----BEGIN PUBLIC KEY-----  
+</span></span><span style=display:flex><span>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7jorXCD3eVKRjf+BhMDY  
+</span></span><span style=display:flex><span>XOHwJhj+n0RCSZP28kYIi4lnMl8HaD8F3V4yko5EiHBE3c/4SwJW+vszWBouAKdE  
+</span></span><span style=display:flex><span>uX5WUkYioetMVkQOL2VYLC6oRItiLHJUpVrt0eyg+XZARrMn+cZQnzUrOA22GDIK  
+</span></span><span style=display:flex><span>112cV0NHOKgopKZxAejqaks5tfQsK3avRsKKYaAD8Z39NHe0vsuUKUWvpQmu9MUO  
+</span></span><span style=display:flex><span>NhcQaTLiu+mtYOovibZj4E2Kl2dBQjJ1BMwavrtzfCyqDc3EjXay4L5h0KDixQP/  
+</span></span><span style=display:flex><span>QT3t+GIC8aAlIvh4RIi0p74M/yp9cqa77M9+22mIs1P2FhRvLPNEj5hbGCQEcb2Y  
+</span></span><span style=display:flex><span>iQIDAQAB  
+</span></span><span style=display:flex><span>-----END PUBLIC KEY-----
+</span></span></code></pre></div><h2 id=setting-up-the-environment-for-net-rsa-decryption>Setting Up the Environment for .NET RSA Decryption<a href=#setting-up-the-environment-for-net-rsa-decryption class=hanchor arialabel=Anchor>&#8983;</a></h2><p>For .NET decryption I will use .NET 8 and use the System.Security.Cryptography namespace. We don’t need any other nuget package for RSA decryption. For RSA Decryption I created a Helper class like this.</p><p>We read RsaKey from appsettings.json. You should add \n for newlines in RsaKey field. We put this key in appsettings.json because we want to use same keys in every request. But If you leave it to the responsibility of the .NET library, in every startup there will be newly generated key.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span><span style=color:#75715e>// appsettings.json  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>{  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;Logging&#34;</span>: {  
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;LogLevel&#34;</span>: {  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;Default&#34;</span>: <span style=color:#e6db74>&#34;Information&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;Microsoft.AspNetCore&#34;</span>: <span style=color:#e6db74>&#34;Warning&#34;</span>  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  },  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;AllowedHosts&#34;</span>: <span style=color:#e6db74>&#34;*&#34;</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;RsaKey&#34;</span>: <span style=color:#e6db74>&#34;-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCuan+y++Eqc2Vx3QIt9gv0r6rzfcxpsBRubcWCmI+8tqb40oflv5dViPSiCSWNgg5xKk7K8WTeEQQ6NDg1IJ2OwoQ2dfzat5qlpfV9EeF3u8iTY/hyQaaYFwB77cV9t5Czb8oG/+IIOByorJVds9tAoKjssKUZ3W9IU7ffElZjZrbjoiy/H4z8u9fOq8IL9Zf3pHgzv2FxF4BPJamqr4s1VtMqGJ5g18wV1OD9gcz9pJOHHUVieZ0+xP4WD4+1wCv/uwEgIcqmEs0os6birHZL1X/CSqBSPc8e/+kkZyyzoF+MBWPzvAwmW32alIxz2ZV0Z+jJtoOrh/qVqbrGAf+RAgMBAAECggEAEWYu4IJHg0ZZOZtgRwj7RtjKXzluraFi3GRHdoB1IFCBRiOsamMrO91qeAqdDCmL+saLbyvXEd8VMqA4djZPeWkWqt8ozwHPY9RzMZuZyCm7t9Zad71sWtI6mmJNF/46qWfOudWHbSX51+rFiMAzMFaGm3wAsFyaaBbv6gkohIhVrrMvpIuV8X8JNI8/VNlOR6vExHd/3uWKi8vPrFEFTNQ1UE+WJDkVojcmx0t63jlP8C/O4ofaJeCYRkAaM9+FXnM+jVNf0qZU+3JGYmy1R/B7L+LyrbG2uYTaBa1Ba9zGsXD1HQ4dctK+MltBd4p+MWgHAQV+xuVmGGDkylpb8QKBgQDP9zY4UzLmnt0werJF9SGmAJU51Y/+gannUC/+XYqnK/NA5iUDR86rlYCJbqQCceyMYJSYuePumygWOVL9rHnu1/fTMG/sXnRktmTSFemgeCYfPyn8/KeZKn6E5xw8GbtfLJLA8uM4DakDf9vSpilKDYT4UbZyKgq7/yodPXbgCQKBgQDWs4gL4yOtDLAY/OQKZvoyXClapldkVFRzf97pBJQGLYfdTzkVFviWsgI/yrA+t5tlzaWtZieuv2KsSmazVyO2W5ei9HILx4yRFK7K56OM5o7wqjN62ZmF0R+422YNaAyqYAd9nhLjgdsrmZ9FTxhQ91asBSH1AO3j6xaZUvh1SQKBgAZuo/ur/xgI89hrAxaM1WSYAgWO6Gw7wHCKF2HrrL0s69InDCAE2YyPDDGz/ViiA2n4FsB+h2E65UuCrGFyMzdC8MRUbDHIXhs7VPT2fopbDPrMblUHz3s6SD1+FG57cUMpUsSq/oIeUgrsqnTidMZ4kpNHm7f+OuTDqJ7M5t9ZAoGAAfm2570YR/BU8nXpNztJVAtLCh17sl2gRUvI5kX3grMKi/u9n7cNZH2Qzbt0sa8Iy///ZUAKX249Xy50EXRczMG8/G/ZWMhmP7N8BDvrYlGAwTAftyKnafbJnu7N2pO5ghvOFdbNf7BjLtyD/aRDqgMMlhqZ/GIczjsMgy6jQJkCgYATxkjdW/mnWLDDZAYm1V10Gnm7YDMwX3gKdhpoYleeeapZiDlurkR3YAEvQezcnhv3NpjaKQtF1/3Q0fZJ0wBc5FflaevHRjHTa0IrU5QIa48dLDx+jxn+cUCFx9kirkb7JcfJLZWtToPMLfCZt324P2ogZgWBwweVPiz1/voEXw==\n-----END PRIVATE KEY-----&#34;</span>  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// Helpers/RsaEncryptionHelper.cs  </span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>RsaEncryptionHelper</span>  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> RSA _rsa = RSA.Create();  
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> RsaEncryptionHelper(IConfiguration configuration)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> privateKeyPem = configuration[<span style=color:#e6db74>&#34;RsaKey&#34;</span>];  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (<span style=color:#66d9ef>string</span>.IsNullOrEmpty(privateKeyPem)) <span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> ArgumentNullException(nameof(privateKeyPem));  
+</span></span><span style=display:flex><span>        ImportKey(privateKeyPem);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>     
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> ImportKey(<span style=color:#66d9ef>string</span> privateKey)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _rsa.ImportFromPem(privateKey.ToCharArray());  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> GetPublicKey()  
+</span></span><span style=display:flex><span>    {   
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> publicKey = _rsa.ExportSubjectPublicKeyInfoPem();  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> publicKey;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> GetPrivateKey()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> privateKey = _rsa.ExportPkcs8PrivateKeyPem();  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> privateKey;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Encrypt(<span style=color:#66d9ef>string</span> data)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> dataBytes = Encoding.UTF8.GetBytes(data);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> encryptedData = _rsa.Encrypt(dataBytes, RSAEncryptionPadding.OaepSHA256);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Convert.ToBase64String(encryptedData);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Decrypt(<span style=color:#66d9ef>string</span> data)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> dataBytes = Convert.FromBase64String(data);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> decryptedData = _rsa.Decrypt(dataBytes, RSAEncryptionPadding.OaepSHA256);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Encoding.UTF8.GetString(decryptedData);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>And use this helper class inside of EncryptionController to use helper class’s methods. In production enviroments You should not be expose PrivateKey to anyone. This should be kept secret.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// Controllers/EncryptionController.cs  </span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;api/[controller]</span><span style=color:#e6db74>&#34;)]  
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>EncryptionController</span> : ControllerBase  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> RsaEncryptionHelper _rsaEncryptionHelper;  
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> EncryptionController(RsaEncryptionHelper rsaEncryptionHelper)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _rsaEncryptionHelper = rsaEncryptionHelper;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>      
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpPost(&#34;Encrypt&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Encrypt([FromBody] EncryptionRequest request)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _rsaEncryptionHelper.Encrypt(request.Data);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>      
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpPost(&#34;Decrypt&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Decrypt([FromBody] EncryptionRequest request)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _rsaEncryptionHelper.Decrypt(request.Data);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>      
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;PublicKey&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> PublicKey()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _rsaEncryptionHelper.GetPublicKey();  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>      
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;PrivateKey&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> PrivateKey()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _rsaEncryptionHelper.GetPrivateKey();  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>      
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpPost(&#34;ImportKey&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> ImportKey([FromBody] ImportKeyRequest request)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _rsaEncryptionHelper.ImportKey(request.PrivateKey);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>      
+</span></span><span style=display:flex><span>}  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>record</span> <span style=color:#a6e22e>ImportKeyRequest</span>  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> PrivateKey { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>init</span>; } = <span style=color:#66d9ef>null</span>!;  
+</span></span><span style=display:flex><span>}  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>record</span> <span style=color:#a6e22e>EncryptionRequest</span>  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Data { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>init</span>; } = <span style=color:#66d9ef>null</span>!;  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>After this development we made in the backend side we can continue to JavaScript side. Thanks to all we’ve done we share our public key from endpoint with client, then clients could use this public key to encrypt their data for secure transmission between sides.</p><h2 id=setting-up-the-development-environment-for-javascript-rsa-encryption>Setting Up the Development environment for JavaScript RSA Encryption<a href=#setting-up-the-development-environment-for-javascript-rsa-encryption class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Before diving into the code, ensure your environment is set up for JavaScript development. For this example, we’ll use the Web Crypto API, which is built into modern browsers and provides cryptographic operations including RSA encryption. Therefore you don’t need to download any npm packages.</p><p>If I am going to develop a browser application with JavaScript, I usually start with Vite. To do this, we can start a project using vanilla js or React by entering the following command. I will develop a small React project for demonstration purposes, but it will be enough even if you stick with vanilla js.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>npm create vite@latest
+</span></span></code></pre></div><p>After that I will create a src/utils/RsaEncryptionHelper.js file and fill that file as follows. With this file’s methods you can encrypt and decrypt with RSA algorithm but usually decryption is a resposibility of backend side because decryption requires private key and javascript client’s should not be store or access private keys publicly because of security reasons. But I am sharing this in case anyone wants to try something similar to two-way key encryption like in the SSL.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=display:flex><span><span style=color:#75715e>// src/utils/RsaEncryptionHelper.js  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encryptAlgorithm</span> <span style=color:#f92672>=</span> {  
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;RSA-OAEP&#34;</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>modulusLength</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>2048</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>publicExponent</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Uint8Array</span>([<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>]),  
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>extractable</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span>,  
+</span></span><span style=display:flex><span>  <span style=color:#a6e22e>hash</span><span style=color:#f92672>:</span> {  
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;SHA-256&#34;</span>,  
+</span></span><span style=display:flex><span>  },  
+</span></span><span style=display:flex><span>};  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>arrayBufferToBase64</span>(<span style=color:#a6e22e>arrayBuffer</span>) {  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>byteArray</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Uint8Array</span>(<span style=color:#a6e22e>arrayBuffer</span>);  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>byteString</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>;  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span> <span style=color:#a6e22e>byteArray</span>.<span style=color:#a6e22e>byteLength</span>; <span style=color:#a6e22e>i</span><span style=color:#f92672>++</span>) {  
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>byteString</span> <span style=color:#f92672>+=</span> String.<span style=color:#a6e22e>fromCharCode</span>(<span style=color:#a6e22e>byteArray</span>[<span style=color:#a6e22e>i</span>]);  
+</span></span><span style=display:flex><span>  }  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>b64</span> <span style=color:#f92672>=</span> window.<span style=color:#a6e22e>btoa</span>(<span style=color:#a6e22e>byteString</span>);  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>b64</span>;  
+</span></span><span style=display:flex><span>}  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>base64StringToArrayBuffer</span>(<span style=color:#a6e22e>b64str</span>) {  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>byteStr</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>atob</span>(<span style=color:#a6e22e>b64str</span>);  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>bytes</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Uint8Array</span>(<span style=color:#a6e22e>byteStr</span>.<span style=color:#a6e22e>length</span>);  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span> <span style=color:#a6e22e>byteStr</span>.<span style=color:#a6e22e>length</span>; <span style=color:#a6e22e>i</span><span style=color:#f92672>++</span>) {  
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>bytes</span>[<span style=color:#a6e22e>i</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>byteStr</span>.<span style=color:#a6e22e>charCodeAt</span>(<span style=color:#a6e22e>i</span>);  
+</span></span><span style=display:flex><span>  }  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>bytes</span>.<span style=color:#a6e22e>buffer</span>;  
+</span></span><span style=display:flex><span>}  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>convertPemToArrayBuffer</span>(<span style=color:#a6e22e>pem</span>) {  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>lines</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>pem</span>.<span style=color:#a6e22e>split</span>(<span style=color:#e6db74>&#34;\n&#34;</span>);  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>encoded</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;&#34;</span>;  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span> <span style=color:#a6e22e>lines</span>.<span style=color:#a6e22e>length</span>; <span style=color:#a6e22e>i</span><span style=color:#f92672>++</span>) {  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>trim</span>().<span style=color:#a6e22e>length</span> <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span>  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>indexOf</span>(<span style=color:#e6db74>&#34;-----BEGIN RSA PRIVATE KEY-----&#34;</span>) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span>  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>indexOf</span>(<span style=color:#e6db74>&#34;-----BEGIN PRIVATE KEY-----&#34;</span>) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span>  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>indexOf</span>(<span style=color:#e6db74>&#34;-----BEGIN PUBLIC KEY-----&#34;</span>) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span>  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>indexOf</span>(<span style=color:#e6db74>&#34;-----END RSA PRIVATE KEY-----&#34;</span>) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span>  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>indexOf</span>(<span style=color:#e6db74>&#34;-----END PRIVATE KEY-----&#34;</span>) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>&amp;&amp;</span>  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>indexOf</span>(<span style=color:#e6db74>&#34;-----END PUBLIC KEY-----&#34;</span>) <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span>  
+</span></span><span style=display:flex><span>    ) {  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>encoded</span> <span style=color:#f92672>+=</span> <span style=color:#a6e22e>lines</span>[<span style=color:#a6e22e>i</span>].<span style=color:#a6e22e>trim</span>();  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  }  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>base64StringToArrayBuffer</span>(<span style=color:#a6e22e>encoded</span>);  
+</span></span><span style=display:flex><span>}  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>export</span> <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encryptRsa</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>async</span> (<span style=color:#a6e22e>str</span>, <span style=color:#a6e22e>pemString</span>) =&gt; {  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>try</span> {  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// convert string into ArrayBuffer  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encodedPlaintext</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>TextEncoder</span>().<span style=color:#a6e22e>encode</span>(<span style=color:#a6e22e>str</span>).<span style=color:#a6e22e>buffer</span>;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>keyArrayBuffer</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>convertPemToArrayBuffer</span>(<span style=color:#a6e22e>pemString</span>);  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// import public key  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>secretKey</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>importKey</span>(  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;spki&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>keyArrayBuffer</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>encryptAlgorithm</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>true</span>,  
+</span></span><span style=display:flex><span>      [<span style=color:#e6db74>&#34;encrypt&#34;</span>]  
+</span></span><span style=display:flex><span>    );  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// encrypt the text with the public key  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encrypted</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>encrypt</span>(  
+</span></span><span style=display:flex><span>      {  
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;RSA-OAEP&#34;</span>,  
+</span></span><span style=display:flex><span>      },  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>secretKey</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>encodedPlaintext</span>  
+</span></span><span style=display:flex><span>    );  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// store data into base64 string  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>arrayBufferToBase64</span>(<span style=color:#a6e22e>encrypted</span>);  
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>catch</span> (<span style=color:#a6e22e>error</span>) {  
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>error</span>(<span style=color:#e6db74>&#34;Encryption Error:&#34;</span>, <span style=color:#a6e22e>error</span>);  
+</span></span><span style=display:flex><span>  }  
+</span></span><span style=display:flex><span>};  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>export</span> <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>decryptRsa</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>async</span> (<span style=color:#a6e22e>str</span>, <span style=color:#a6e22e>pemString</span>) =&gt; {  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>try</span> {  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// convert base64 encoded input string into ArrayBuffer  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encodedPlaintext</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>base64StringToArrayBuffer</span>(<span style=color:#a6e22e>str</span>);  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>keyArrayBuffer</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>convertPemToArrayBuffer</span>(<span style=color:#a6e22e>pemString</span>);  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// import private key  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>secretKey</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>importKey</span>(  
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;pkcs8&#34;</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>keyArrayBuffer</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>encryptAlgorithm</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>true</span>,  
+</span></span><span style=display:flex><span>      [<span style=color:#e6db74>&#34;decrypt&#34;</span>]  
+</span></span><span style=display:flex><span>    );  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// decrypt the text with the public key  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>decrypted</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>decrypt</span>(  
+</span></span><span style=display:flex><span>      {  
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;RSA-OAEP&#34;</span>,  
+</span></span><span style=display:flex><span>      },  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>secretKey</span>,  
+</span></span><span style=display:flex><span>      <span style=color:#a6e22e>encodedPlaintext</span>  
+</span></span><span style=display:flex><span>    );  
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// decode the decrypted ArrayBuffer output  
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>uint8Array</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Uint8Array</span>(<span style=color:#a6e22e>decrypted</span>);  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>textDecoder</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>TextDecoder</span>();  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>decodedString</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>textDecoder</span>.<span style=color:#a6e22e>decode</span>(<span style=color:#a6e22e>uint8Array</span>);  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>decodedString</span>;  
+</span></span><span style=display:flex><span>  } <span style=color:#66d9ef>catch</span> (<span style=color:#a6e22e>error</span>) {  
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>error</span>(<span style=color:#e6db74>&#34;Decryption Error:&#34;</span>, <span style=color:#a6e22e>error</span>);  
+</span></span><span style=display:flex><span>  }  
+</span></span><span style=display:flex><span>};
+</span></span></code></pre></div><p>I developed a small React project using this helper methods. You can use your public and private keys that will be shared from .NET API to encrypt and decrypt data, but keep in mind decryption should be doing in backend side with private key that kept secret.</p><a href=https://lecture-rsa-dotnet-javascript.vercel.app target=_blank><img src=/img/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/rsa-encryption.webp alt="RSA Encryption (lecture-rsa-dotnet-javascript.vercel.app)" loading=lazy><p class=image-sub-title>RSA Encryption (lecture-rsa-dotnet-javascript.vercel.app)</p></a><p>If you want to access the source code, you can find the whole project on my GitHub account:</p><p><a href=https://github.com/berkslv/lecture-rsa-dotnet-javascript>GitHub - berkslv/lecture-rsa-dotnet-javascript</a></p><hr><h2 id=conclusion>Conclusion<a href=#conclusion class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Thank you for reading 🎉 Don&rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on <a href=https://x.com/berkslv>@berkslv</a> to stay connected and join the conversation</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Read other posts</span><hr></div><div class=pagination__buttons><span class="button next"><a href=https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/><span class=button__text>How to use Ocelot and Keycloak together to secure Microservices from API Gateway</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>
