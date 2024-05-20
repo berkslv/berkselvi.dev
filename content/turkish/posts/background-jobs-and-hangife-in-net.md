@@ -1,10 +1,10 @@
 +++
 title = ".NET ile Background jobs ve Hangfire"
-date = "2024-09-17T00:00:00+03:00"
+date = "2023-09-17T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-keywords = [".NET","hangfire","background jobs"]
-description = ".NET'te arka plan işlerini yönetme hakkında Task.Run(), Hosted Service ve Hangfire gibi çeşitli yöntemlerle ilgili bilgi edinin. Bu kapsamlı blog yazısı, avantajları, dezavantajları ve uygulama detaylarıyla birlikte Hangfire'a odaklanarak bu yöntemleri inceliyoruz."
+keywords = [".NET","hangfire","background jobs"] 
+description = ".NET'te arka plan işlerini yönetme hakkında Task.Run(), Hosted Service ve Hangfire gibi çeşitli yöntemlerle ilgili bilgi edinin. Bu kapsamlı blog yazısı, avantajları, dezavantajları ve uygulama detaylarıyla birlikte Hangfire'a odaklanarak bu yöntemleri inceliyoruz." 
 showFullContent = false
 readingTime = true
 +++

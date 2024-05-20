@@ -1,10 +1,10 @@
 +++
-title = "Background jobs and Hangfire in .Net"
-date = "2024-09-17T00:00:00+03:00"
+title = "Background jobs and Hangfire in .NET"
+date = "2023-09-17T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
-keywords = [".NET","hangfire","background jobs"]
-description = "Learn about managing background jobs in .Net with various methods like Task.Run(), Hosted Service, and Hangfire. This comprehensive blog post explores their pros, cons, and implementation details, with a focus on Hangfire..."
+keywords = [".NET","hangfire","background jobs"] 
+description = "Learn about managing background jobs in .NET with various methods like Task.Run(), Hosted Service, and Hangfire. This comprehensive blog post explores their pros, cons, and implementation details, with a focus on Hangfire..." 
 showFullContent = false
 readingTime = true
 +++
