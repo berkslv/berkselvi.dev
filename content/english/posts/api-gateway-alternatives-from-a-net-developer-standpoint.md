@@ -498,9 +498,7 @@ KrakenD is an API gateway product developed with Go and has both community and e
 
 Since KrakenD does not use a database, it does not create confusion when deciding on deployment options. We can perform our operations using only configuration files. However, it does not have an admin panel due to the lack of a database. The absence of a database eliminates additional error sources and provides easier scalability.
 
-All configurations are managed through a configuration file that can be tracked
-
- with git. It supports different file formats like JSON, YAML, and TOML. We can quickly create configurations using the interface on KrakenD's website. In a local development environment, you can quickly start and make requests to your service, as it only works through the configuration file. With the hot reload feature, you can update the configuration file with a short downtime. However, this method is not recommended for production environments; using GitOps methods to create a new release is advised. The enterprise version includes additional features such as OpenAPI importer and exporter, gzip compression, and response validation.
+All configurations are managed through a configuration file that can be tracked via version control systems such as Git. It supports different file formats like JSON, YAML, and TOML. We can quickly create configurations using the interface on KrakenD's website. In a local development environment, you can quickly start and make requests to your service, as it only works through the configuration file. With the hot reload feature, you can update the configuration file with a short downtime. However, this method is not recommended for production environments; using GitOps methods to create a new release is advised. The enterprise version includes additional features such as OpenAPI importer and exporter, gzip compression, and response validation.
 
 <img src="/img/api-gateway-alternatives-from-a-net-developer-standpoint/krakend-designer.png" alt="KrakenD designer" loading="lazy" />
 
