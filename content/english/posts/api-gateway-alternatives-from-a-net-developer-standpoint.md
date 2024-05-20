@@ -27,7 +27,7 @@ When evaluating API Gateway alternatives that we can use in our systems, we need
 
 First, we will examine the .NET-based YARP and Ocelot API gateway products, which can be customized with C#, then talk about Kong and Apache APISIX, which use the OpenResty (nginx and lua) combination. Finally, we will look at KrakenD, which is frequently used in cloud-native environments and developed with Go. All these options can be used open source for free, but we can get enterprise support for Kong, Apache APISIX, and KrakenD if needed.
 
-Before evaluating our options, I developed a very simple .NET API service that simulates database queries by waiting for 1 second. After putting this service behind the API Gateway, we will try to route requests and perform performance tests using the Apache Benchmark tool. To examine resource consumption more closely, we will run this application with other gateways using docker compose and receive responses from the service at address:8080.
+Before evaluating our options, I developed a very simple .NET API service that simulates database queries by waiting for 1 second. After putting this service behind the API Gateway, we will try to route requests and perform performance tests using the Apache Benchmark tool. To examine resource consumption more closely, we will run this application with other gateways using docker compose and receive responses from the service at service:8080.
 
 ```csharp
 // Program.cs
@@ -58,11 +58,11 @@ app.Run();
 
 ## .NET Based
 
-As .NET developers, we can start by examining the YARP and Ocelot API Gateway products that can be developed with .NET technologies, which usually come to mind first. While these options can compete with other competitors in very simple scenarios in terms of performance, they cannot respond to complex needs such as resource consumption and admin dashboard.
+As .NET developers, we can start by examining the YARP and Ocelot API Gateway products that can be developed with .NET technologies, which usually come to mind first. While these options can compete with other competitors in very simple scenarios in terms of performance, they cannot respond to complex needs such as minimal resource consumption and admin dashboard.
 
 ### YARP
 
-Microsoft's YARP (Yet Another Reverse Proxy) stands out as a reverse proxy product and can also be used as an API Gateway. It caught my attention because it is used as an API Gateway in the eShop example microservice projects published by Microsoft on GitHub. YARP provides load balancing support and can route requests to services using algorithms like round robin by obtaining the addresses of these services through service discovery methods. Since it is .NET-based, processes such as authorization, rate limiting, distributed tracing, and logging that can be used in standard .NET API projects can also be easily implemented with familiar methods. Additionally, customizations can be made by adding middleware, and HTTP requests can be converted to gRPC requests.
+Microsoft's YARP (Yet Another Reverse Proxy) stands out as a reverse proxy product and can also be used as an API Gateway. It caught my attention because it is used as an API Gateway in the eShop example microservice projects published by Microsoft on [GitHub](https://github.com/dotnet/eShop). YARP provides load balancing support and can route requests to services using algorithms like round robin by obtaining the addresses of these services through service discovery methods. Since it is .NET-based, processes such as authorization, rate limiting, distributed tracing, and logging that can be used in standard .NET API projects can also be easily implemented with familiar methods. Additionally, customizations can be made by adding middleware, and HTTP requests can be converted to gRPC requests.
 
 To create a YARP project, after creating a .NET web API project, you include the Yarp.ReverseProxy package in the application and configure it to start routing requests.
 
