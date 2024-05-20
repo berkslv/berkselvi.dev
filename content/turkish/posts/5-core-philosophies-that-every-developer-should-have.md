@@ -1,6 +1,6 @@
 +++
 title = "Her Geliştiricinin Sahip Olması Gereken 5 Temel Felsefe"
-date = "2022-03-09T11:01:10+03:00"
+date = "2021-09-26T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["öğrenme", "çalışma", "bilgi"]

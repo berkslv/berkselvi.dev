@@ -1,6 +1,6 @@
 +++
 title = "5 Core Philosophies That Every Developer Should Have"
-date = "2021-09-26T11:01:10+03:00"
+date = "2021-09-26T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["learning", "study", "knowledge"]
