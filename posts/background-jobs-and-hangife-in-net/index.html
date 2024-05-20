@@ -1,0 +1,261 @@
+<!doctype html><html lang=en><head><title>Background jobs and Hangfire in .NET :: Berk Selvi | Software Developer</title>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Learn about managing background jobs in .NET with various methods like Task.Run(), Hosted Service, and Hangfire. This comprehensive blog post explores their pros, cons, and implementation details, with a focus on Hangfire..."><meta name=keywords content=".NET,hangfire,background jobs"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="og:title" content="Background jobs and Hangfire in .NET"><meta property="og:description" content="Learn about managing background jobs in .NET with various methods like Task.Run(), Hosted Service, and Hangfire. This comprehensive blog post explores their pros, cons, and implementation details, with a focus on Hangfire..."><meta property="og:url" content="https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/icon/favicon.ico"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2023-09-17 00:00:00 +0300 +0300"><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/>home</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>english ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/>home</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h4>For turkish translation;</h4><a href=/tr/posts/background-jobs-and-hangife-in-net/>.NET ile Background jobs ve Hangfire</a><h1 class=post-title><a href=https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/>Background jobs and Hangfire in .NET</a></h1><div class=post-meta><span class=post-date>September 17, 2023
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 8 min read (1697 words)</span></div><div class=post-content><div><p>When developing an application in the .Net ecosystem, when things get complicated, we may need some of our methods to go to multiple services, evaluate their responses, and report these results to different services and this takes long time! We do not want to waste resources by placing such long-running methods behind an endpoint and keeping our TCP connection open for the response from that HTTP request. We can call this usage on demand job because it will run when a request is made. We may also want it to run automatically at certain times of the day or week, without putting it behind an endpoint; in this case, we can call it a recurring job. In such cases, we use “background job” by starting our work on a different thread other than the main thread where the application runs.</p><p>There are many different methods of managing background jobs in .Net. This will be a blog post where I will talk about them step by step, how they solve problems and what problems they cause us, and give in-depth usage examples in Hangfire, which is the package I like the most when dealing with background jobs. You can also access all the codes from the repo:</p><p><a href=https://github.com/berkslv/lecture-dotnet-background-jobs>GitHub - berkslv/lecture-dotnet-background-jobs</a></p><h2 id=taskrun>Task.Run()<a href=#taskrun class=hanchor arialabel=Anchor>&#8983;</a></h2><p>We can create a new thread and run a method on it with the Task.Run() method, which is the first solution that comes to my mind when I need a background job. I have a method that has dependencies on many external services that can take up to 5 minutes to complete, and I was calling this method with an HTTP request through a controller that I created, but answering this request was problematic because it is required a TCP connection to remain open for 5 minutes, so instead when I called the method, If started successfully, I had to notify the client that the process was started successfully with a 200 status code.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// TestService.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestService</span> : ITestService  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ILogger&lt;TestService&gt; _logger;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> TestService(ILogger&lt;TestService&gt; logger)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger = logger;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>bool</span> RunTests()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} RunTests is started&#34;</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>        Thread.Sleep(<span style=color:#ae81ff>5000</span>);  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} RunTests is finished&#34;</span>);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// Program.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddTransient&lt;ITestService, TestService&gt;();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span></code></pre></div><p>If I do not make the execution by calling with the Task.Run(), the request to my /job endpoint will be loading for 3 seconds in browser for this example.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// JobController.cs  </span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;[controller]</span><span style=color:#e6db74>&#34;)]  
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>JobController</span> : ControllerBase  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ITestService _testService;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> JobController(ITestService testService)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _testService = testService;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Get()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _testService.RunTests();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Ok&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>If I use Task.Run instead as below, the controller will respond ok and my RunTests method will continue to run in the background.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#a6e22e>[HttpGet]</span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> IActionResult Get()  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    Task.Run(() =&gt; {  
+</span></span><span style=display:flex><span>        _testService.RunTests();  
+</span></span><span style=display:flex><span>    });  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Ok&#34;</span>);  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=pros>Pros<a href=#pros class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>We can run a process in the background on demand.</li><li>Does not require an additional package.</li></ul><h3 id=cons>Cons<a href=#cons class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>It does not support recurring in its current state, a special system must be developed.</li><li>When Dependency Injection is used, since the injected interfaces will remain on the main thread, we may need to re-generate the required interface through the Service scope.</li><li>What happens if an error is throwed while running the Method?</li></ul><h2 id=hosted-service>Hosted Service<a href=#hosted-service class=hanchor arialabel=Anchor>&#8983;</a></h2><p>We had to develop our own system to manage recurring jobs, which we could not implement in our previous example, but with the Hosted service, we do not need to develop this management ourselves, instead we call our <code>AddHostedService</code> method in Program.cs as follows and inherit our TestService class from the BackgroundService class. In this example, our RunTests method will run every 10 seconds. This time interval is set from the ExecuteAsync method inherited from BackgroundService abstract class.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// Program.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddHostedService&lt;TestService&gt;();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// TestService.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestService</span> : BackgroundService, ITestService  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ILogger&lt;TestService&gt; _logger;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> TestService(ILogger&lt;TestService&gt; logger)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger = logger;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>bool</span> RunTests(TestType testType)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> type = Enum.GetName(<span style=color:#66d9ef>typeof</span>(TestType), testType);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is started&#34;</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>        Thread.Sleep(<span style=color:#ae81ff>5000</span>);  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is finished&#34;</span>);  
+</span></span><span style=display:flex><span>          
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task ExecuteAsync(CancellationToken stoppingToken)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> timer = <span style=color:#66d9ef>new</span> PeriodicTimer(TimeSpan.FromSeconds(<span style=color:#ae81ff>10</span>));  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>while</span> (<span style=color:#66d9ef>await</span> timer.WaitForNextTickAsync(stoppingToken))  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            RunTests(TestType.Recurring);  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>However, if we want to run our method on demand, we work on a new thread with the help of the Task.Run() method, so we do not need to make any changes to JobController.cs.</p><h3 id=pros-1>Pros<a href=#pros-1 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>Provides recurring job management</li><li>No need to install additional packages</li></ul><h3 id=cons-1>Cons<a href=#cons-1 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>It does not have a system for on demand operation.</li><li>What happens if an error is received while running the Method?</li></ul><h2 id=hangfire>Hangfire<a href=#hangfire class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Hangfire makes our job much easier to manage on demand and recurring jobs through a single system. With the Job Storage system, which is not available in the other two methods, if the application is not running at that moment but the cron job has expired, it automatically runs the relevant job. We can run specific jobs and delete that job with the ID information provided during job creation. Additionally, we can monitor currently running jobs via a dashboard at /hangfire.</p><img src=/img/background-jobs-and-hangife-in-net/hangfire-dashboard.webp alt="Hangfire dashboard" loading=lazy><p class=image-sub-title>Hangfire dashboard</p><p>Hangfire officially supports the Sql Server database, but with an open source extension, frequently preferred databases such as Sqlite and Postgresql can also be used. In addition, Hangfire, with its paid version, also meets enterprise needs such as Redis database support and running batch jobs.</p><p><a href=https://www.hangfire.io/extensions.html>Hangfire – Background Jobs for .NET and .NET Core</a></p><p>After this brief introduction to Hangfire, let’s briefly talk about how we can use Hangfire in our application and its capabilities. In our example, we will use Postgresql as Job storage, but you can choose any database you want from the link above. After installing the following packages in our application and setting up a Postgre SQL database with docker, let’s move on to our code.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>dotnet add package Hangfire  
+</span></span><span style=display:flex><span>dotnet add package Hangfire.Core  
+</span></span><span style=display:flex><span>dotnet add package Hangfire.PostgreSql   
+</span></span><span style=display:flex><span>dotnet add package TimeZoneConverter  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>docker run -d --name postgres_db -e POSTGRES_USER<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;root&#34;</span> -e POSTGRES_PASSWORD<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;1234&#34;</span> -e POSTGRES_DB<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;postgres&#34;</span> -v postgres_data:/var/lib/postgresql/data -p 5432:5432 postgres
+</span></span></code></pre></div><p>First, we provide the connection string information for Postgresql in appsettings.json as follows.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span><span style=color:#e6db74>&#34;ConnectionStrings&#34;</span><span style=color:#960050;background-color:#1e0010>:</span> {  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;HangfireConnection&#34;</span>: <span style=color:#e6db74>&#34;Host=localhost;Port=5432;Password=1234;Username=root;Database=postgres;Pooling=true;Integrated Security=true;&#34;</span>  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>We make the relevant configurations in Program.cs as follows.</p><p>With TZConvert.GetTimeZoneInfo method you get the neccessary time zone information from OS. This line of code is neccessary because your local machine, frontend application and Cloud machine may have different time zones.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddHangfire(config =&gt; {  
+</span></span><span style=display:flex><span>    config  
+</span></span><span style=display:flex><span>        .UseSimpleAssemblyNameTypeSerializer()  
+</span></span><span style=display:flex><span>        .UseRecommendedSerializerSettings()  
+</span></span><span style=display:flex><span>        .UsePostgreSqlStorage(builder.Configuration.GetConnectionString(<span style=color:#e6db74>&#34;HangfireConnection&#34;</span>));  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> cronEveryMinute = <span style=color:#e6db74>&#34;*/1 * * * *&#34;</span>;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> recurringJobOptions = <span style=color:#66d9ef>new</span> RecurringJobOptions  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        TimeZone = TZConvert.GetTimeZoneInfo(<span style=color:#e6db74>&#34;Etc/GMT+3&#34;</span>)  
+</span></span><span style=display:flex><span>    };  
+</span></span><span style=display:flex><span>    RecurringJob.AddOrUpdate&lt;ITestService&gt;(<span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>, x =&gt; x.RunTests(Guid.NewGuid(), TestType.Recurring, CancellationToken.None), cronEveryMinute, recurringJobOptions);  
+</span></span><span style=display:flex><span>});  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddHangfireServer();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>app.UseHangfireDashboard();  
+</span></span><span style=display:flex><span>app.MapHangfireDashboard();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><p>To showcase Hangfire’s capabilities, we add a few more endpoints to our controller class.</p><p><strong>/run,</strong> we can start a job and that method returns us a job id</p><p><strong>/stop,</strong> we can stop the job related to the job id given to us by Hangfire.</p><p><strong>/continue,</strong> if many different jobs are to be run but they are dependent on each other, another job can be run after the parent job is finished with the given job id.</p><p><strong>/reschedule,</strong> the job’s working intervals can be dynamically adjusted by cron or TimeSpan.</p><p><strong>/deschedule,</strong> recurring jobs can be deleted by their unique id.</p><p><strong>/trigger,</strong> we can manually trigger a recurring job.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// JobController.cs  </span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;[controller]</span><span style=color:#e6db74>&#34;)]  
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>JobController</span> : ControllerBase  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/run&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Run()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> jobId = BackgroundJob.Enqueue&lt;ITestService&gt;(x =&gt; x.RunTests(Guid.NewGuid(), TestType.OnDemand, CancellationToken.None));  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(jobId);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/stop&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Stop(<span style=color:#66d9ef>string</span> jobId)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        BackgroundJob.Delete(jobId);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Stopped&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/continue&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Continue(<span style=color:#66d9ef>string</span> jobId)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        BackgroundJob.ContinueJobWith&lt;ITestService&gt;(jobId, x =&gt; x.RunTests(Guid.NewGuid(), TestType.OnDemand, CancellationToken.None));  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Continued&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/reschedule&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Reschedule(<span style=color:#66d9ef>string</span> cron)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> recurringJobOptions = <span style=color:#66d9ef>new</span> RecurringJobOptions  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            TimeZone = TZConvert.GetTimeZoneInfo(<span style=color:#e6db74>&#34;Etc/GMT+3&#34;</span>)  
+</span></span><span style=display:flex><span>        };  
+</span></span><span style=display:flex><span>        RecurringJob.AddOrUpdate&lt;ITestService&gt;(<span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>, x =&gt; x.RunTests(Guid.NewGuid(), TestType.Recurring, CancellationToken.None), cron, recurringJobOptions);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Rescheduled&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/deschedule&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Deschedule(<span style=color:#66d9ef>string</span> id)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (String.IsNullOrEmpty(id))  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            id = <span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        RecurringJob.RemoveIfExists(id);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Descheduled&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/trigger&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Trigger(<span style=color:#66d9ef>string</span> id)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (String.IsNullOrEmpty(id))  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            id = <span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        RecurringJob.TriggerJob(id);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Triggered&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Finally, error management, which is not in our toolkit previously with Task.Run() and Hosted service but with Hangfire if an error occurs while running a method, Hangfire runs that method 10 more times with the same parameters at certain time intervals. As an example, we add a method called ThrowRandomly to our TestService class. With this method, we simply add a system that will throw an exception from the method that works with probability 1/2, but Hangfire will try to get successful results by re-running the methods that get errors for us. But errors that catches successfully cannot trigger the retry system. Therefore in the end of catch block we throw again.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// TestService.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestService</span> : ITestService  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ILogger&lt;TestService&gt; _logger;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> TestService(ILogger&lt;TestService&gt; logger)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger = logger;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>bool</span> RunTests(Guid id, TestType testType, CancellationToken cancellationToken)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> type = Enum.GetName(<span style=color:#66d9ef>typeof</span>(TestType), testType);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>try</span>  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is started. Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>            cancellationToken.ThrowIfCancellationRequested();  
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>            Thread.Sleep(<span style=color:#ae81ff>5000</span>);  
+</span></span><span style=display:flex><span>            ThrowRandomly();  
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>            _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is finished. Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;    
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>catch</span> (OperationCanceledException exception)  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            _logger.LogError(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is failed. Exception: {exception.Message} Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>throw</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>catch</span>(Exception exception)  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            _logger.LogError(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is failed. Exception: {exception.Message} Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>throw</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> ThrowRandomly()   
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> random = <span style=color:#66d9ef>new</span> Random();  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> number = random.Next(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>3</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (number == <span style=color:#ae81ff>2</span>)  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> Exception(<span style=color:#e6db74>&#34;Error is throwed!&#34;</span>);  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Also Hangfire runs on a seperate service, this can be good or bad depending on your needs. When you need scaling you may seperate the application and hangfire servers and place them to different machines.</p><h3 id=pros-2>Pros<a href=#pros-2 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>Can manage on demand and recurring jobs together with a powerful abstraction</li><li>We can adjust cron job timing dynamically and its timing is very precise.</li><li>We can monitor our employee and cron jobs with Dashborad.</li><li>There is no imposed interface implementation or any other special implementation, we can only manage our jobs by using the methods provided by Hangfire.</li></ul><h3 id=cons-2>Cons<a href=#cons-2 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>External storage is required, works with SQL Server by default.</li></ul><hr><h2 id=conclusion>Conclusion<a href=#conclusion class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Thank you for reading 🎉 Don&rsquo;t miss out on the latest updates and insights in the world of software development. Follow me on <a href=https://x.com/berkslv>@berkslv</a> to stay connected and join the conversation</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Read other posts</span><hr></div><div class=pagination__buttons><span class="button previous"><a href=https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/><span class=button__icon>←</span>
+<span class=button__text>Achieving Zero Downtime: Azure App Service Deployment using Azure DevOps and Deployment Slots</span>
+</a></span><span class="button next"><a href=https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/><span class=button__text>How to Secure Dotnet & Vue.js Application with Keycloak</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>

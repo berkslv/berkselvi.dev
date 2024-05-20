@@ -1,0 +1,419 @@
+<!doctype html><html lang=tr><head><title>.NET Geliştiricisi Perspektifinden API Gateway Alternatifleri: YARP, Ocelot, Kong, APISIX ve KrakenD :: Berk Selvi | Software Developer</title>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content=".NET geliştirici bakışından API Gateway alternatiflerini inceliyoruz. YARP ve Ocelot gibi .NET tabanlı çözümlerden başlayarak, OpenResty tabanlı Kong ve Apache APISIX ile Go tabanlı KrakenD'yi değerlendiriyoruz. Her bir API Gateway'in özelliklerini, performansını ve kullanım senaryolarını detaylı bir şekilde ele alıyoruz."><meta name=keywords content="api gateway,yarp,ocelot,kong,apisix,krakend"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/tr/posts/api-gateway-alternatives-from-a-net-developer-standpoint/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/tr/posts/api-gateway-alternatives-from-a-net-developer-standpoint/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="tr"><meta property="og:type" content="article"><meta property="og:title" content=".NET Geliştiricisi Perspektifinden API Gateway Alternatifleri: YARP, Ocelot, Kong, APISIX ve KrakenD"><meta property="og:description" content=".NET geliştirici bakışından API Gateway alternatiflerini inceliyoruz. YARP ve Ocelot gibi .NET tabanlı çözümlerden başlayarak, OpenResty tabanlı Kong ve Apache APISIX ile Go tabanlı KrakenD'yi değerlendiriyoruz. Her bir API Gateway'in özelliklerini, performansını ve kullanım senaryolarını detaylı bir şekilde ele alıyoruz."><meta property="og:url" content="https://berkselvi.dev/tr/posts/api-gateway-alternatives-from-a-net-developer-standpoint/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/icon/favicon.ico"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2024-05-20 00:00:00 +0300 +0300"><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/tr>ana sayfa</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>türkçe ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/tr>ana sayfa</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h4>İngilizce çevirisi için;</h4><a href=/posts/api-gateway-alternatives-from-a-net-developer-standpoint/>API Gateway Alternatives from a .NET Developer's Perspective: YARP, Ocelot, Kong, APISIX, and KrakenD</a><h1 class=post-title><a href=https://berkselvi.dev/tr/posts/api-gateway-alternatives-from-a-net-developer-standpoint/>.NET Geliştiricisi Perspektifinden API Gateway Alternatifleri: YARP, Ocelot, Kong, APISIX ve KrakenD</a></h1><div class=post-meta><span class=post-date>20 Mayıs 2024
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 17 min read (3460 words)</span></div><div class=post-content><div><p>API Gateway servislerini microservice mimarisinde servislerimizi dış dünyaya açarken bir ara katman olarak kullanabiliyoruz. Bu yazımızda kısaca API Gateway nedirden bahsedip sonrasında kullanabileceğimiz .NET, OpenResty ve Go tabanlı API Gateway alternatiflerinden performans testleri ile beraber bahsedip sonlandıracağız.</p><p><a href=https://github.com/berkslv/lecture-api-gateway-comparison>GitHub - berkslv/lecture-api-gateway-comparison</a></p><h2 id=api-gateway-nedir>API Gateway nedir?<a href=#api-gateway-nedir class=hanchor arialabel=Anchor>&#8983;</a></h2><p>API Gateway, sistemlerimize aşağıdaki gibi bir giriş noktası sağlarak dış dünyadan izole eder. İçerisinde her bir alt serviste tekrar tekrar implemente edilmesi gereken yetkilendirme, loglama, Rate limiting gibi ortak sorunları tek bir servis ile çözer.</p><p>İstekleri yönlendirirken url ve body bilgilerinde hatta protokollerinde dönüşümler uygulayabilirler, http bir isteği alt servislere daha performanslı olması için gRPC protokolü ile iletebilirler. Gelen istekleri yönlendirecekleri servislerin adresini bulmak için flat file veya veritabanlarından yararlanabilirler.</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/what-is-api-gateway.png alt="What is API Gateway" loading=lazy><br><h2 id=seçenekler-nelerdir>Seçenekler nelerdir<a href=#seçenekler-nelerdir class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Sistemlerimizde kullanabileceğimiz API Gateway alternatiflerini değerlendirirken, gereken özelleştirme miktarı, performans, dağıtık mimariye uygunluk ve admin paneli üzerinden route bilgilerini güncelleme gibi ihtiyaçları değerlendirip uygun kararı vermemiz gerekir. Tüm bu özellikleri içerisinde barındıran, tüm ihtiyaçlarımızı tek seferde çözen bir gateway ürünü maalesef yok, bu değerlendirmeleri sistemimizin özel ihtiyaçlarına göre yapmamız gerekiyor.</p><p>İlk olarak .NET tabanlı, C# ile özelleştirilebilen YARP ve Ocelot API gateway ürünlerini inceleyip, OpenResty yani ngnix ve lua ikilisini beraber kullanan Kong ve Apache APISIX’den bahsettikten sonra son olarak cloud native ortamdada sıklıkla kullanılan Go ile geliştirilmiş KrakenD’yi inceleyeceğiz. Tüm bu seçenekler open source olarak ücretsiz bir şekilde kullanılabilir, ancak Kong, Apache APISIX ve KrakenD seçeneklerinde gerektiğinde enterprise desteğide alabiliriz.</p><p>Seçeneklerimizi değerlendirmeye geçmeden önce 1 saniye bekleyerek veritabanı sorgularını simule eden çok basit bir .NET API servisi geliştirdim, bu servisi API Gateway’in arkasına aldıktan sonra isteklerimizi yönlendirmeye çalışacak ve basit bir performans aracı olan Apache Benchmark kullanarak performans testlerimizi yapacağız. Kaynak tüketimini daha yakından inceleyebilmek için bu uygulamayı diğer gateway’lerle beraber docker compose ile çalıştırıp service:8080 adresinden isteklerimize cevap alacağız.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Program.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddEndpointsApiExplorer();
+</span></span><span style=display:flex><span>builder.Services.AddSwaggerGen();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (app.Environment.IsDevelopment())
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    app.UseSwagger();
+</span></span><span style=display:flex><span>    app.UseSwaggerUI();
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.MapGet(<span style=color:#e6db74>&#34;/weather&#34;</span>, () =&gt;
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    Task.Delay(<span style=color:#ae81ff>1000</span>).Wait();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Weather is OK!&#34;</span>;
+</span></span><span style=display:flex><span>})
+</span></span><span style=display:flex><span>.WithName(<span style=color:#e6db74>&#34;GetWeather&#34;</span>)
+</span></span><span style=display:flex><span>.WithOpenApi();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><h2 id=net-based>.NET Based<a href=#net-based class=hanchor arialabel=Anchor>&#8983;</a></h2><p>.NET developerları olarak genellikle aklımıza ilk gelen çözüm yine .NET teknolojileri ile geliştirilebilen YARP ve Ocelot API Gateway’den bahsederek seçeneklerimizi incelemeye başlayabiliriz. Bu seçenekler performans olarak çok basit senaryolarda diğer rakipleriyle yarışabilirken, kaynak tüketimi ve admin dashboard gibi kompleks ihtiyaçlara cevap veremiyorlar.</p><h2 id=yarp>YARP<a href=#yarp class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Microsoft&rsquo;un geliştirdiği YARP (Yet Another Reverse Proxy), bir reverse proxy ürünü olarak öne çıkıyor ve API Gateway olarak da kullanılabiliyor. Microsoft&rsquo;un GitHub&rsquo;da yayınladığı eShop örnek microservice projelerinde API Gateway olarak kullanıldığı için benim dikkatimi çekmişti. YARP, load balancing desteği sunuyor ve birden fazla servis olduğunda bu servislerin adreslerini service discovery yöntemleriyle alarak istekleri round robin gibi algoritmalarla bu servislere iletebiliyor. .NET tabanlı olması sebebiyle standart .NET API projelerinde kullanılabilen yetkilendirme, rate limiting, distributed tracing, loglama gibi işlemler de kolayca ve aşina olduğumuz yöntemlerle uygulanabiliyor. Ayrıca, middleware eklemesi ile özelleştirmeler yapılabiliyor, HTTP isteklerini gRPC isteklerine dönüştürebiliyor.</p><p>YARP projesi oluşturmak için bir .NET web api projesi oluşturulduktan sonra Yarp.ReverseProxy paketini uygulamaya dahil edip, gerekli konfigürasyonları yaptıktan sonra istekleri yönlendirmek için hazırız.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Program.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddReverseProxy()
+</span></span><span style=display:flex><span>    .LoadFromConfig(builder.Configuration.GetSection(<span style=color:#e6db74>&#34;ReverseProxy&#34;</span>));
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.MapReverseProxy();
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span><span style=color:#75715e>// appsettings.json
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;ReverseProxy&#34;</span>: {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Routes&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;weaher_route&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;ClusterId&#34;</span>: <span style=color:#e6db74>&#34;weather_api&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Match&#34;</span>: {
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;Path&#34;</span>: <span style=color:#e6db74>&#34;/weather&#34;</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    },
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Clusters&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;weather_api&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Destinations&#34;</span>: {
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;destination1&#34;</span>: {
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Address&#34;</span>: <span style=color:#e6db74>&#34;http://service:8080&#34;</span>
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  },
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;Logging&#34;</span>: {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;LogLevel&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;Default&#34;</span>: <span style=color:#e6db74>&#34;Information&#34;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;Microsoft.AspNetCore&#34;</span>: <span style=color:#e6db74>&#34;Warning&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  },
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;AllowedHosts&#34;</span>: <span style=color:#e6db74>&#34;*&#34;</span>
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=ocelot>Ocelot<a href=#ocelot class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Ocelot, YARP ile birçok ortak özelliğe sahip bir API Gateway çözümüdür. .NET API projelerinde kullanılabilecek tüm özellikleri yine buradada kullanabiliriz, bağımsız bir open source projesi olarak geliştiriliyor. Ocelot, YARP’a kıyasla direk olarak API Gateway ürünü olarak kendisini konumlandırıyor. Farklı olarak, gRPC desteği bulunmamakla birlikte request aggregation gibi özellikler sunuyor. Bu özellik, backend for frontend yapılarında tercih edilebiliyor.</p><p>Ocelot uygulaması oluşturmak için benzer şekilde bir .NET API projesi oluşturulur ve Program.cs içerisindeki konfigurasyonlarla birlikte servis konfigürasyonları appsettings.json değil ayrı bir ocelot.json dosyasından okunacak şekilde ayarlanır. Ocelot ile route tanımlarını yaparken servis adreslerini tekrar tekrar vermemiz gerekiyor, YARP ile bunu tek bir yerden verip oluşturduğumuz servisin bilgisini router içerisinde belirtmemiz yeterliydi. Request aggregation işleminide route tanımlamalarından sonra aggregates kısmında yapabiliriz. Daha kompleks ihtiyaçlar için ise IDefinedAggregator interface&rsquo;inden yararlanılarak özel aggregate&rsquo;ler tanımlayabiliyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Program.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Ocelot.DependencyInjection;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Ocelot.Middleware;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Configuration.AddJsonFile(<span style=color:#e6db74>&#34;ocelot.json&#34;</span>, optional: <span style=color:#66d9ef>false</span>, reloadOnChange: <span style=color:#66d9ef>true</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddOcelot(builder.Configuration);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.UseOcelot();
+</span></span><span style=display:flex><span><span style=color:#66d9ef>await</span> app.RunAsync();
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span><span style=color:#75715e>// ocelot.json
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>{
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Routes&#34;</span>: [
+</span></span><span style=display:flex><span>      {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/weather&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamScheme&#34;</span>: <span style=color:#e6db74>&#34;http&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;DownstreamHostAndPorts&#34;</span>: [
+</span></span><span style=display:flex><span>          {
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Host&#34;</span>: <span style=color:#e6db74>&#34;service&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&#34;Port&#34;</span>: <span style=color:#ae81ff>8080</span>
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>        ],
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamPathTemplate&#34;</span>: <span style=color:#e6db74>&#34;/weather&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;UpstreamHttpMethod&#34;</span>: [ <span style=color:#e6db74>&#34;Get&#34;</span> ]
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    ],
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;GlobalConfiguration&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;BaseUrl&#34;</span>: <span style=color:#e6db74>&#34;https://service:8080&#34;</span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }
+</span></span></code></pre></div><h2 id=yarp-vs-ocelot>YARP vs Ocelot<a href=#yarp-vs-ocelot class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Ocelot ve YARP teknolojilerinin karşılaştırılması için hazırladığım tabloda görebileceğiniz üzere çoğu özellikte ortaklar. Burada iki teknoloji arasında tercih sebebimiz destekledikleri özellikler, community desteği ve konfigurasyon dosyasının yapısı olabilir diye düşünüyorum.</p><table><thead><tr><th>Özellik</th><th>YARP</th><th>Ocelot</th></tr></thead><tbody><tr><td>Routing & Request mapping</td><td>Var</td><td>Var</td></tr><tr><td>Authn & Authz</td><td>Var</td><td>Var</td></tr><tr><td>Rate limiting</td><td>Var</td><td>Var</td></tr><tr><td>Load balancing</td><td>Var</td><td>Var</td></tr><tr><td>gRPC</td><td>Var</td><td>Yok, Eski paketler mevcut</td></tr><tr><td>Request aggregation</td><td>Yok, Özel geliştirme gerekiyor</td><td>Var, Basit ise konfigurasyon ile yapılabilir</td></tr><tr><td>Distributed tracing</td><td></td><td></td></tr><tr><td>Var</td><td>Var</td><td></td></tr></tbody></table><p>Mac M1 8GB özelliklere sahip makinede, docker üzerinde çalışan ortamda, sadece tek bir endpointin olduğu çok basit bir senaryoda performans testlerimiz için 10 bin adet isteği, 50 concurrent channel üzerinden Apache Benchmark aracı ile ilettim. Ocelot ortalama 1030 ms, YARP ortalama 1029 ms cevap süresi ile hemen hemen aynı sonucu verdiler. Tüketim için 20MB hafıza tüketimi ile başlarken, istekler gelmeye başlayınca maksimum 100MB tüketime kadar yükseldi, CPU için ise %10 - %20 arasında değişkenli gösteren bir tüketim oldu. Bu oranlar YARP ve Ocelot için hemen hemen aynı. Testleri yaptığım komutlarda şu şekilde:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># YARP</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 100 MB RAM | %10 - %20 CPU</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>ab -k -n <span style=color:#ae81ff>10000</span> -c <span style=color:#ae81ff>50</span> http://localhost:9090/weather
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Server Software:        Kestrel
+</span></span><span style=display:flex><span>Server Hostname:        localhost
+</span></span><span style=display:flex><span>Server Port:            <span style=color:#ae81ff>9090</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Document Path:          /weather
+</span></span><span style=display:flex><span>Document Length:        <span style=color:#ae81ff>14</span> bytes
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Concurrency Level:      <span style=color:#ae81ff>50</span>
+</span></span><span style=display:flex><span>Time taken <span style=color:#66d9ef>for</span> tests:   207.561 seconds
+</span></span><span style=display:flex><span>Complete requests:      <span style=color:#ae81ff>10000</span>
+</span></span><span style=display:flex><span>Failed requests:        <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Keep-Alive requests:    <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Total transferred:      <span style=color:#ae81ff>1470000</span> bytes
+</span></span><span style=display:flex><span>HTML transferred:       <span style=color:#ae81ff>140000</span> bytes
+</span></span><span style=display:flex><span>Requests per second:    48.18 <span style=color:#f92672>[</span><span style=color:#75715e>#/sec] (mean)</span>
+</span></span><span style=display:flex><span>Time per request:       1037.804 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Time per request:       20.756 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean, across all concurrent requests<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Transfer rate:          6.92 <span style=color:#f92672>[</span>Kbytes/sec<span style=color:#f92672>]</span> received
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Connection Times <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>              min  mean<span style=color:#f92672>[</span>+/-sd<span style=color:#f92672>]</span> median   max
+</span></span><span style=display:flex><span>Connect:        <span style=color:#ae81ff>0</span>    <span style=color:#ae81ff>0</span>   0.1      <span style=color:#ae81ff>0</span>       <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>Processing:  <span style=color:#ae81ff>1002</span> <span style=color:#ae81ff>1029</span> 122.9   <span style=color:#ae81ff>1015</span>    <span style=color:#ae81ff>2961</span>
+</span></span><span style=display:flex><span>Waiting:     <span style=color:#ae81ff>1002</span> <span style=color:#ae81ff>1028</span> 122.9   <span style=color:#ae81ff>1015</span>    <span style=color:#ae81ff>2961</span>
+</span></span><span style=display:flex><span>Total:       <span style=color:#ae81ff>1002</span> <span style=color:#ae81ff>1029</span> 123.0   <span style=color:#ae81ff>1016</span>    <span style=color:#ae81ff>2962</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Percentage of the requests served within a certain time <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  50%   <span style=color:#ae81ff>1016</span>
+</span></span><span style=display:flex><span>  66%   <span style=color:#ae81ff>1019</span>
+</span></span><span style=display:flex><span>  75%   <span style=color:#ae81ff>1021</span>
+</span></span><span style=display:flex><span>  80%   <span style=color:#ae81ff>1023</span>
+</span></span><span style=display:flex><span>  90%   <span style=color:#ae81ff>1028</span>
+</span></span><span style=display:flex><span>  95%   <span style=color:#ae81ff>1033</span>
+</span></span><span style=display:flex><span>  98%   <span style=color:#ae81ff>1052</span>
+</span></span><span style=display:flex><span>  99%   <span style=color:#ae81ff>1517</span>
+</span></span><span style=display:flex><span> 100%   <span style=color:#ae81ff>2962</span> <span style=color:#f92672>(</span>longest request<span style=color:#f92672>)</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># Ocelot</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 100 MB RAM | %10 - %20 CPU</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>ab -k -n <span style=color:#ae81ff>10000</span> -c <span style=color:#ae81ff>50</span> http://localhost:9090/weather
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Server Software:        Kestrel
+</span></span><span style=display:flex><span>Server Hostname:        localhost
+</span></span><span style=display:flex><span>Server Port:            <span style=color:#ae81ff>9090</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Document Path:          /weather
+</span></span><span style=display:flex><span>Document Length:        <span style=color:#ae81ff>14</span> bytes
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Concurrency Level:      <span style=color:#ae81ff>50</span>
+</span></span><span style=display:flex><span>Time taken <span style=color:#66d9ef>for</span> tests:   207.739 seconds
+</span></span><span style=display:flex><span>Complete requests:      <span style=color:#ae81ff>10000</span>
+</span></span><span style=display:flex><span>Failed requests:        <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Keep-Alive requests:    <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Total transferred:      <span style=color:#ae81ff>1470000</span> bytes
+</span></span><span style=display:flex><span>HTML transferred:       <span style=color:#ae81ff>140000</span> bytes
+</span></span><span style=display:flex><span>Requests per second:    48.14 <span style=color:#f92672>[</span><span style=color:#75715e>#/sec] (mean)</span>
+</span></span><span style=display:flex><span>Time per request:       1038.695 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Time per request:       20.774 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean, across all concurrent requests<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Transfer rate:          6.91 <span style=color:#f92672>[</span>Kbytes/sec<span style=color:#f92672>]</span> received
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Connection Times <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>              min  mean<span style=color:#f92672>[</span>+/-sd<span style=color:#f92672>]</span> median   max
+</span></span><span style=display:flex><span>Connect:        <span style=color:#ae81ff>0</span>    <span style=color:#ae81ff>0</span>   0.1      <span style=color:#ae81ff>0</span>       <span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>Processing:  <span style=color:#ae81ff>1001</span> <span style=color:#ae81ff>1030</span> 120.0   <span style=color:#ae81ff>1016</span>    <span style=color:#ae81ff>3347</span>
+</span></span><span style=display:flex><span>Waiting:     <span style=color:#ae81ff>1001</span> <span style=color:#ae81ff>1030</span> 119.9   <span style=color:#ae81ff>1016</span>    <span style=color:#ae81ff>3347</span>
+</span></span><span style=display:flex><span>Total:       <span style=color:#ae81ff>1001</span> <span style=color:#ae81ff>1030</span> 120.0   <span style=color:#ae81ff>1016</span>    <span style=color:#ae81ff>3349</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Percentage of the requests served within a certain time <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  50%   <span style=color:#ae81ff>1016</span>
+</span></span><span style=display:flex><span>  66%   <span style=color:#ae81ff>1020</span>
+</span></span><span style=display:flex><span>  75%   <span style=color:#ae81ff>1023</span>
+</span></span><span style=display:flex><span>  80%   <span style=color:#ae81ff>1025</span>
+</span></span><span style=display:flex><span>  90%   <span style=color:#ae81ff>1032</span>
+</span></span><span style=display:flex><span>  95%   <span style=color:#ae81ff>1040</span>
+</span></span><span style=display:flex><span>  98%   <span style=color:#ae81ff>1061</span>
+</span></span><span style=display:flex><span>  99%   <span style=color:#ae81ff>1359</span>
+</span></span><span style=display:flex><span> 100%   <span style=color:#ae81ff>3349</span> <span style=color:#f92672>(</span>longest request<span style=color:#f92672>)</span>
+</span></span></code></pre></div><h2 id=openresty-tabanlı>OpenResty tabanlı<a href=#openresty-tabanlı class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Temellerinden yüksek performansı ile adını duyuran ngnix ve onun üzerine LuaJIT ile script dili olarak esnek bir geliştirme ortamı sunan ve JIT desteği yeniden başlatmaya gerek kalmadan hot reload özelliğini destekleyen Lua kullanılabiliyor. Lua dili çoğu senaryoda içerdiği C API’ı sayesinde C kadar yüksek performans sunarken aynı zamanda script dili olduğu için daha yüksek seviyede bir programlama ile, daha geliştirici dostu yapısıyla daha esnek geliştirme yapmaya olanak sağlıyor. C kodundan Lua kodunu veya Lua kodundan C kodunu çağırmakta mümkün, bu sebeplerden ötürü, beraber kullanılabilen güzel bir ikili ortaya çıkmış oluyor. Hatta C ve Lua ikilisi Cloudflare&rsquo;in kendi araçları içinde kullandığı bir stack, yani networking uygulamarındada sıklıkla kullanılıyor.</p><p>Bahsettiğim OpenResty temeline sahip gatewaylerdende sektörde çok sık tercih edilen ve ismini duyuran Kong, sonrasında tamamen open source olduğu için dikkat çeken ve kong&rsquo;dan birkaç güzel özellikle sıyrılmayı başaran Apache APISIX&rsquo;den bahsedip Go tabanlı gatewaylerle devam edeceğiz.</p><h2 id=kong>Kong<a href=#kong class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Kong, API gateway çözümleri arasında öne çıkan bir araçtır. Ocelot ve YARP gibi araçlarda bulunan tüm özellikleri içermesinin yanı sıra, 60&rsquo;tan fazla plugin desteği ile ek özellikler sunar. Ayrıca, Lua veya diğer programlama dilleri ile kendi pluginlerinizi geliştirebilirsiniz. Enterprise versiyonu, GraphQL desteği, request validation, body güncelleme ve secret manager gibi ekstra özellikler sağlar.</p><p>Kong, bir API gateway’den beklenebilecek yetkilendirme, loglama, request transformation ve rate limiting gibi çoğu özelliği içerir. Ancak, request aggregation pattern (tek bir istekle birden fazla servisten dönen cevabı birleştirme) gibi bazı özellikler için ek geliştirme yapılması gerekir. Native olarak kullanılabilen ve diğer alternatiflerden daha iyi çalışacak olan Lua dışında Go, JavaScript veya Python ile IPC (Inter Process Communication) desteği sayesindede geliştirme yapabiliriz ancak daha düşük bir performansla karşılaşacağız. Bununla birlikte, WebAssembly desteği sayesinde Go ve Rust dilleri ile IPC yöntemlerine gerek kalmadan aşina olduğumuz dillerle yüksek performanslı pluginler oluşturabiliyoruz.</p><p>Ocelot ve YARP gibi .NET tabanlı gateway&rsquo;lerden farklı olarak, Kong farklı deployment seçenekleri sunuyor. &ldquo;DB-less&rdquo; mod ile, konfigurasyon dosyaları üzerinden yönetim yapılabilir. Bu mod, CI/CD tabanlı deployment senaryolarında oldukça kullanışlıdır ve state farklılıklarından kaynaklanabilecek sorunları önler.</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-config-deployment.png alt="Kong config deployment" loading=lazy><br><p>Kong, ayrıca traditional olarak adlandırılan yöntemle veritabanı kullanarak da yapılandırılabilir. Bu yöntemde, PostgreSQL, Cassandra, Redis, InfluxDB ve Kafka gibi veritabanları kullanılabilir. Admin API üzerinden route ve service bilgileri üzerinde değişiklikler yapılabilir. Ancak, bu senaryo veritabanına ek bir bağımlılık yaratır ve control plane ile data plane aynı instance üzerinde çalıştığı için saldırılara karşı daha korunaksız olabilir.</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-traditional-deployment.png alt="Kong traditional deployment" loading=lazy><br><p>Konnect servisi sayesinde uygulayabildiğimiz deployment senaryosu ile data plane ve control plane kısımlarını birbirinden ayırarak daha güvenli bir yapıya sahip oluyoruz. Konnect, Kong tarafından software as a service olarak sunuluyor ve state yönetimi için ekstra bir veritabanı bağımlılığı gerektirmiyor.</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-konnect-deployment.png alt="Kong konnect deployment" loading=lazy><br><p>Eğer Kong tarafından yönetilen bir ürünü kullanmak istemiyorsak, tüm sürecin kendi iç network ağımız üzerinde yapılmasını istiyorsak Hybrid mod olarak isimlendirilen yöntem ile control plane ve veritabanı, data plane&rsquo;den ayrı olarak sistemimizin, birbiri ile iletişime geçebilecekleri farklı bir konumuna deploy edilerek, data plane&rsquo;i kontrol etmek için kullanılabiliyor</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-hybrid-deployment.png alt="Kong hybrid deployment" loading=lazy><br><p>Local olarak geliştirme yapmak için, Kong&rsquo;un sunduğu Docker Compose dosyası sayesinde PostgreSQL ile beraber çalışabilirsiniz ve ilk çalıştırmada bu dosyadan okuma yapılır. Eğer Db-less modda çalışacaksak, tüm route&rsquo;larınızı bir konfigurasyon dosyasında tanımlamanız gerekir. Aşağıdaki gibi konfigurasyon tanımını yaptıktan sonra Docker compose dosyamız ile gateway’imizi ayağa kaldırıyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#75715e># kong.yaml</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># a very minimal declarative config file</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>_format_version</span>: <span style=color:#e6db74>&#34;2.1&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>_transform</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>services</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>weather-service</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>url</span>: <span style=color:#ae81ff>http://host.docker.internal:8080</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>routes</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>get-weather</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>paths</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#ae81ff>/weather</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#75715e># docker-compose.yml</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e># ...</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>kong</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#e6db74>&#34;${KONG_DOCKER_TAG:-kong:latest}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>user</span>: <span style=color:#e6db74>&#34;${KONG_USER:-kong}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>environment</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&lt;&lt;</span>: <span style=color:#75715e>*kong-env</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_ADMIN_ACCESS_LOG</span>: <span style=color:#ae81ff>/dev/stdout</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_ADMIN_ERROR_LOG</span>: <span style=color:#ae81ff>/dev/stderr</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_PROXY_LISTEN</span>: <span style=color:#e6db74>&#34;${KONG_PROXY_LISTEN:-0.0.0.0:8000}&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_ADMIN_LISTEN</span>: <span style=color:#e6db74>&#34;${KONG_ADMIN_LISTEN:-0.0.0.0:8001}&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_ADMIN_GUI_LISTEN</span>: <span style=color:#e6db74>&#34;${KONG_ADMIN_GUI_LISTEN:-0.0.0.0:8002}&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_PROXY_ACCESS_LOG</span>: <span style=color:#ae81ff>/dev/stdout</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_PROXY_ERROR_LOG</span>: <span style=color:#ae81ff>/dev/stderr</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_PREFIX</span>: <span style=color:#ae81ff>${KONG_PREFIX:-/var/run/kong}</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>KONG_DECLARATIVE_CONFIG</span>: <span style=color:#e6db74>&#34;/opt/kong/kong.yaml&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>secrets</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>kong_postgres_password</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>kong-net</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:
+</span></span><span style=display:flex><span>      <span style=color:#75715e># The following two environment variables default to an insecure value (0.0.0.0)</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># according to the CIS Security test.</span>
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;${KONG_INBOUND_PROXY_LISTEN:-0.0.0.0}:8000:8000/tcp&#34;</span>
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;${KONG_INBOUND_SSL_PROXY_LISTEN:-0.0.0.0}:8443:8443/tcp&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># Making them mandatory but undefined, like so would be backwards-breaking:</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># - &#34;${KONG_INBOUND_PROXY_LISTEN?Missing inbound proxy host}:8000:8000/tcp&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># - &#34;${KONG_INBOUND_SSL_PROXY_LISTEN?Missing inbound proxy ssl host}:8443:8443/tcp&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># Alternative is deactivating check 5.13 in the security bench, if we consider Kong&#39;s own config to be enough security here</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;127.0.0.1:8001:8001/tcp&#34;</span>
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;127.0.0.1:8444:8444/tcp&#34;</span>
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;127.0.0.1:8002:8002/tcp&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>healthcheck</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>test</span>: [ <span style=color:#e6db74>&#34;CMD&#34;</span>, <span style=color:#e6db74>&#34;kong&#34;</span>, <span style=color:#e6db74>&#34;health&#34;</span> ]
+</span></span><span style=display:flex><span>      <span style=color:#f92672>interval</span>: <span style=color:#ae81ff>10s</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>timeout</span>: <span style=color:#ae81ff>10s</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>retries</span>: <span style=color:#ae81ff>10</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#66d9ef>on</span>-<span style=color:#ae81ff>failure:5</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>read_only</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>kong_tmp_vol:/tmp</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./config:/opt/kong</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>security_opt</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#66d9ef>no</span>-<span style=color:#ae81ff>new-privileges</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e># ...</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>
+</span></span><span style=display:flex><span>KONG_DATABASE<span style=color:#f92672>=</span>postgres docker compose --profile database up -d
+</span></span></code></pre></div><p>Kong ile başarılı bir deployment yaptıktan sonra, belirttiğiniz route ve service bilgilerine yapılan istekler yönlendirilir. Tradational veya hybrid mod ile deployment yaptıysanız, bir admin arayüzü üzerinden servis ve endpoint bilgilerinizi yönetebilirsiniz.</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-admin-gui.png alt="Kong admin gui" loading=lazy><br><h2 id=apache-apisix>Apache APISIX<a href=#apache-apisix class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Apache APISIX, Kong gibi OpenResty üzerine geliştirilmiş bir gateway ürünüdür. Ancak, Kong&rsquo;un sadece enterprise versiyonunda bulunan özellikleri open source olarak sunarak öne çıkıyor. Bu özellikler arasında GraphQL, Canary release ve secret management gibi özellikler yer alıyor.</p><p>APISIX, yüksek sayıda route içeren sistemlerde Kong&rsquo;a kıyasla daha yüksek performans sunuyor. Kong, route&rsquo;lar arasında traversal search algoritması kullanırken, APISIX radixtree algoritması ile arama yapar ve plugin kullanılmadığında %140 daha yüksek performans sağlar. Ayrıca, APISIX, konfigurasyonlarını depolamak için etcd veritabanını kullanır. Bu veritabanı, cloud native çalışabilen ve kubernetes ortamında yaygın olarak kullanılan bir veritabanıdır.</p><p>APISIX, üç farklı deployment senaryosu sunar:</p><ol><li><strong>Traditional Yöntem</strong>: Control plane ve data plane aynı instance içerisinde veritabanına bağımlı olarak deploy edilir.</li><li><strong>Decoupled Yöntem</strong>: Control plane ve data plane farklı instancelar ile deploy edilir ve sadece control plane veritabanına bağımlıdır.</li><li><strong>Standalone Yöntem</strong>: Veritabanı kullanmadan konfigurasyon dosyasından okuma yaparak çalışır.</li></ol><p>Local testlerimde, etcd veritabanı ile traditional yöntem kullanarak Docker Compose üzerinden deployment işlemi gerçekleştirdim. APISIX&rsquo;in docker repositorysinde bulunan Docker Compose dosyasını küçük değişiklikler yaparak kullandım. Admin key&rsquo;leri kullanarak Admin API&rsquo;ya istek atabiliyoruz. Eğer standalone yöntemle deploy edecek olsaydım, route&rsquo;ları yaml dosyasında tanımlamam gerekecekti.</p><p>Eğer enterprise destek almak istenirse, APISIX&rsquo;in geliştirici takımı tarafından yürütülen <a href=http://api7.ai/>API7</a> üzerinden destek alınabilir.</p><p>Docker Compose dosyalarını ve kullandığım kodları blog yazısının sonunda paylaşacağım, böylece siz de kendi localinizde hızlıca deneyimleyebilirsiniz.</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-vs-apisix.png alt="Kong vs APISIX" loading=lazy><br><p>APISIX&rsquo;in performans testlerinde, 1025 milisaniye ortalama cevap süresiyle, 1032 milisaniye ortalama cevap süresine sahip olan Kong&rsquo;dan daha performanslı olduğu görülebiliyor. Tüketim olarak, Kong çalışır çalışmaz 280MB civarında bellek kullanırken, APISIX 100MB civarında bellek kullanmaktadır. Her iki gateway de %5-10 arasında değişen CPU tüketim oranına sahip.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># Kong</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 280MB RAM | %5 - %10 CPU</span>
+</span></span><span style=display:flex><span>ab -k -n <span style=color:#ae81ff>10000</span> -c <span style=color:#ae81ff>50</span> http://localhost:8000/weather
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Server Software:        Kestrel
+</span></span><span style=display:flex><span>Server Hostname:        localhost
+</span></span><span style=display:flex><span>Server Port:            <span style=color:#ae81ff>8000</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Document Path:          /weather
+</span></span><span style=display:flex><span>Document Length:        <span style=color:#ae81ff>14</span> bytes
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Concurrency Level:      <span style=color:#ae81ff>50</span>
+</span></span><span style=display:flex><span>Time taken <span style=color:#66d9ef>for</span> tests:   207.499 seconds
+</span></span><span style=display:flex><span>Complete requests:      <span style=color:#ae81ff>10000</span>
+</span></span><span style=display:flex><span>Failed requests:        <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Keep-Alive requests:    <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Total transferred:      <span style=color:#ae81ff>2730028</span> bytes
+</span></span><span style=display:flex><span>HTML transferred:       <span style=color:#ae81ff>140000</span> bytes
+</span></span><span style=display:flex><span>Requests per second:    48.19 <span style=color:#f92672>[</span><span style=color:#75715e>#/sec] (mean)</span>
+</span></span><span style=display:flex><span>Time per request:       1037.494 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Time per request:       20.750 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean, across all concurrent requests<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Transfer rate:          12.85 <span style=color:#f92672>[</span>Kbytes/sec<span style=color:#f92672>]</span> received
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Connection Times <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>              min  mean<span style=color:#f92672>[</span>+/-sd<span style=color:#f92672>]</span> median   max
+</span></span><span style=display:flex><span>Connect:        <span style=color:#ae81ff>0</span>    <span style=color:#ae81ff>0</span>   0.2      <span style=color:#ae81ff>0</span>       <span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span>Processing:  <span style=color:#ae81ff>1002</span> <span style=color:#ae81ff>1032</span> 120.5   <span style=color:#ae81ff>1018</span>    <span style=color:#ae81ff>3369</span>
+</span></span><span style=display:flex><span>Waiting:     <span style=color:#ae81ff>1002</span> <span style=color:#ae81ff>1031</span> 120.5   <span style=color:#ae81ff>1018</span>    <span style=color:#ae81ff>3369</span>
+</span></span><span style=display:flex><span>Total:       <span style=color:#ae81ff>1002</span> <span style=color:#ae81ff>1032</span> 120.7   <span style=color:#ae81ff>1019</span>    <span style=color:#ae81ff>3373</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Percentage of the requests served within a certain time <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  50%   <span style=color:#ae81ff>1019</span>
+</span></span><span style=display:flex><span>  66%   <span style=color:#ae81ff>1023</span>
+</span></span><span style=display:flex><span>  75%   <span style=color:#ae81ff>1026</span>
+</span></span><span style=display:flex><span>  80%   <span style=color:#ae81ff>1028</span>
+</span></span><span style=display:flex><span>  90%   <span style=color:#ae81ff>1034</span>
+</span></span><span style=display:flex><span>  95%   <span style=color:#ae81ff>1043</span>
+</span></span><span style=display:flex><span>  98%   <span style=color:#ae81ff>1066</span>
+</span></span><span style=display:flex><span>  99%   <span style=color:#ae81ff>1326</span>
+</span></span><span style=display:flex><span> 100%   <span style=color:#ae81ff>3373</span> <span style=color:#f92672>(</span>longest request<span style=color:#f92672>)</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># APISIX</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 100MB RAM | %5 - %10 CPU</span>
+</span></span><span style=display:flex><span>ab -k -n <span style=color:#ae81ff>10000</span> -c <span style=color:#ae81ff>50</span> http://localhost:9080/weather
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Server Software:        APISIX/3.9.0
+</span></span><span style=display:flex><span>Server Hostname:        localhost
+</span></span><span style=display:flex><span>Server Port:            <span style=color:#ae81ff>9090</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Document Path:          /weather
+</span></span><span style=display:flex><span>Document Length:        <span style=color:#ae81ff>14</span> bytes
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Concurrency Level:      <span style=color:#ae81ff>50</span>
+</span></span><span style=display:flex><span>Time taken <span style=color:#66d9ef>for</span> tests:   206.130 seconds
+</span></span><span style=display:flex><span>Complete requests:      <span style=color:#ae81ff>10000</span>
+</span></span><span style=display:flex><span>Failed requests:        <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Keep-Alive requests:    <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>Total transferred:      <span style=color:#ae81ff>1520000</span> bytes
+</span></span><span style=display:flex><span>HTML transferred:       <span style=color:#ae81ff>140000</span> bytes
+</span></span><span style=display:flex><span>Requests per second:    48.51 <span style=color:#f92672>[</span><span style=color:#75715e>#/sec] (mean)</span>
+</span></span><span style=display:flex><span>Time per request:       1030.650 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Time per request:       20.613 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean, across all concurrent requests<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Transfer rate:          7.20 <span style=color:#f92672>[</span>Kbytes/sec<span style=color:#f92672>]</span> received
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Connection Times <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>              min  mean<span style=color:#f92672>[</span>+/-sd<span style=color:#f92672>]</span> median   max
+</span></span><span style=display:flex><span>Connect:        <span style=color:#ae81ff>0</span>    <span style=color:#ae81ff>0</span>   0.2      <span style=color:#ae81ff>0</span>       <span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span>Processing:   <span style=color:#ae81ff>921</span> <span style=color:#ae81ff>1025</span> 126.2   <span style=color:#ae81ff>1012</span>    <span style=color:#ae81ff>3376</span>
+</span></span><span style=display:flex><span>Waiting:      <span style=color:#ae81ff>921</span> <span style=color:#ae81ff>1024</span> 126.2   <span style=color:#ae81ff>1011</span>    <span style=color:#ae81ff>3375</span>
+</span></span><span style=display:flex><span>Total:        <span style=color:#ae81ff>921</span> <span style=color:#ae81ff>1025</span> 126.3   <span style=color:#ae81ff>1012</span>    <span style=color:#ae81ff>3378</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Percentage of the requests served within a certain time <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  50%   <span style=color:#ae81ff>1012</span>
+</span></span><span style=display:flex><span>  66%   <span style=color:#ae81ff>1015</span>
+</span></span><span style=display:flex><span>  75%   <span style=color:#ae81ff>1017</span>
+</span></span><span style=display:flex><span>  80%   <span style=color:#ae81ff>1018</span>
+</span></span><span style=display:flex><span>  90%   <span style=color:#ae81ff>1023</span>
+</span></span><span style=display:flex><span>  95%   <span style=color:#ae81ff>1029</span>
+</span></span><span style=display:flex><span>  98%   <span style=color:#ae81ff>1047</span>
+</span></span><span style=display:flex><span>  99%   <span style=color:#ae81ff>1327</span>
+</span></span><span style=display:flex><span> 100%   <span style=color:#ae81ff>3378</span> <span style=color:#f92672>(</span>longest request<span style=color:#f92672>)</span>
+</span></span></code></pre></div><h1 id=go-tabanlı-alternatifler>Go Tabanlı alternatifler<a href=#go-tabanlı-alternatifler class=hanchor arialabel=Anchor>&#8983;</a></h1><p>Go tabanlı API Gateway alternatifi olarakta en çok öne çıkan, KrakenD ürününü ele alacağız, ancak Go ile ikinci bir alternatif olarak Tyk veya Traefik API Gateway gibi seçeneklerde tercih edilebilir, ancak bu ikiside ücretli olarak sunulduğu için deneme yapamadığımdan bu anlatımda yer veremiyorum.</p><h2 id=krakend>KrakenD<a href=#krakend class=hanchor arialabel=Anchor>&#8983;</a></h2><p>KrakenD, Go ile geliştirilmiş ve hem community hem de enterprise versiyonlarına sahip bir API gateway ürünü. 2021 yılında Linux Foundation&rsquo;a bağışlanmış olan Lura engine üzerinde çalışır. Diğer API gateway ürünlerine kıyasla güçlü bir aggregation sistemi sunar. Kod yazmadan, sadece konfigurasyon dosyaları ile tüm aggregation işlemlerini gerçekleştirebilirsiniz.</p><p>KrakenD, veritabanı kullanmadığı için, deployment seçenekleri arasında karar verirken kafa karışıklığı yaşatmaz, sadece konfigurasyon dosyalarını kullanarak işlemlerimizi gerçekleştirebiliriz. Ancak, veritabanı kullanmadığı için bir admin paneli bulunmamaktadır. Veritabanı olmaması, ek hata kaynaklarını ortadan kaldırır ve daha kolay ölçeklenebilirlik sağlar.</p><p>Tüm konfigurasyonlar, git ile takip edilebilecek bir konfigurasyon dosyası üzerinden yönetilir. JSON, YAML, TOML gibi farklı dosya formatlarını destekliyor. KrakenD&rsquo;nin kendi websitesindeki arayüz ile konfigurasyonları hızlıca oluşturabiliriz. Local geliştirme ortamında, sadece konfigurasyon dosyası üzerinden çalıştığı için hızlıca ayağa kaldırabilir ve servisinize istek atabiliriz. Hot reload özelliği ile kısa bir downtime ile konfigurasyon dosyasını güncelleyebilirsiniz. Ancak, production ortamlarında bu yöntem önerilmez, GitOps yöntemleri ile yeni bir release almanız tavsiye edilir. Enterprise versiyonunda OpenAPI importer ve exporter, gzip sıkıştırma ve response validation gibi ek özellikler bulunur.</p><img src=/img/api-gateway-alternatives-from-a-net-developer-standpoint/krakend-designer.png alt="KrakenD designer" loading=lazy><br><p>KrakenD, Kong ve APISIX&rsquo;ten çok daha basit bir Docker Compose içeriğine sahiptir, çünkü herhangi bir ek bağımlılığı yoktur. Sadece konfigurasyon dosyasının path&rsquo;ini volume olarak vermeniz yeterlidir. Örnek olması açısından weather servisini Docker Compose içerisine ekledim ve krakend.json dosyasını hızlıca oluşturarak servisi ayağa kaldırdım. Performans testinde çok iyi sonuçlar verdi.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span><span style=color:#75715e>// krakend.json
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>{
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;$schema&#34;</span>: <span style=color:#e6db74>&#34;https://www.krakend.io/schema/krakend.json&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;version&#34;</span>: <span style=color:#ae81ff>3</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;name&#34;</span>: <span style=color:#e6db74>&#34;KrakenD - API Gateway&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;timeout&#34;</span>: <span style=color:#e6db74>&#34;3000ms&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;cache_ttl&#34;</span>: <span style=color:#e6db74>&#34;300s&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;output_encoding&#34;</span>: <span style=color:#e6db74>&#34;json&#34;</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;port&#34;</span>: <span style=color:#ae81ff>9090</span>,
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;endpoints&#34;</span>: [
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;endpoint&#34;</span>: <span style=color:#e6db74>&#34;/weather&#34;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;GET&#34;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;output_encoding&#34;</span>: <span style=color:#e6db74>&#34;string&#34;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;backend&#34;</span>: [
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;url_pattern&#34;</span>: <span style=color:#e6db74>&#34;/weather&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;encoding&#34;</span>: <span style=color:#e6db74>&#34;string&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;sd&#34;</span>: <span style=color:#e6db74>&#34;static&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;method&#34;</span>: <span style=color:#e6db74>&#34;GET&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;host&#34;</span>: [
+</span></span><span style=display:flex><span>            <span style=color:#e6db74>&#34;http://service:8080&#34;</span>
+</span></span><span style=display:flex><span>          ],
+</span></span><span style=display:flex><span>          <span style=color:#f92672>&#34;disable_host_sanitize&#34;</span>: <span style=color:#66d9ef>false</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      ]
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  ]
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#75715e># docker-compose.yml</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#39;3&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>services</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>krakend</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>devopsfaith/krakend</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>9090</span>:<span style=color:#ae81ff>9090</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./krakend.json:/etc/krakend/krakend.json</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>krakend-net</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>weather-service</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>service</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>build</span>: <span style=color:#ae81ff>../service/Service.API</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>krakend-net</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;8080:8080&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>krakend-net</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>external</span>: <span style=color:#66d9ef>false</span>
+</span></span></code></pre></div><p>KrakenD, kendi websitesinde de belirttiği gibi, Kong ve APISIX&rsquo;ten daha hızlı çalışıyor. Benzer test sonuçlarında, Kong ortalama 1032 milisaniye, APISIX ortalama 1025 milisaniye ile cevap verirken, KrakenD ortalama 1024 milisaniye ile en iyi performansı sunuyor. CPU tüketimi %4-6 civarında sabit kalırken en yüksek 30MB memory tüketiyor. Bu sonuçlar, KrakenD&rsquo;nin diğer rakiplerinden daha az kaynak tükettiğini ve buna rağmen daha hızlı olduğunu gösteriyor.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># KrakenD</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 30MB RAM | %4 - %6 CPU</span>
+</span></span><span style=display:flex><span>ab -k -n <span style=color:#ae81ff>10000</span> -c <span style=color:#ae81ff>50</span> http://localhost:9090/weather
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Server Software:
+</span></span><span style=display:flex><span>Server Hostname:        localhost
+</span></span><span style=display:flex><span>Server Port:            <span style=color:#ae81ff>9090</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Document Path:          /weather
+</span></span><span style=display:flex><span>Document Length:        <span style=color:#ae81ff>14</span> bytes
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Concurrency Level:      <span style=color:#ae81ff>50</span>
+</span></span><span style=display:flex><span>Time taken <span style=color:#66d9ef>for</span> tests:   206.359 seconds
+</span></span><span style=display:flex><span>Complete requests:      <span style=color:#ae81ff>10000</span>
+</span></span><span style=display:flex><span>Failed requests:        <span style=color:#ae81ff>9</span>
+</span></span><span style=display:flex><span>   <span style=color:#f92672>(</span>Connect: 0, Receive: 0, Length: 9, Exceptions: 0<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Non-2xx responses:      <span style=color:#ae81ff>9</span>
+</span></span><span style=display:flex><span>Keep-Alive requests:    <span style=color:#ae81ff>10000</span>
+</span></span><span style=display:flex><span>Total transferred:      <span style=color:#ae81ff>2439352</span> bytes
+</span></span><span style=display:flex><span>HTML transferred:       <span style=color:#ae81ff>139874</span> bytes
+</span></span><span style=display:flex><span>Requests per second:    48.46 <span style=color:#f92672>[</span><span style=color:#75715e>#/sec] (mean)</span>
+</span></span><span style=display:flex><span>Time per request:       1031.795 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Time per request:       20.636 <span style=color:#f92672>[</span>ms<span style=color:#f92672>]</span> <span style=color:#f92672>(</span>mean, across all concurrent requests<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Transfer rate:          11.54 <span style=color:#f92672>[</span>Kbytes/sec<span style=color:#f92672>]</span> received
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Connection Times <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>              min  mean<span style=color:#f92672>[</span>+/-sd<span style=color:#f92672>]</span> median   max
+</span></span><span style=display:flex><span>Connect:        <span style=color:#ae81ff>0</span>    <span style=color:#ae81ff>0</span>   0.1      <span style=color:#ae81ff>0</span>       <span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>Processing:  <span style=color:#ae81ff>1000</span> <span style=color:#ae81ff>1024</span> 122.7   <span style=color:#ae81ff>1010</span>    <span style=color:#ae81ff>3021</span>
+</span></span><span style=display:flex><span>Waiting:     <span style=color:#ae81ff>1000</span> <span style=color:#ae81ff>1024</span> 122.7   <span style=color:#ae81ff>1010</span>    <span style=color:#ae81ff>3021</span>
+</span></span><span style=display:flex><span>Total:       <span style=color:#ae81ff>1000</span> <span style=color:#ae81ff>1024</span> 122.8   <span style=color:#ae81ff>1010</span>    <span style=color:#ae81ff>3023</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Percentage of the requests served within a certain time <span style=color:#f92672>(</span>ms<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  50%   <span style=color:#ae81ff>1010</span>
+</span></span><span style=display:flex><span>  66%   <span style=color:#ae81ff>1012</span>
+</span></span><span style=display:flex><span>  75%   <span style=color:#ae81ff>1013</span>
+</span></span><span style=display:flex><span>  80%   <span style=color:#ae81ff>1015</span>
+</span></span><span style=display:flex><span>  90%   <span style=color:#ae81ff>1018</span>
+</span></span><span style=display:flex><span>  95%   <span style=color:#ae81ff>1023</span>
+</span></span><span style=display:flex><span>  98%   <span style=color:#ae81ff>1037</span>
+</span></span><span style=display:flex><span>  99%   <span style=color:#ae81ff>1520</span>
+</span></span><span style=display:flex><span> 100%   <span style=color:#ae81ff>3023</span> <span style=color:#f92672>(</span>longest request<span style=color:#f92672>)</span>
+</span></span></code></pre></div><h2 id=sonuç>Sonuç<a href=#sonuç class=hanchor arialabel=Anchor>&#8983;</a></h2><p>İncelediğimiz 5 API gateway ürününü karşılaştırmak için aşağıdaki gibi bir tablo hazırladım. Bu tablo, sunumun içeriğin özetini oluşturuyor ve araştırmalarım sonucunda birkaç önemli noktayı vurgulamak istiyorum.</p><h3 id=kong-ve-apisix><strong>Kong ve APISIX</strong><a href=#kong-ve-apisix class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Eğer farklı projelere sahip takımlar, tek bir API gateway üzerinden internete açılacaksa ve canlı olarak güncellenebilen bir admin arayüzüne ihtiyaç duyuyorsa, Kong veya APISIX tercih edilebilir. Her iki gateway de güçlü özelliklere sahip ve genişletilebilir yapıları ile öne çıkıyorlar. Ayrıca, admin arayüzü sayesinde, konfigurasyonları yönetmek ve güncellemeleri canlı olarak yapmak mümkün.</p><h3 id=krakend-1><strong>KrakenD</strong><a href=#krakend-1 class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Eğer API gateway projesi, takımların ortak sorumluluğunda ise ve geliştiriciler konfigurasyon dosyasını güncelleyip pipeline çalıştırabilirlerse, yüksek performans ve düşük kaynak tüketimi hedeflenen durumlarda, KrakenD iyi bir seçim olabilir. KrakenD, Go ile geliştirilmiş olup, güçlü bir aggregation sistemi sunar ve veritabanı kullanmadığı için daha kolay ölçeklenebilir.</p><h3 id=ocelot-ve-yarp><strong>Ocelot ve YARP</strong><a href=#ocelot-ve-yarp class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Performans ve kaynak tüketimi kritik değilse ve aşina olduğumuz bir teknoloji yeterliyse, .NET tabanlı Ocelot veya YARP ile yolumuza devam edebiliriz. Bu araçlar, benzer özellikleri farklı şekillerde destekliyorlar ve .NET ekosistemine entegrasyonları kolaydır.</p><h3 id=diğer-kriterler><strong>Diğer Kriterler</strong><a href=#diğer-kriterler class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>Deployment Yöntemleri</strong>: Hangi gateway’in nasıl deploy edileceği, konfigurasyon dosyalarının yapısı ve düzenlenebilirliği önemlidir.</li><li><strong>Community ve Enterprise Desteği</strong>: Gateway&rsquo;in ne kadar geniş bir kullanıcı kitlesine sahip olduğu ve destek alabileceğimiz kaynakların bulunup bulunmadığı da karar verirken göz önünde bulundurulmalıdır.</li></ul><p>Tüm ihtiyaçlarımıza tek başına kusursuz bir çözüm sunacak bir ürün maalesef yok. Bu nedenle, kendi ihtiyaçlarımızı değerlendirerek, seçeceğimiz aracın özelliklerine göre karar vermeliyiz. Doğru API gateway seçimi, projenizin başarısı için kritik bir adımdır ve ihtiyaçlarınıza en uygun olanı tercih etmek her zaman en iyi yaklaşımdır.</p><table><thead><tr><th>Feature</th><th>YARP</th><th>Ocelot</th><th>Kong</th><th>APISIX</th><th>KrakenD</th></tr></thead><tbody><tr><td>Request aggregation</td><td>NO</td><td>Simple, can be done with configuration</td><td>NO</td><td>YES</td><td>Powerful,, can be done with configuration</td></tr><tr><td>OAuth & OpenID</td><td>YES</td><td>YES</td><td>YES</td><td>YES</td><td>YES</td></tr><tr><td>Request validation</td><td>Needs custom logic</td><td>Needs custom logic</td><td>Comes with enterprise</td><td>YES</td><td>YES</td></tr><tr><td>HTTP to gRPC</td><td>YES</td><td>NO</td><td>YES</td><td>YES</td><td>YES</td></tr><tr><td>Websocket</td><td>YES</td><td>YES</td><td>?</td><td>YES</td><td>Comes with enterprise</td></tr><tr><td>State</td><td>File</td><td>File</td><td>File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka</td><td>File, etcd</td><td>File</td></tr><tr><td>Plugin</td><td>C#</td><td>C#</td><td><strong>Native</strong>: Lua & <strong>IPC</strong>: Go, Javascript, Python & <strong>WASM</strong>: Go, Rust vs.</td><td><strong>Native</strong>: Lua & <strong>IPC</strong>: Go, Javascript, Python & <strong>WASM</strong>: Go, Rust vs.</td><td>Go & Lua</td></tr><tr><td>Performance</td><td><strong>Mean response</strong>: 1029ms, <strong>Memory</strong>: 100MB, <strong>CPU</strong>: %10 - %20</td><td><strong>Mean response</strong>: 1030ms, <strong>Memory</strong>: 100MB, <strong>CPU</strong>: %10 - %20</td><td><strong>Mean response</strong>: 1035ms, <strong>Memory</strong>: 280MB, <strong>CPU</strong>: %5 - %10</td><td><strong>Mean response</strong>: 1025ms, <strong>Memory</strong>: 100MB <strong>CPU</strong>: %5 - %10</td><td><strong>Mean response</strong>: 1024ms, <strong>Memory</strong>: 30MB, <strong>CPU</strong>: %4 - %6</td></tr></tbody></table><p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:</p><p><a href=https://github.com/berkslv/lecture-api-gateway-comparison>GitHub - berkslv/lecture-api-gateway-comparison</a></p><hr><h2 id=sonuç-1>Sonuç<a href=#sonuç-1 class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek <a href=https://x.com/berkslv>@berkslv</a> ile bağlantıda ve iletişimde kalın.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Diğer yazıları oku</span><hr></div><div class=pagination__buttons><span class="button next"><a href=https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/><span class=button__text>RSA ile JavaScript'te Şifreleme ve .NET'te Şifre Çözme Nasıl Yapılır</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>

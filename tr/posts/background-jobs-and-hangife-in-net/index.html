@@ -1,0 +1,260 @@
+<!doctype html><html lang=tr><head><title>.NET ile Background jobs ve Hangfire :: Berk Selvi | Software Developer</title>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content=".NET'te arka plan işlerini yönetme hakkında Task.Run(), Hosted Service ve Hangfire gibi çeşitli yöntemlerle ilgili bilgi edinin. Bu kapsamlı blog yazısı, avantajları, dezavantajları ve uygulama detaylarıyla birlikte Hangfire'a odaklanarak bu yöntemleri inceliyoruz."><meta name=keywords content=".NET,hangfire,background jobs"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/tr/posts/background-jobs-and-hangife-in-net/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/tr/posts/background-jobs-and-hangife-in-net/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="tr"><meta property="og:type" content="article"><meta property="og:title" content=".NET ile Background jobs ve Hangfire"><meta property="og:description" content=".NET'te arka plan işlerini yönetme hakkında Task.Run(), Hosted Service ve Hangfire gibi çeşitli yöntemlerle ilgili bilgi edinin. Bu kapsamlı blog yazısı, avantajları, dezavantajları ve uygulama detaylarıyla birlikte Hangfire'a odaklanarak bu yöntemleri inceliyoruz."><meta property="og:url" content="https://berkselvi.dev/tr/posts/background-jobs-and-hangife-in-net/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/icon/favicon.ico"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2023-09-17 00:00:00 +0300 +0300"><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/tr>ana sayfa</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>türkçe ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/tr>ana sayfa</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h4>İngilizce çevirisi için;</h4><a href=/posts/background-jobs-and-hangife-in-net/>Background jobs and Hangfire in .NET</a><h1 class=post-title><a href=https://berkselvi.dev/tr/posts/background-jobs-and-hangife-in-net/>.NET ile Background jobs ve Hangfire</a></h1><div class=post-meta><span class=post-date>17 Eylül 2023
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 8 min read (1599 words)</span></div><div class=post-content><div><p>.NET ekosisteminde bir uygulama geliştirirken, işler karmaşıklaştığında, bazı yöntemlerimizin birden fazla servise gitmesi, yanıtlarını değerlendirmesi ve bu sonuçları farklı servislere bildirmesi gerekebilir ve bu uzun zaman alabilir! Bu tür uzun süre çalışan yöntemleri bir endpoint&rsquo;in arkasına yerleştirerek ve TCP bağlantımızı o HTTP isteğinin yanıtı için açık tutarak kaynakları boşa harcamak istemeyiz. Bu kullanımı on demand job olarak adlandırabiliriz çünkü bir istek yapıldığında çalışacaktır. Ayrıca, belirli günler veya haftanın belirli zamanlarında otomatik olarak çalışmasını isteyebiliriz, bunu bir recurring job olarak adlandırabiliriz; Bu tür durumlarda, işimizi uygulamanın çalıştığı main thread&rsquo;den farklı bir thread başlatarak &ldquo;background job&rdquo; kullanabiliriz.</p><p>.NET&rsquo;te arka plan işlerini yönetmenin birçok farklı yöntemi bulunmaktadır. Bu blog yazısında adım adım bu yöntemlerden bahsedeceğim, nasıl sorunları çözdüklerini ve bize hangi sorunları getirdiklerini anlatacağım ve background job&rsquo;larıyla uğraşırken en çok sevdiğim paket olan Hangfire&rsquo;da detaylı kullanım örnekleri sunacağım. Ayrıca, tüm kodlara repodan erişebilirsiniz:</p><p><a href=https://github.com/berkslv/lecture-dotnet-background-jobs>GitHub - berkslv/lecture-dotnet-background-jobs</a></p><h2 id=taskrun>Task.Run()<a href=#taskrun class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Background job&rsquo;larına ihtiyacım olduğunda aklıma ilk gelen çözüm, Task.Run() yöntemiyle yeni bir thread oluşturmak ve bir methodu onun üzerinde çalıştırmak oldu. Birçok dış servise bağımlılığı olan ve tamamlanması 5 dakikaya kadar sürebilen bir yöntemim var ve bu yöntemi oluşturduğum bir controller aracılığıyla bir HTTP isteği üzerinden çağırıyordum, ancak bu isteğe yanıt vermek sorunluydu çünkü TCP bağlantısının 5 dakika boyunca açık kalması gerekiyordu, bu yüzden isteği çağırdığımda, işlem başarıyla başlatıldıysa, istemciye işlemin başarıyla başlatıldığını 200 durum koduyla bildirmem gerekiyor.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// TestService.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestService</span> : ITestService  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ILogger&lt;TestService&gt; _logger;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> TestService(ILogger&lt;TestService&gt; logger)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger = logger;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>bool</span> RunTests()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} RunTests is started&#34;</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>        Thread.Sleep(<span style=color:#ae81ff>5000</span>);  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} RunTests is finished&#34;</span>);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// Program.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddTransient&lt;ITestService, TestService&gt;();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span></code></pre></div><p>Task.Run() kullanmadan işlemi çağırmazsam, bu örnekte tarayıcıda /job endpoint&rsquo;ine yönelik istek 3 saniye boyunca yükleniyor olacak.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// JobController.cs  </span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;[controller]</span><span style=color:#e6db74>&#34;)]  
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>JobController</span> : ControllerBase  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ITestService _testService;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> JobController(ITestService testService)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _testService = testService;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Get()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _testService.RunTests();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Ok&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Task.Run() ile aşağıdaki gibi kullandığımda, controller başarılı bir şekilde yanıt verecek ve RunTests yöntemim arka planda çalışmaya devam edecek.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#a6e22e>[HttpGet]</span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> IActionResult Get()  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    Task.Run(() =&gt; {  
+</span></span><span style=display:flex><span>        _testService.RunTests();  
+</span></span><span style=display:flex><span>    });  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Ok&#34;</span>);  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=artılar>Artılar<a href=#artılar class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>İsteğe bağlı olarak arka planda bir işlem çalıştırabiliriz.</li><li>Ek bir paket gerektirmez.</li></ul><h3 id=eksiler>Eksiler<a href=#eksiler class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>Mevcut durumda recurring job desteği bulunmamaktadır, özel bir sistem geliştirilmesi gerekmektedir.</li><li>Dependency Injection kullanıldığında, enjekte edilen interface&rsquo;ler main thread üzerinde kalacağından, gereken interface&rsquo;ü Service scope aracılığıyla yeniden oluşturmamız gerekebilir.</li><li>Yöntem çalışırken bir hata oluşursa ne olur?</li></ul><h2 id=hosted-service>Hosted Service<a href=#hosted-service class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Önceki örneğimizde uygulayamadığımız yinelenen işleri yönetmek için kendi sistemimizi geliştirmemiz gerekiyordu, ancak Hosted servis ile bu yönetimi kendimiz geliştirmemize gerek kalmaz, bunun yerine Program.cs dosyasında <code>AddHostedService</code> yöntemimizi aşağıdaki gibi çağırırız ve TestService sınıfımızı BackgroundService sınıfından türetiriz. Bu örnekte, RunTests yöntemimiz her 10 saniyede bir çalışacaktır. Bu zaman aralığı, BackgroundService abstract sınıfından miras alınan ExecuteAsync yönteminden ayarlanır.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// Program.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddHostedService&lt;TestService&gt;();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// TestService.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestService</span> : BackgroundService, ITestService  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ILogger&lt;TestService&gt; _logger;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> TestService(ILogger&lt;TestService&gt; logger)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger = logger;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>bool</span> RunTests(TestType testType)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> type = Enum.GetName(<span style=color:#66d9ef>typeof</span>(TestType), testType);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is started&#34;</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>        Thread.Sleep(<span style=color:#ae81ff>5000</span>);  
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is finished&#34;</span>);  
+</span></span><span style=display:flex><span>          
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task ExecuteAsync(CancellationToken stoppingToken)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> timer = <span style=color:#66d9ef>new</span> PeriodicTimer(TimeSpan.FromSeconds(<span style=color:#ae81ff>10</span>));  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>while</span> (<span style=color:#66d9ef>await</span> timer.WaitForNextTickAsync(stoppingToken))  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            RunTests(TestType.Recurring);  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Ancak, yöntemimizi on demand olarak çalıştırmak istiyorsak, Task.Run() yönteminin yardımıyla yeni bir thread üzerinden çalışırız, bu nedenle JobController.cs&rsquo;de herhangi bir değişiklik yapmamıza gerek yoktur.</p><h3 id=artılar-1>Artılar<a href=#artılar-1 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>Recurring job yönetimi sağlar</li><li>Ek paket kurmaya gerek yoktur</li></ul><h3 id=eksiler-1>Eksiler<a href=#eksiler-1 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>Talep üzerine çalışma için bir sistem bulunmamaktadır.</li><li>Yöntem çalışırken bir hata alınırsa ne olur?</li></ul><h2 id=hangfire>Hangfire<a href=#hangfire class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Hangfire, job&rsquo;ımızı tek bir sistem aracılığıyla talep üzerine ve recurring job&rsquo;ları yönetmeyi çok daha kolay hale getirir. Diğer iki yöntemde bulunmayan job storage sistemi sayesinde, uygulama o anda çalışmıyor olsa bile cron job ile süresi gelmişse ilgili job&rsquo;ı otomatik olarak çalıştırır. Belirli job&rsquo;ları çalıştırabilir ve job oluşturulurken sağlanan id bilgileri ile o job&rsquo;ı silme yeteneğine sahip oluruz. Ayrıca, /hangfire adresindeki bir dashboard üzerinden şu anda çalışan job&rsquo;larımızı izleyebiliriz.</p><img src=/img/background-jobs-and-hangife-in-net/hangfire-dashboard.webp alt="Hangfire dashboard" loading=lazy><p class=image-sub-title>Hangfire dashboard</p><p>Hangfire resmi olarak Sql Server veritabanını destekler, ancak açık kaynaklı bir uzantı ile Sqlite ve Postgresql gibi sık tercih edilen veritabanları da kullanılabilir. Ayrıca, Hangfire, ücretli sürümüyle Redis veritabanı desteği ve batch job&rsquo;larının çalıştırılması gibi enterprise ihtiyaçları da karşılar.</p><p><a href=https://www.hangfire.io/extensions.html>Hangfire – Background Jobs for .NET and .NET Core</a></p><p>Bu kısa Hangfire girişten sonra, Hangfire&rsquo;ı uygulamamızda nasıl kullanabileceğimiz ve yeteneklerinden kısaca bahsedelim. Örneğimizde job storage olarak Postgresql kullanacağız, ancak yukarıdaki link üzerinden istediğiniz veritabanını seçebilirsiniz. Uygulamamıza aşağıdaki paketleri yükledikten ve Docker ile bir Postgre SQL veritabanı kurduktan sonra, kodlarımıza geçelim.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>dotnet add package Hangfire  
+</span></span><span style=display:flex><span>dotnet add package Hangfire.Core  
+</span></span><span style=display:flex><span>dotnet add package Hangfire.PostgreSql   
+</span></span><span style=display:flex><span>dotnet add package TimeZoneConverter  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>docker run -d --name postgres_db -e POSTGRES_USER<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;root&#34;</span> -e POSTGRES_PASSWORD<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;1234&#34;</span> -e POSTGRES_DB<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;postgres&#34;</span> -v postgres_data:/var/lib/postgresql/data -p 5432:5432 postgres
+</span></span></code></pre></div><p>İlk olarak, appsettings.json dosyasında Postgresql için connection string bilgilerini aşağıdaki gibi sağlıyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span><span style=color:#e6db74>&#34;ConnectionStrings&#34;</span><span style=color:#960050;background-color:#1e0010>:</span> {  
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;HangfireConnection&#34;</span>: <span style=color:#e6db74>&#34;Host=localhost;Port=5432;Password=1234;Username=root;Database=postgres;Pooling=true;Integrated Security=true;&#34;</span>  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Program.cs&rsquo;de ilgili yapılandırmaları aşağıdaki gibi yapıyoruz.</p><p>TZConvert.GetTimeZoneInfo yöntemiyle gerekli zaman dilimi bilgisini işletim sisteminden alırsınız. Bu kod satırı, local makinenizin, frontend uygulamanızın ve cloud makinenizin farklı zaman dilimlerine sahip olabileceği için gereklidir.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddHangfire(config =&gt; {  
+</span></span><span style=display:flex><span>    config  
+</span></span><span style=display:flex><span>        .UseSimpleAssemblyNameTypeSerializer()  
+</span></span><span style=display:flex><span>        .UseRecommendedSerializerSettings()  
+</span></span><span style=display:flex><span>        .UsePostgreSqlStorage(builder.Configuration.GetConnectionString(<span style=color:#e6db74>&#34;HangfireConnection&#34;</span>));  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> cronEveryMinute = <span style=color:#e6db74>&#34;*/1 * * * *&#34;</span>;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> recurringJobOptions = <span style=color:#66d9ef>new</span> RecurringJobOptions  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        TimeZone = TZConvert.GetTimeZoneInfo(<span style=color:#e6db74>&#34;Etc/GMT+3&#34;</span>)  
+</span></span><span style=display:flex><span>    };  
+</span></span><span style=display:flex><span>    RecurringJob.AddOrUpdate&lt;ITestService&gt;(<span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>, x =&gt; x.RunTests(Guid.NewGuid(), TestType.Recurring, CancellationToken.None), cronEveryMinute, recurringJobOptions);  
+</span></span><span style=display:flex><span>});  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>builder.Services.AddHangfireServer();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>app.UseHangfireDashboard();  
+</span></span><span style=display:flex><span>app.MapHangfireDashboard();  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><p>To showcase Hangfire’s capabilities, we add a few more endpoints to our controller class.</p><p><strong>/run,</strong> we can start a job and that method returns us a job id</p><p><strong>/stop,</strong> we can stop the job related to the job id given to us by Hangfire.</p><p><strong>/continue,</strong> if many different jobs are to be run but they are dependent on each other, another job can be run after the parent job is finished with the given job id.</p><p><strong>/reschedule,</strong> the job’s working intervals can be dynamically adjusted by cron or TimeSpan.</p><p><strong>/deschedule,</strong> recurring jobs can be deleted by their unique id.</p><p><strong>/trigger,</strong> we can manually trigger a recurring job.</p><p>Hangfire&rsquo;nin yeteneklerini sergilemek için, controller sınıfımıza birkaç ek endpoint ekliyoruz.</p><p><strong>/run,</strong> bir job başlatabilir ve bu yöntem bize job&rsquo;ın id bilgisini döndürür.</p><p><strong>/stop,</strong> bize Hangfire tarafından verilen job id ile ilişkili job sürecini durdurabiliriz.</p><p><strong>/continue,</strong> birçok farklı job&rsquo;ın çalıştırılması gerekiyorsa, ama bunlar birbirlerine bağımlıysa, verilen job id ile ana job tamamlandıktan sonra başka bir iş çalıştırılabilir.</p><p><strong>/reschedule,</strong> job&rsquo;un çalışma aralıkları cron veya TimeSpan ile dinamik olarak ayarlanabilir.</p><p><strong>/deschedule,</strong> recurring job&rsquo;lar, job id bilgileriyle silinebilir.</p><p><strong>/trigger,</strong> recurring bir job&rsquo;ları manuel olarak tetikleyebiliriz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// JobController.cs  </span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;[controller]</span><span style=color:#e6db74>&#34;)]  
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>JobController</span> : ControllerBase  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/run&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Run()  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> jobId = BackgroundJob.Enqueue&lt;ITestService&gt;(x =&gt; x.RunTests(Guid.NewGuid(), TestType.OnDemand, CancellationToken.None));  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(jobId);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/stop&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Stop(<span style=color:#66d9ef>string</span> jobId)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        BackgroundJob.Delete(jobId);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Stopped&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/continue&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Continue(<span style=color:#66d9ef>string</span> jobId)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        BackgroundJob.ContinueJobWith&lt;ITestService&gt;(jobId, x =&gt; x.RunTests(Guid.NewGuid(), TestType.OnDemand, CancellationToken.None));  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Continued&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/reschedule&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Reschedule(<span style=color:#66d9ef>string</span> cron)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> recurringJobOptions = <span style=color:#66d9ef>new</span> RecurringJobOptions  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            TimeZone = TZConvert.GetTimeZoneInfo(<span style=color:#e6db74>&#34;Etc/GMT+3&#34;</span>)  
+</span></span><span style=display:flex><span>        };  
+</span></span><span style=display:flex><span>        RecurringJob.AddOrUpdate&lt;ITestService&gt;(<span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>, x =&gt; x.RunTests(Guid.NewGuid(), TestType.Recurring, CancellationToken.None), cron, recurringJobOptions);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Rescheduled&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/deschedule&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Deschedule(<span style=color:#66d9ef>string</span> id)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (String.IsNullOrEmpty(id))  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            id = <span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        RecurringJob.RemoveIfExists(id);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Descheduled&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span><span style=color:#a6e22e>  
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;/trigger&#34;)]</span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult Trigger(<span style=color:#66d9ef>string</span> id)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (String.IsNullOrEmpty(id))  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            id = <span style=color:#e6db74>&#34;id-run-and-wait&#34;</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        RecurringJob.TriggerJob(id);  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(<span style=color:#e6db74>&#34;Triggered&#34;</span>);  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Finally, error management, which is not in our toolkit previously with Task.Run and Hosted service but with Hangfire if an error occurs while running a method, Hangfire runs that method 10 more times with the same parameters at certain time intervals. As an example, we add a method called ThrowRandomly to our TestService class. With this method, we simply add a system that will throw an exception from the method that works with probability 1/2, but Hangfire will try to get successful results by re-running the methods that get errors for us. But errors that catches successfully cannot trigger the retry system. Therefore in the end of catch block we throw again.</p><p>Son olarak, önceki Task.Run() ve Hosted servis ile sahip olmadığımız hata yönetimi sayesinde Hangfire ile bir yöntem çalışırken bir hata oluşursa, Hangfire belirli zaman aralıklarında aynı parametrelerle bu yöntemi 10 kez daha çalıştırır. Bir örnek olarak, TestService sınıfımıza ThrowRandomly adında bir method ekliyoruz. Bu method ile, 1/2 olasılıkla gerçekleşen bir exception fırlatan yapı oluşturuyoruz, ancak Hangfire, bizim için hata alan methodları tekrar çalıştırarak başarılı sonuçlar elde etmeye çalışır. Ancak başarılı bir şekilde catch&rsquo;lenen exception&rsquo;lar, yeniden deneme sistemini tetiklemez. Bu nedenle catch bloğunun sonunda tekrar bir exception fırlatıyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// TestService.cs  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>TestService</span> : ITestService  
+</span></span><span style=display:flex><span>{  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ILogger&lt;TestService&gt; _logger;  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> TestService(ILogger&lt;TestService&gt; logger)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        _logger = logger;  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>bool</span> RunTests(Guid id, TestType testType, CancellationToken cancellationToken)  
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> type = Enum.GetName(<span style=color:#66d9ef>typeof</span>(TestType), testType);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>try</span>  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is started. Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>            cancellationToken.ThrowIfCancellationRequested();  
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>            Thread.Sleep(<span style=color:#ae81ff>5000</span>);  
+</span></span><span style=display:flex><span>            ThrowRandomly();  
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// ...  </span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>            _logger.LogInformation(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is finished. Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;    
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>catch</span> (OperationCanceledException exception)  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            _logger.LogError(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is failed. Exception: {exception.Message} Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>throw</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>catch</span>(Exception exception)  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            _logger.LogError(<span style=color:#e6db74>$&#34;{DateTime.Now} {type} RunTests is failed. Exception: {exception.Message} Id: {id}&#34;</span>);  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>throw</span>;  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> ThrowRandomly()   
+</span></span><span style=display:flex><span>    {  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> random = <span style=color:#66d9ef>new</span> Random();  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> number = random.Next(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>3</span>);  
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (number == <span style=color:#ae81ff>2</span>)  
+</span></span><span style=display:flex><span>        {  
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>throw</span> <span style=color:#66d9ef>new</span> Exception(<span style=color:#e6db74>&#34;Error is throwed!&#34;</span>);  
+</span></span><span style=display:flex><span>        }  
+</span></span><span style=display:flex><span>    }  
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Ayrıca, Hangfire ayrı servis üzerinde çalışır, bu ihtiyaçlarınıza bağlı olarak iyi veya kötü olabilir. Ölçeklendirme gerektiğinde uygulama ve Hangfire sunucularını ayırabilir ve bunları farklı makinelerde çalıştırabiliriz.</p><h3 id=artılar-2>Artılar<a href=#artılar-2 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>Güçlü bir soyutlama ile talep üzerine ve yinelenen işleri birlikte yönetebilir.</li><li>Cron iş zamanlamasını dinamik olarak ayarlayabiliriz ve zamanlaması çok hassastır.</li><li>Çalışan ve cron job&rsquo;larımızı Dashboard ile izleyebiliriz.</li><li>Zorunlu interface uygulaması veya başka özel bir uygulama yoktur, yalnızca Hangfire tarafından sağlanan yöntemleri kullanarak job&rsquo;larımızı yönetebiliriz.</li></ul><h3 id=eksiler-2>Eksiler<a href=#eksiler-2 class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li>Harici depolama gereklidir, varsayılan olarak SQL Server ile çalışır.</li></ul><hr><h2 id=sonuç>Sonuç<a href=#sonuç class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek <a href=https://x.com/berkslv>@berkslv</a> ile bağlantıda ve iletişimde kalın.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Diğer yazıları oku</span><hr></div><div class=pagination__buttons><span class="button previous"><a href=https://berkselvi.dev/tr/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/><span class=button__icon>←</span>
+<span class=button__text>Ocelot ve Keycloak'i birlikte kullanarak API Gateway'den Mikroservis güvenliğini nasıl sağlarız?</span>
+</a></span><span class="button next"><a href=https://berkselvi.dev/tr/posts/how-to-secure-dotnet-vue-application-with-keycloak/><span class=button__text>Dotnet ve Vue.js uygulamasını Keycloak ile nasıl güvenliği sağlanır?</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>

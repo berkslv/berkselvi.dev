@@ -1,4 +1,636 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Tue, 17 Sep 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>RSA ile JavaScript'te Şifreleme ve .NET'te Şifre Çözme Nasıl Yapılır</title><link>https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</link><pubDate>Thu, 07 Mar 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</guid><description>Dijital dünyada, farklı sistemler arasındaki iletişimin güvence altına alınması çok önemlidir. RSA şifreleme, iki adet anahtar kullanarak şifreleme ve şifre çözme için sağlam bir yol sağlar. Öte yandan, AES gibi simetrik şifreleme algoritmaları, şifreleme ve şifre çözme için tek bir anahtar kullanır. Bu nedenlerle, anahtarı halka açık olarak kullanmak ve hatta bir saldırganın eline geçse bile sorunları önlemek için asimetrik şifreleme algoritmalarından olan RSA tercih edilebilir.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Mon, 20 May 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>.NET Geliştiricisi Perspektifinden API Gateway Alternatifleri: YARP, Ocelot, Kong, APISIX ve KrakenD</title><link>https://berkselvi.dev/tr/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</link><pubDate>Mon, 20 May 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</guid><description>API Gateway servislerini microservice mimarisinde servislerimizi dış dünyaya açarken bir ara katman olarak kullanabiliyoruz. Bu yazımızda kısaca API Gateway nedirden bahsedip sonrasında kullanabileceğimiz .NET, OpenResty ve Go tabanlı API Gateway alternatiflerinden performans testleri ile beraber bahsedip sonlandıracağız.
+GitHub - berkslv/lecture-api-gateway-comparison
+API Gateway nedir? API Gateway, sistemlerimize aşağıdaki gibi bir giriş noktası sağlarak dış dünyadan izole eder. İçerisinde her bir alt serviste tekrar tekrar implemente edilmesi gereken yetkilendirme, loglama, Rate limiting gibi ortak sorunları tek bir servis ile çözer.</description><content>&lt;p>API Gateway servislerini microservice mimarisinde servislerimizi dış dünyaya açarken bir ara katman olarak kullanabiliyoruz. Bu yazımızda kısaca API Gateway nedirden bahsedip sonrasında kullanabileceğimiz .NET, OpenResty ve Go tabanlı API Gateway alternatiflerinden performans testleri ile beraber bahsedip sonlandıracağız.&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-api-gateway-comparison">GitHub - berkslv/lecture-api-gateway-comparison&lt;/a>&lt;/p>
+&lt;h2 id="api-gateway-nedir">API Gateway nedir?&lt;/h2>
+&lt;p>API Gateway, sistemlerimize aşağıdaki gibi bir giriş noktası sağlarak dış dünyadan izole eder. İçerisinde her bir alt serviste tekrar tekrar implemente edilmesi gereken yetkilendirme, loglama, Rate limiting gibi ortak sorunları tek bir servis ile çözer.&lt;/p>
+&lt;p>İstekleri yönlendirirken url ve body bilgilerinde hatta protokollerinde dönüşümler uygulayabilirler, http bir isteği alt servislere daha performanslı olması için gRPC protokolü ile iletebilirler. Gelen istekleri yönlendirecekleri servislerin adresini bulmak için flat file veya veritabanlarından yararlanabilirler.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/what-is-api-gateway.png" alt="What is API Gateway" loading="lazy" />
+&lt;br/>
+&lt;h2 id="seçenekler-nelerdir">Seçenekler nelerdir&lt;/h2>
+&lt;p>Sistemlerimizde kullanabileceğimiz API Gateway alternatiflerini değerlendirirken, gereken özelleştirme miktarı, performans, dağıtık mimariye uygunluk ve admin paneli üzerinden route bilgilerini güncelleme gibi ihtiyaçları değerlendirip uygun kararı vermemiz gerekir. Tüm bu özellikleri içerisinde barındıran, tüm ihtiyaçlarımızı tek seferde çözen bir gateway ürünü maalesef yok, bu değerlendirmeleri sistemimizin özel ihtiyaçlarına göre yapmamız gerekiyor.&lt;/p>
+&lt;p>İlk olarak .NET tabanlı, C# ile özelleştirilebilen YARP ve Ocelot API gateway ürünlerini inceleyip, OpenResty yani ngnix ve lua ikilisini beraber kullanan Kong ve Apache APISIX’den bahsettikten sonra son olarak cloud native ortamdada sıklıkla kullanılan Go ile geliştirilmiş KrakenD’yi inceleyeceğiz. Tüm bu seçenekler open source olarak ücretsiz bir şekilde kullanılabilir, ancak Kong, Apache APISIX ve KrakenD seçeneklerinde gerektiğinde enterprise desteğide alabiliriz.&lt;/p>
+&lt;p>Seçeneklerimizi değerlendirmeye geçmeden önce 1 saniye bekleyerek veritabanı sorgularını simule eden çok basit bir .NET API servisi geliştirdim, bu servisi API Gateway’in arkasına aldıktan sonra isteklerimizi yönlendirmeye çalışacak ve basit bir performans aracı olan Apache Benchmark kullanarak performans testlerimizi yapacağız. Kaynak tüketimini daha yakından inceleyebilmek için bu uygulamayı diğer gateway’lerle beraber docker compose ile çalıştırıp service:8080 adresinden isteklerimize cevap alacağız.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddEndpointsApiExplorer();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddSwaggerGen();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> (app.Environment.IsDevelopment())
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> app.UseSwagger();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> app.UseSwaggerUI();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapGet(&lt;span style="color:#e6db74">&amp;#34;/weather&amp;#34;&lt;/span>, () =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Task.Delay(&lt;span style="color:#ae81ff">1000&lt;/span>).Wait();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#e6db74">&amp;#34;Weather is OK!&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>})
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>.WithName(&lt;span style="color:#e6db74">&amp;#34;GetWeather&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>.WithOpenApi();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="net-based">.NET Based&lt;/h2>
+&lt;p>.NET developerları olarak genellikle aklımıza ilk gelen çözüm yine .NET teknolojileri ile geliştirilebilen YARP ve Ocelot API Gateway’den bahsederek seçeneklerimizi incelemeye başlayabiliriz. Bu seçenekler performans olarak çok basit senaryolarda diğer rakipleriyle yarışabilirken, kaynak tüketimi ve admin dashboard gibi kompleks ihtiyaçlara cevap veremiyorlar.&lt;/p>
+&lt;h2 id="yarp">YARP&lt;/h2>
+&lt;p>Microsoft&amp;rsquo;un geliştirdiği YARP (Yet Another Reverse Proxy), bir reverse proxy ürünü olarak öne çıkıyor ve API Gateway olarak da kullanılabiliyor. Microsoft&amp;rsquo;un GitHub&amp;rsquo;da yayınladığı eShop örnek microservice projelerinde API Gateway olarak kullanıldığı için benim dikkatimi çekmişti. YARP, load balancing desteği sunuyor ve birden fazla servis olduğunda bu servislerin adreslerini service discovery yöntemleriyle alarak istekleri round robin gibi algoritmalarla bu servislere iletebiliyor. .NET tabanlı olması sebebiyle standart .NET API projelerinde kullanılabilen yetkilendirme, rate limiting, distributed tracing, loglama gibi işlemler de kolayca ve aşina olduğumuz yöntemlerle uygulanabiliyor. Ayrıca, middleware eklemesi ile özelleştirmeler yapılabiliyor, HTTP isteklerini gRPC isteklerine dönüştürebiliyor.&lt;/p>
+&lt;p>YARP projesi oluşturmak için bir .NET web api projesi oluşturulduktan sonra Yarp.ReverseProxy paketini uygulamaya dahil edip, gerekli konfigürasyonları yaptıktan sonra istekleri yönlendirmek için hazırız.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddReverseProxy()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .LoadFromConfig(builder.Configuration.GetSection(&lt;span style="color:#e6db74">&amp;#34;ReverseProxy&amp;#34;&lt;/span>));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapReverseProxy();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// appsettings.json
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;ReverseProxy&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Routes&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;weaher_route&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;ClusterId&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;weather_api&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Match&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Path&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/weather&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Clusters&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;weather_api&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Destinations&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;destination1&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Address&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;http://service:8080&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Logging&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;LogLevel&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Default&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Information&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Microsoft.AspNetCore&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Warning&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;AllowedHosts&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;*&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="ocelot">Ocelot&lt;/h2>
+&lt;p>Ocelot, YARP ile birçok ortak özelliğe sahip bir API Gateway çözümüdür. .NET API projelerinde kullanılabilecek tüm özellikleri yine buradada kullanabiliriz, bağımsız bir open source projesi olarak geliştiriliyor. Ocelot, YARP’a kıyasla direk olarak API Gateway ürünü olarak kendisini konumlandırıyor. Farklı olarak, gRPC desteği bulunmamakla birlikte request aggregation gibi özellikler sunuyor. Bu özellik, backend for frontend yapılarında tercih edilebiliyor.&lt;/p>
+&lt;p>Ocelot uygulaması oluşturmak için benzer şekilde bir .NET API projesi oluşturulur ve Program.cs içerisindeki konfigurasyonlarla birlikte servis konfigürasyonları appsettings.json değil ayrı bir ocelot.json dosyasından okunacak şekilde ayarlanır. Ocelot ile route tanımlarını yaparken servis adreslerini tekrar tekrar vermemiz gerekiyor, YARP ile bunu tek bir yerden verip oluşturduğumuz servisin bilgisini router içerisinde belirtmemiz yeterliydi. Request aggregation işleminide route tanımlamalarından sonra aggregates kısmında yapabiliriz. Daha kompleks ihtiyaçlar için ise IDefinedAggregator interface&amp;rsquo;inden yararlanılarak özel aggregate&amp;rsquo;ler tanımlayabiliyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> Ocelot.DependencyInjection;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> Ocelot.Middleware;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Configuration.AddJsonFile(&lt;span style="color:#e6db74">&amp;#34;ocelot.json&amp;#34;&lt;/span>, optional: &lt;span style="color:#66d9ef">false&lt;/span>, reloadOnChange: &lt;span style="color:#66d9ef">true&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddOcelot(builder.Configuration);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> app.UseOcelot();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> app.RunAsync();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ocelot.json
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Routes&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/weather&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamScheme&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;http&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;DownstreamHostAndPorts&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Host&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;service&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;Port&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">8080&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamPathTemplate&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/weather&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;UpstreamHttpMethod&amp;#34;&lt;/span>: [ &lt;span style="color:#e6db74">&amp;#34;Get&amp;#34;&lt;/span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;GlobalConfiguration&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;BaseUrl&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://service:8080&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="yarp-vs-ocelot">YARP vs Ocelot&lt;/h2>
+&lt;p>Ocelot ve YARP teknolojilerinin karşılaştırılması için hazırladığım tabloda görebileceğiniz üzere çoğu özellikte ortaklar. Burada iki teknoloji arasında tercih sebebimiz destekledikleri özellikler, community desteği ve konfigurasyon dosyasının yapısı olabilir diye düşünüyorum.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Özellik&lt;/th>
+&lt;th>YARP&lt;/th>
+&lt;th>Ocelot&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Routing &amp;amp; Request mapping&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Authn &amp;amp; Authz&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Rate limiting&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Load balancing&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>gRPC&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Yok, Eski paketler mevcut&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Request aggregation&lt;/td>
+&lt;td>Yok, Özel geliştirme gerekiyor&lt;/td>
+&lt;td>Var, Basit ise konfigurasyon ile yapılabilir&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Distributed tracing&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>Mac M1 8GB özelliklere sahip makinede, docker üzerinde çalışan ortamda, sadece tek bir endpointin olduğu çok basit bir senaryoda performans testlerimiz için 10 bin adet isteği, 50 concurrent channel üzerinden Apache Benchmark aracı ile ilettim. Ocelot ortalama 1030 ms, YARP ortalama 1029 ms cevap süresi ile hemen hemen aynı sonucu verdiler. Tüketim için 20MB hafıza tüketimi ile başlarken, istekler gelmeye başlayınca maksimum 100MB tüketime kadar yükseldi, CPU için ise %10 - %20 arasında değişkenli gösteren bir tüketim oldu. Bu oranlar YARP ve Ocelot için hemen hemen aynı. Testleri yaptığım komutlarda şu şekilde:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># YARP&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 100 MB RAM | %10 - %20 CPU&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ab -k -n &lt;span style="color:#ae81ff">10000&lt;/span> -c &lt;span style="color:#ae81ff">50&lt;/span> http://localhost:9090/weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Software: Kestrel
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Hostname: localhost
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Port: &lt;span style="color:#ae81ff">9090&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Path: /weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Length: &lt;span style="color:#ae81ff">14&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Concurrency Level: &lt;span style="color:#ae81ff">50&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time taken &lt;span style="color:#66d9ef">for&lt;/span> tests: 207.561 seconds
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Complete requests: &lt;span style="color:#ae81ff">10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Failed requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Keep-Alive requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total transferred: &lt;span style="color:#ae81ff">1470000&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>HTML transferred: &lt;span style="color:#ae81ff">140000&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Requests per second: 48.18 &lt;span style="color:#f92672">[&lt;/span>&lt;span style="color:#75715e">#/sec] (mean)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 1037.804 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 20.756 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean, across all concurrent requests&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Transfer rate: 6.92 &lt;span style="color:#f92672">[&lt;/span>Kbytes/sec&lt;span style="color:#f92672">]&lt;/span> received
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection Times &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> min mean&lt;span style="color:#f92672">[&lt;/span>+/-sd&lt;span style="color:#f92672">]&lt;/span> median max
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connect: &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> 0.1 &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Processing: &lt;span style="color:#ae81ff">1002&lt;/span> &lt;span style="color:#ae81ff">1029&lt;/span> 122.9 &lt;span style="color:#ae81ff">1015&lt;/span> &lt;span style="color:#ae81ff">2961&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Waiting: &lt;span style="color:#ae81ff">1002&lt;/span> &lt;span style="color:#ae81ff">1028&lt;/span> 122.9 &lt;span style="color:#ae81ff">1015&lt;/span> &lt;span style="color:#ae81ff">2961&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total: &lt;span style="color:#ae81ff">1002&lt;/span> &lt;span style="color:#ae81ff">1029&lt;/span> 123.0 &lt;span style="color:#ae81ff">1016&lt;/span> &lt;span style="color:#ae81ff">2962&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Percentage of the requests served within a certain time &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 50% &lt;span style="color:#ae81ff">1016&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 66% &lt;span style="color:#ae81ff">1019&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 75% &lt;span style="color:#ae81ff">1021&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 80% &lt;span style="color:#ae81ff">1023&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 90% &lt;span style="color:#ae81ff">1028&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 95% &lt;span style="color:#ae81ff">1033&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 98% &lt;span style="color:#ae81ff">1052&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 99% &lt;span style="color:#ae81ff">1517&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 100% &lt;span style="color:#ae81ff">2962&lt;/span> &lt;span style="color:#f92672">(&lt;/span>longest request&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Ocelot&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 100 MB RAM | %10 - %20 CPU&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ab -k -n &lt;span style="color:#ae81ff">10000&lt;/span> -c &lt;span style="color:#ae81ff">50&lt;/span> http://localhost:9090/weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Software: Kestrel
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Hostname: localhost
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Port: &lt;span style="color:#ae81ff">9090&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Path: /weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Length: &lt;span style="color:#ae81ff">14&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Concurrency Level: &lt;span style="color:#ae81ff">50&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time taken &lt;span style="color:#66d9ef">for&lt;/span> tests: 207.739 seconds
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Complete requests: &lt;span style="color:#ae81ff">10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Failed requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Keep-Alive requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total transferred: &lt;span style="color:#ae81ff">1470000&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>HTML transferred: &lt;span style="color:#ae81ff">140000&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Requests per second: 48.14 &lt;span style="color:#f92672">[&lt;/span>&lt;span style="color:#75715e">#/sec] (mean)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 1038.695 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 20.774 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean, across all concurrent requests&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Transfer rate: 6.91 &lt;span style="color:#f92672">[&lt;/span>Kbytes/sec&lt;span style="color:#f92672">]&lt;/span> received
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection Times &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> min mean&lt;span style="color:#f92672">[&lt;/span>+/-sd&lt;span style="color:#f92672">]&lt;/span> median max
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connect: &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> 0.1 &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">2&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Processing: &lt;span style="color:#ae81ff">1001&lt;/span> &lt;span style="color:#ae81ff">1030&lt;/span> 120.0 &lt;span style="color:#ae81ff">1016&lt;/span> &lt;span style="color:#ae81ff">3347&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Waiting: &lt;span style="color:#ae81ff">1001&lt;/span> &lt;span style="color:#ae81ff">1030&lt;/span> 119.9 &lt;span style="color:#ae81ff">1016&lt;/span> &lt;span style="color:#ae81ff">3347&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total: &lt;span style="color:#ae81ff">1001&lt;/span> &lt;span style="color:#ae81ff">1030&lt;/span> 120.0 &lt;span style="color:#ae81ff">1016&lt;/span> &lt;span style="color:#ae81ff">3349&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Percentage of the requests served within a certain time &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 50% &lt;span style="color:#ae81ff">1016&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 66% &lt;span style="color:#ae81ff">1020&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 75% &lt;span style="color:#ae81ff">1023&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 80% &lt;span style="color:#ae81ff">1025&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 90% &lt;span style="color:#ae81ff">1032&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 95% &lt;span style="color:#ae81ff">1040&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 98% &lt;span style="color:#ae81ff">1061&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 99% &lt;span style="color:#ae81ff">1359&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 100% &lt;span style="color:#ae81ff">3349&lt;/span> &lt;span style="color:#f92672">(&lt;/span>longest request&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="openresty-tabanlı">OpenResty tabanlı&lt;/h2>
+&lt;p>Temellerinden yüksek performansı ile adını duyuran ngnix ve onun üzerine LuaJIT ile script dili olarak esnek bir geliştirme ortamı sunan ve JIT desteği yeniden başlatmaya gerek kalmadan hot reload özelliğini destekleyen Lua kullanılabiliyor. Lua dili çoğu senaryoda içerdiği C API’ı sayesinde C kadar yüksek performans sunarken aynı zamanda script dili olduğu için daha yüksek seviyede bir programlama ile, daha geliştirici dostu yapısıyla daha esnek geliştirme yapmaya olanak sağlıyor. C kodundan Lua kodunu veya Lua kodundan C kodunu çağırmakta mümkün, bu sebeplerden ötürü, beraber kullanılabilen güzel bir ikili ortaya çıkmış oluyor. Hatta C ve Lua ikilisi Cloudflare&amp;rsquo;in kendi araçları içinde kullandığı bir stack, yani networking uygulamarındada sıklıkla kullanılıyor.&lt;/p>
+&lt;p>Bahsettiğim OpenResty temeline sahip gatewaylerdende sektörde çok sık tercih edilen ve ismini duyuran Kong, sonrasında tamamen open source olduğu için dikkat çeken ve kong&amp;rsquo;dan birkaç güzel özellikle sıyrılmayı başaran Apache APISIX&amp;rsquo;den bahsedip Go tabanlı gatewaylerle devam edeceğiz.&lt;/p>
+&lt;h2 id="kong">Kong&lt;/h2>
+&lt;p>Kong, API gateway çözümleri arasında öne çıkan bir araçtır. Ocelot ve YARP gibi araçlarda bulunan tüm özellikleri içermesinin yanı sıra, 60&amp;rsquo;tan fazla plugin desteği ile ek özellikler sunar. Ayrıca, Lua veya diğer programlama dilleri ile kendi pluginlerinizi geliştirebilirsiniz. Enterprise versiyonu, GraphQL desteği, request validation, body güncelleme ve secret manager gibi ekstra özellikler sağlar.&lt;/p>
+&lt;p>Kong, bir API gateway’den beklenebilecek yetkilendirme, loglama, request transformation ve rate limiting gibi çoğu özelliği içerir. Ancak, request aggregation pattern (tek bir istekle birden fazla servisten dönen cevabı birleştirme) gibi bazı özellikler için ek geliştirme yapılması gerekir. Native olarak kullanılabilen ve diğer alternatiflerden daha iyi çalışacak olan Lua dışında Go, JavaScript veya Python ile IPC (Inter Process Communication) desteği sayesindede geliştirme yapabiliriz ancak daha düşük bir performansla karşılaşacağız. Bununla birlikte, WebAssembly desteği sayesinde Go ve Rust dilleri ile IPC yöntemlerine gerek kalmadan aşina olduğumuz dillerle yüksek performanslı pluginler oluşturabiliyoruz.&lt;/p>
+&lt;p>Ocelot ve YARP gibi .NET tabanlı gateway&amp;rsquo;lerden farklı olarak, Kong farklı deployment seçenekleri sunuyor. &amp;ldquo;DB-less&amp;rdquo; mod ile, konfigurasyon dosyaları üzerinden yönetim yapılabilir. Bu mod, CI/CD tabanlı deployment senaryolarında oldukça kullanışlıdır ve state farklılıklarından kaynaklanabilecek sorunları önler.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-config-deployment.png" alt="Kong config deployment" loading="lazy" />
+&lt;br/>
+&lt;p>Kong, ayrıca traditional olarak adlandırılan yöntemle veritabanı kullanarak da yapılandırılabilir. Bu yöntemde, PostgreSQL, Cassandra, Redis, InfluxDB ve Kafka gibi veritabanları kullanılabilir. Admin API üzerinden route ve service bilgileri üzerinde değişiklikler yapılabilir. Ancak, bu senaryo veritabanına ek bir bağımlılık yaratır ve control plane ile data plane aynı instance üzerinde çalıştığı için saldırılara karşı daha korunaksız olabilir.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-traditional-deployment.png" alt="Kong traditional deployment" loading="lazy" />
+&lt;br/>
+&lt;p>Konnect servisi sayesinde uygulayabildiğimiz deployment senaryosu ile data plane ve control plane kısımlarını birbirinden ayırarak daha güvenli bir yapıya sahip oluyoruz. Konnect, Kong tarafından software as a service olarak sunuluyor ve state yönetimi için ekstra bir veritabanı bağımlılığı gerektirmiyor.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-konnect-deployment.png" alt="Kong konnect deployment" loading="lazy" />
+&lt;br/>
+&lt;p>Eğer Kong tarafından yönetilen bir ürünü kullanmak istemiyorsak, tüm sürecin kendi iç network ağımız üzerinde yapılmasını istiyorsak Hybrid mod olarak isimlendirilen yöntem ile control plane ve veritabanı, data plane&amp;rsquo;den ayrı olarak sistemimizin, birbiri ile iletişime geçebilecekleri farklı bir konumuna deploy edilerek, data plane&amp;rsquo;i kontrol etmek için kullanılabiliyor&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-hybrid-deployment.png" alt="Kong hybrid deployment" loading="lazy" />
+&lt;br/>
+&lt;p>Local olarak geliştirme yapmak için, Kong&amp;rsquo;un sunduğu Docker Compose dosyası sayesinde PostgreSQL ile beraber çalışabilirsiniz ve ilk çalıştırmada bu dosyadan okuma yapılır. Eğer Db-less modda çalışacaksak, tüm route&amp;rsquo;larınızı bir konfigurasyon dosyasında tanımlamanız gerekir. Aşağıdaki gibi konfigurasyon tanımını yaptıktan sonra Docker compose dosyamız ile gateway’imizi ayağa kaldırıyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># kong.yaml&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># a very minimal declarative config file&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">_format_version&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;2.1&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">_transform&lt;/span>: &lt;span style="color:#66d9ef">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#f92672">name&lt;/span>: &lt;span style="color:#ae81ff">weather-service&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">url&lt;/span>: &lt;span style="color:#ae81ff">http://host.docker.internal:8080&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">routes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#f92672">name&lt;/span>: &lt;span style="color:#ae81ff">get-weather&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">paths&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">/weather&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># docker-compose.yml&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># ...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">kong&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;${KONG_DOCKER_TAG:-kong:latest}&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">user&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;${KONG_USER:-kong}&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">environment&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;lt;&amp;lt;&lt;/span>: &lt;span style="color:#75715e">*kong-env&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_ADMIN_ACCESS_LOG&lt;/span>: &lt;span style="color:#ae81ff">/dev/stdout&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_ADMIN_ERROR_LOG&lt;/span>: &lt;span style="color:#ae81ff">/dev/stderr&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_PROXY_LISTEN&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;${KONG_PROXY_LISTEN:-0.0.0.0:8000}&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_ADMIN_LISTEN&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;${KONG_ADMIN_LISTEN:-0.0.0.0:8001}&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_ADMIN_GUI_LISTEN&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;${KONG_ADMIN_GUI_LISTEN:-0.0.0.0:8002}&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_PROXY_ACCESS_LOG&lt;/span>: &lt;span style="color:#ae81ff">/dev/stdout&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_PROXY_ERROR_LOG&lt;/span>: &lt;span style="color:#ae81ff">/dev/stderr&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_PREFIX&lt;/span>: &lt;span style="color:#ae81ff">${KONG_PREFIX:-/var/run/kong}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">KONG_DECLARATIVE_CONFIG&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/opt/kong/kong.yaml&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">secrets&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">kong_postgres_password&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">kong-net&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># The following two environment variables default to an insecure value (0.0.0.0)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># according to the CIS Security test.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;${KONG_INBOUND_PROXY_LISTEN:-0.0.0.0}:8000:8000/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;${KONG_INBOUND_SSL_PROXY_LISTEN:-0.0.0.0}:8443:8443/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># Making them mandatory but undefined, like so would be backwards-breaking:&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># - &amp;#34;${KONG_INBOUND_PROXY_LISTEN?Missing inbound proxy host}:8000:8000/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># - &amp;#34;${KONG_INBOUND_SSL_PROXY_LISTEN?Missing inbound proxy ssl host}:8443:8443/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># Alternative is deactivating check 5.13 in the security bench, if we consider Kong&amp;#39;s own config to be enough security here&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;127.0.0.1:8001:8001/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;127.0.0.1:8444:8444/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;127.0.0.1:8002:8002/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">healthcheck&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">test&lt;/span>: [ &lt;span style="color:#e6db74">&amp;#34;CMD&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;kong&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;health&amp;#34;&lt;/span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">interval&lt;/span>: &lt;span style="color:#ae81ff">10s&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">timeout&lt;/span>: &lt;span style="color:#ae81ff">10s&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">retries&lt;/span>: &lt;span style="color:#ae81ff">10&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">restart&lt;/span>: &lt;span style="color:#66d9ef">on&lt;/span>-&lt;span style="color:#ae81ff">failure:5&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">read_only&lt;/span>: &lt;span style="color:#66d9ef">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">kong_tmp_vol:/tmp&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">./config:/opt/kong&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">security_opt&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#66d9ef">no&lt;/span>-&lt;span style="color:#ae81ff">new-privileges&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e"># ...&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>KONG_DATABASE&lt;span style="color:#f92672">=&lt;/span>postgres docker compose --profile database up -d
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kong ile başarılı bir deployment yaptıktan sonra, belirttiğiniz route ve service bilgilerine yapılan istekler yönlendirilir. Tradational veya hybrid mod ile deployment yaptıysanız, bir admin arayüzü üzerinden servis ve endpoint bilgilerinizi yönetebilirsiniz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-admin-gui.png" alt="Kong admin gui" loading="lazy" />
+&lt;br/>
+&lt;h2 id="apache-apisix">Apache APISIX&lt;/h2>
+&lt;p>Apache APISIX, Kong gibi OpenResty üzerine geliştirilmiş bir gateway ürünüdür. Ancak, Kong&amp;rsquo;un sadece enterprise versiyonunda bulunan özellikleri open source olarak sunarak öne çıkıyor. Bu özellikler arasında GraphQL, Canary release ve secret management gibi özellikler yer alıyor.&lt;/p>
+&lt;p>APISIX, yüksek sayıda route içeren sistemlerde Kong&amp;rsquo;a kıyasla daha yüksek performans sunuyor. Kong, route&amp;rsquo;lar arasında traversal search algoritması kullanırken, APISIX radixtree algoritması ile arama yapar ve plugin kullanılmadığında %140 daha yüksek performans sağlar. Ayrıca, APISIX, konfigurasyonlarını depolamak için etcd veritabanını kullanır. Bu veritabanı, cloud native çalışabilen ve kubernetes ortamında yaygın olarak kullanılan bir veritabanıdır.&lt;/p>
+&lt;p>APISIX, üç farklı deployment senaryosu sunar:&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>Traditional Yöntem&lt;/strong>: Control plane ve data plane aynı instance içerisinde veritabanına bağımlı olarak deploy edilir.&lt;/li>
+&lt;li>&lt;strong>Decoupled Yöntem&lt;/strong>: Control plane ve data plane farklı instancelar ile deploy edilir ve sadece control plane veritabanına bağımlıdır.&lt;/li>
+&lt;li>&lt;strong>Standalone Yöntem&lt;/strong>: Veritabanı kullanmadan konfigurasyon dosyasından okuma yaparak çalışır.&lt;/li>
+&lt;/ol>
+&lt;p>Local testlerimde, etcd veritabanı ile traditional yöntem kullanarak Docker Compose üzerinden deployment işlemi gerçekleştirdim. APISIX&amp;rsquo;in docker repositorysinde bulunan Docker Compose dosyasını küçük değişiklikler yaparak kullandım. Admin key&amp;rsquo;leri kullanarak Admin API&amp;rsquo;ya istek atabiliyoruz. Eğer standalone yöntemle deploy edecek olsaydım, route&amp;rsquo;ları yaml dosyasında tanımlamam gerekecekti.&lt;/p>
+&lt;p>Eğer enterprise destek almak istenirse, APISIX&amp;rsquo;in geliştirici takımı tarafından yürütülen &lt;a href="http://api7.ai/">API7&lt;/a> üzerinden destek alınabilir.&lt;/p>
+&lt;p>Docker Compose dosyalarını ve kullandığım kodları blog yazısının sonunda paylaşacağım, böylece siz de kendi localinizde hızlıca deneyimleyebilirsiniz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/kong-vs-apisix.png" alt="Kong vs APISIX" loading="lazy" />
+&lt;br/>
+&lt;p>APISIX&amp;rsquo;in performans testlerinde, 1025 milisaniye ortalama cevap süresiyle, 1032 milisaniye ortalama cevap süresine sahip olan Kong&amp;rsquo;dan daha performanslı olduğu görülebiliyor. Tüketim olarak, Kong çalışır çalışmaz 280MB civarında bellek kullanırken, APISIX 100MB civarında bellek kullanmaktadır. Her iki gateway de %5-10 arasında değişen CPU tüketim oranına sahip.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># Kong&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 280MB RAM | %5 - %10 CPU&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ab -k -n &lt;span style="color:#ae81ff">10000&lt;/span> -c &lt;span style="color:#ae81ff">50&lt;/span> http://localhost:8000/weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Software: Kestrel
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Hostname: localhost
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Port: &lt;span style="color:#ae81ff">8000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Path: /weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Length: &lt;span style="color:#ae81ff">14&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Concurrency Level: &lt;span style="color:#ae81ff">50&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time taken &lt;span style="color:#66d9ef">for&lt;/span> tests: 207.499 seconds
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Complete requests: &lt;span style="color:#ae81ff">10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Failed requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Keep-Alive requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total transferred: &lt;span style="color:#ae81ff">2730028&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>HTML transferred: &lt;span style="color:#ae81ff">140000&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Requests per second: 48.19 &lt;span style="color:#f92672">[&lt;/span>&lt;span style="color:#75715e">#/sec] (mean)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 1037.494 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 20.750 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean, across all concurrent requests&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Transfer rate: 12.85 &lt;span style="color:#f92672">[&lt;/span>Kbytes/sec&lt;span style="color:#f92672">]&lt;/span> received
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection Times &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> min mean&lt;span style="color:#f92672">[&lt;/span>+/-sd&lt;span style="color:#f92672">]&lt;/span> median max
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connect: &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> 0.2 &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Processing: &lt;span style="color:#ae81ff">1002&lt;/span> &lt;span style="color:#ae81ff">1032&lt;/span> 120.5 &lt;span style="color:#ae81ff">1018&lt;/span> &lt;span style="color:#ae81ff">3369&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Waiting: &lt;span style="color:#ae81ff">1002&lt;/span> &lt;span style="color:#ae81ff">1031&lt;/span> 120.5 &lt;span style="color:#ae81ff">1018&lt;/span> &lt;span style="color:#ae81ff">3369&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total: &lt;span style="color:#ae81ff">1002&lt;/span> &lt;span style="color:#ae81ff">1032&lt;/span> 120.7 &lt;span style="color:#ae81ff">1019&lt;/span> &lt;span style="color:#ae81ff">3373&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Percentage of the requests served within a certain time &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 50% &lt;span style="color:#ae81ff">1019&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 66% &lt;span style="color:#ae81ff">1023&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 75% &lt;span style="color:#ae81ff">1026&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 80% &lt;span style="color:#ae81ff">1028&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 90% &lt;span style="color:#ae81ff">1034&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 95% &lt;span style="color:#ae81ff">1043&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 98% &lt;span style="color:#ae81ff">1066&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 99% &lt;span style="color:#ae81ff">1326&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 100% &lt;span style="color:#ae81ff">3373&lt;/span> &lt;span style="color:#f92672">(&lt;/span>longest request&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># APISIX&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 100MB RAM | %5 - %10 CPU&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ab -k -n &lt;span style="color:#ae81ff">10000&lt;/span> -c &lt;span style="color:#ae81ff">50&lt;/span> http://localhost:9080/weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Software: APISIX/3.9.0
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Hostname: localhost
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Port: &lt;span style="color:#ae81ff">9090&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Path: /weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Length: &lt;span style="color:#ae81ff">14&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Concurrency Level: &lt;span style="color:#ae81ff">50&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time taken &lt;span style="color:#66d9ef">for&lt;/span> tests: 206.130 seconds
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Complete requests: &lt;span style="color:#ae81ff">10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Failed requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Keep-Alive requests: &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total transferred: &lt;span style="color:#ae81ff">1520000&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>HTML transferred: &lt;span style="color:#ae81ff">140000&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Requests per second: 48.51 &lt;span style="color:#f92672">[&lt;/span>&lt;span style="color:#75715e">#/sec] (mean)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 1030.650 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 20.613 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean, across all concurrent requests&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Transfer rate: 7.20 &lt;span style="color:#f92672">[&lt;/span>Kbytes/sec&lt;span style="color:#f92672">]&lt;/span> received
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection Times &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> min mean&lt;span style="color:#f92672">[&lt;/span>+/-sd&lt;span style="color:#f92672">]&lt;/span> median max
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connect: &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> 0.2 &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">7&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Processing: &lt;span style="color:#ae81ff">921&lt;/span> &lt;span style="color:#ae81ff">1025&lt;/span> 126.2 &lt;span style="color:#ae81ff">1012&lt;/span> &lt;span style="color:#ae81ff">3376&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Waiting: &lt;span style="color:#ae81ff">921&lt;/span> &lt;span style="color:#ae81ff">1024&lt;/span> 126.2 &lt;span style="color:#ae81ff">1011&lt;/span> &lt;span style="color:#ae81ff">3375&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total: &lt;span style="color:#ae81ff">921&lt;/span> &lt;span style="color:#ae81ff">1025&lt;/span> 126.3 &lt;span style="color:#ae81ff">1012&lt;/span> &lt;span style="color:#ae81ff">3378&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Percentage of the requests served within a certain time &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 50% &lt;span style="color:#ae81ff">1012&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 66% &lt;span style="color:#ae81ff">1015&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 75% &lt;span style="color:#ae81ff">1017&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 80% &lt;span style="color:#ae81ff">1018&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 90% &lt;span style="color:#ae81ff">1023&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 95% &lt;span style="color:#ae81ff">1029&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 98% &lt;span style="color:#ae81ff">1047&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 99% &lt;span style="color:#ae81ff">1327&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 100% &lt;span style="color:#ae81ff">3378&lt;/span> &lt;span style="color:#f92672">(&lt;/span>longest request&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="go-tabanlı-alternatifler">Go Tabanlı alternatifler&lt;/h1>
+&lt;p>Go tabanlı API Gateway alternatifi olarakta en çok öne çıkan, KrakenD ürününü ele alacağız, ancak Go ile ikinci bir alternatif olarak Tyk veya Traefik API Gateway gibi seçeneklerde tercih edilebilir, ancak bu ikiside ücretli olarak sunulduğu için deneme yapamadığımdan bu anlatımda yer veremiyorum.&lt;/p>
+&lt;h2 id="krakend">KrakenD&lt;/h2>
+&lt;p>KrakenD, Go ile geliştirilmiş ve hem community hem de enterprise versiyonlarına sahip bir API gateway ürünü. 2021 yılında Linux Foundation&amp;rsquo;a bağışlanmış olan Lura engine üzerinde çalışır. Diğer API gateway ürünlerine kıyasla güçlü bir aggregation sistemi sunar. Kod yazmadan, sadece konfigurasyon dosyaları ile tüm aggregation işlemlerini gerçekleştirebilirsiniz.&lt;/p>
+&lt;p>KrakenD, veritabanı kullanmadığı için, deployment seçenekleri arasında karar verirken kafa karışıklığı yaşatmaz, sadece konfigurasyon dosyalarını kullanarak işlemlerimizi gerçekleştirebiliriz. Ancak, veritabanı kullanmadığı için bir admin paneli bulunmamaktadır. Veritabanı olmaması, ek hata kaynaklarını ortadan kaldırır ve daha kolay ölçeklenebilirlik sağlar.&lt;/p>
+&lt;p>Tüm konfigurasyonlar, git ile takip edilebilecek bir konfigurasyon dosyası üzerinden yönetilir. JSON, YAML, TOML gibi farklı dosya formatlarını destekliyor. KrakenD&amp;rsquo;nin kendi websitesindeki arayüz ile konfigurasyonları hızlıca oluşturabiliriz. Local geliştirme ortamında, sadece konfigurasyon dosyası üzerinden çalıştığı için hızlıca ayağa kaldırabilir ve servisinize istek atabiliriz. Hot reload özelliği ile kısa bir downtime ile konfigurasyon dosyasını güncelleyebilirsiniz. Ancak, production ortamlarında bu yöntem önerilmez, GitOps yöntemleri ile yeni bir release almanız tavsiye edilir. Enterprise versiyonunda OpenAPI importer ve exporter, gzip sıkıştırma ve response validation gibi ek özellikler bulunur.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/api-gateway-alternatives-from-a-net-developer-standpoint/krakend-designer.png" alt="KrakenD designer" loading="lazy" />
+&lt;br/>
+&lt;p>KrakenD, Kong ve APISIX&amp;rsquo;ten çok daha basit bir Docker Compose içeriğine sahiptir, çünkü herhangi bir ek bağımlılığı yoktur. Sadece konfigurasyon dosyasının path&amp;rsquo;ini volume olarak vermeniz yeterlidir. Örnek olması açısından weather servisini Docker Compose içerisine ekledim ve krakend.json dosyasını hızlıca oluşturarak servisi ayağa kaldırdım. Performans testinde çok iyi sonuçlar verdi.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// krakend.json
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$schema&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://www.krakend.io/schema/krakend.json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;version&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">3&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;KrakenD - API Gateway&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;timeout&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;3000ms&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;cache_ttl&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;300s&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;output_encoding&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;port&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">9090&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;endpoints&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;endpoint&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/weather&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;method&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;GET&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;output_encoding&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;string&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;backend&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;url_pattern&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/weather&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;encoding&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;string&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;sd&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;static&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;method&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;GET&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;host&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;http://service:8080&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;disable_host_sanitize&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># docker-compose.yml&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">version&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;3&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">krakend&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">devopsfaith/krakend&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">9090&lt;/span>:&lt;span style="color:#ae81ff">9090&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">./krakend.json:/etc/krakend/krakend.json&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">krakend-net&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">weather-service&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">container_name&lt;/span>: &lt;span style="color:#ae81ff">service&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">build&lt;/span>: &lt;span style="color:#ae81ff">../service/Service.API&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">krakend-net&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;8080:8080&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">krakend-net&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">external&lt;/span>: &lt;span style="color:#66d9ef">false&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>KrakenD, kendi websitesinde de belirttiği gibi, Kong ve APISIX&amp;rsquo;ten daha hızlı çalışıyor. Benzer test sonuçlarında, Kong ortalama 1032 milisaniye, APISIX ortalama 1025 milisaniye ile cevap verirken, KrakenD ortalama 1024 milisaniye ile en iyi performansı sunuyor. CPU tüketimi %4-6 civarında sabit kalırken en yüksek 30MB memory tüketiyor. Bu sonuçlar, KrakenD&amp;rsquo;nin diğer rakiplerinden daha az kaynak tükettiğini ve buna rağmen daha hızlı olduğunu gösteriyor.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># KrakenD&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># 30MB RAM | %4 - %6 CPU&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ab -k -n &lt;span style="color:#ae81ff">10000&lt;/span> -c &lt;span style="color:#ae81ff">50&lt;/span> http://localhost:9090/weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Software:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Hostname: localhost
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server Port: &lt;span style="color:#ae81ff">9090&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Path: /weather
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Document Length: &lt;span style="color:#ae81ff">14&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Concurrency Level: &lt;span style="color:#ae81ff">50&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time taken &lt;span style="color:#66d9ef">for&lt;/span> tests: 206.359 seconds
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Complete requests: &lt;span style="color:#ae81ff">10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Failed requests: &lt;span style="color:#ae81ff">9&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">(&lt;/span>Connect: 0, Receive: 0, Length: 9, Exceptions: 0&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Non-2xx responses: &lt;span style="color:#ae81ff">9&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Keep-Alive requests: &lt;span style="color:#ae81ff">10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total transferred: &lt;span style="color:#ae81ff">2439352&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>HTML transferred: &lt;span style="color:#ae81ff">139874&lt;/span> bytes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Requests per second: 48.46 &lt;span style="color:#f92672">[&lt;/span>&lt;span style="color:#75715e">#/sec] (mean)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 1031.795 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Time per request: 20.636 &lt;span style="color:#f92672">[&lt;/span>ms&lt;span style="color:#f92672">]&lt;/span> &lt;span style="color:#f92672">(&lt;/span>mean, across all concurrent requests&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Transfer rate: 11.54 &lt;span style="color:#f92672">[&lt;/span>Kbytes/sec&lt;span style="color:#f92672">]&lt;/span> received
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection Times &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> min mean&lt;span style="color:#f92672">[&lt;/span>+/-sd&lt;span style="color:#f92672">]&lt;/span> median max
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connect: &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">0&lt;/span> 0.1 &lt;span style="color:#ae81ff">0&lt;/span> &lt;span style="color:#ae81ff">3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Processing: &lt;span style="color:#ae81ff">1000&lt;/span> &lt;span style="color:#ae81ff">1024&lt;/span> 122.7 &lt;span style="color:#ae81ff">1010&lt;/span> &lt;span style="color:#ae81ff">3021&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Waiting: &lt;span style="color:#ae81ff">1000&lt;/span> &lt;span style="color:#ae81ff">1024&lt;/span> 122.7 &lt;span style="color:#ae81ff">1010&lt;/span> &lt;span style="color:#ae81ff">3021&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Total: &lt;span style="color:#ae81ff">1000&lt;/span> &lt;span style="color:#ae81ff">1024&lt;/span> 122.8 &lt;span style="color:#ae81ff">1010&lt;/span> &lt;span style="color:#ae81ff">3023&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Percentage of the requests served within a certain time &lt;span style="color:#f92672">(&lt;/span>ms&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 50% &lt;span style="color:#ae81ff">1010&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 66% &lt;span style="color:#ae81ff">1012&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 75% &lt;span style="color:#ae81ff">1013&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 80% &lt;span style="color:#ae81ff">1015&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 90% &lt;span style="color:#ae81ff">1018&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 95% &lt;span style="color:#ae81ff">1023&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 98% &lt;span style="color:#ae81ff">1037&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 99% &lt;span style="color:#ae81ff">1520&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 100% &lt;span style="color:#ae81ff">3023&lt;/span> &lt;span style="color:#f92672">(&lt;/span>longest request&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>İncelediğimiz 5 API gateway ürününü karşılaştırmak için aşağıdaki gibi bir tablo hazırladım. Bu tablo, sunumun içeriğin özetini oluşturuyor ve araştırmalarım sonucunda birkaç önemli noktayı vurgulamak istiyorum.&lt;/p>
+&lt;h3 id="kong-ve-apisix">&lt;strong>Kong ve APISIX&lt;/strong>&lt;/h3>
+&lt;p>Eğer farklı projelere sahip takımlar, tek bir API gateway üzerinden internete açılacaksa ve canlı olarak güncellenebilen bir admin arayüzüne ihtiyaç duyuyorsa, Kong veya APISIX tercih edilebilir. Her iki gateway de güçlü özelliklere sahip ve genişletilebilir yapıları ile öne çıkıyorlar. Ayrıca, admin arayüzü sayesinde, konfigurasyonları yönetmek ve güncellemeleri canlı olarak yapmak mümkün.&lt;/p>
+&lt;h3 id="krakend-1">&lt;strong>KrakenD&lt;/strong>&lt;/h3>
+&lt;p>Eğer API gateway projesi, takımların ortak sorumluluğunda ise ve geliştiriciler konfigurasyon dosyasını güncelleyip pipeline çalıştırabilirlerse, yüksek performans ve düşük kaynak tüketimi hedeflenen durumlarda, KrakenD iyi bir seçim olabilir. KrakenD, Go ile geliştirilmiş olup, güçlü bir aggregation sistemi sunar ve veritabanı kullanmadığı için daha kolay ölçeklenebilir.&lt;/p>
+&lt;h3 id="ocelot-ve-yarp">&lt;strong>Ocelot ve YARP&lt;/strong>&lt;/h3>
+&lt;p>Performans ve kaynak tüketimi kritik değilse ve aşina olduğumuz bir teknoloji yeterliyse, .NET tabanlı Ocelot veya YARP ile yolumuza devam edebiliriz. Bu araçlar, benzer özellikleri farklı şekillerde destekliyorlar ve .NET ekosistemine entegrasyonları kolaydır.&lt;/p>
+&lt;h3 id="diğer-kriterler">&lt;strong>Diğer Kriterler&lt;/strong>&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>Deployment Yöntemleri&lt;/strong>: Hangi gateway’in nasıl deploy edileceği, konfigurasyon dosyalarının yapısı ve düzenlenebilirliği önemlidir.&lt;/li>
+&lt;li>&lt;strong>Community ve Enterprise Desteği&lt;/strong>: Gateway&amp;rsquo;in ne kadar geniş bir kullanıcı kitlesine sahip olduğu ve destek alabileceğimiz kaynakların bulunup bulunmadığı da karar verirken göz önünde bulundurulmalıdır.&lt;/li>
+&lt;/ul>
+&lt;p>Tüm ihtiyaçlarımıza tek başına kusursuz bir çözüm sunacak bir ürün maalesef yok. Bu nedenle, kendi ihtiyaçlarımızı değerlendirerek, seçeceğimiz aracın özelliklerine göre karar vermeliyiz. Doğru API gateway seçimi, projenizin başarısı için kritik bir adımdır ve ihtiyaçlarınıza en uygun olanı tercih etmek her zaman en iyi yaklaşımdır.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Feature&lt;/th>
+&lt;th>YARP&lt;/th>
+&lt;th>Ocelot&lt;/th>
+&lt;th>Kong&lt;/th>
+&lt;th>APISIX&lt;/th>
+&lt;th>KrakenD&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Request aggregation&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>Simple, can be done with configuration&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>Powerful,, can be done with configuration&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>OAuth &amp;amp; OpenID&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Request validation&lt;/td>
+&lt;td>Needs custom logic&lt;/td>
+&lt;td>Needs custom logic&lt;/td>
+&lt;td>Comes with enterprise&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>HTTP to gRPC&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Websocket&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>?&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>Comes with enterprise&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>State&lt;/td>
+&lt;td>File&lt;/td>
+&lt;td>File&lt;/td>
+&lt;td>File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka&lt;/td>
+&lt;td>File, etcd&lt;/td>
+&lt;td>File&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Plugin&lt;/td>
+&lt;td>C#&lt;/td>
+&lt;td>C#&lt;/td>
+&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td>Go &amp;amp; Lua&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Performance&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1029ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1030ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1035ms, &lt;strong>Memory&lt;/strong>: 280MB, &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1025ms, &lt;strong>Memory&lt;/strong>: 100MB &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1024ms, &lt;strong>Memory&lt;/strong>: 30MB, &lt;strong>CPU&lt;/strong>: %4 - %6&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-api-gateway-comparison">GitHub - berkslv/lecture-api-gateway-comparison&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="sonuç-1">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>RSA ile JavaScript'te Şifreleme ve .NET'te Şifre Çözme Nasıl Yapılır</title><link>https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</link><pubDate>Thu, 07 Mar 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</guid><description>Dijital dünyada, farklı sistemler arasındaki iletişimin güvence altına alınması çok önemlidir. RSA şifreleme, iki adet anahtar kullanarak şifreleme ve şifre çözme için sağlam bir yol sağlar. Öte yandan, AES gibi simetrik şifreleme algoritmaları, şifreleme ve şifre çözme için tek bir anahtar kullanır. Bu nedenlerle, anahtarı halka açık olarak kullanmak ve hatta bir saldırganın eline geçse bile sorunları önlemek için asimetrik şifreleme algoritmalarından olan RSA tercih edilebilir.
 Bu blog yazısında, OpenSSL ile RSA anahtar oluşturmayı, JavaScript&amp;rsquo;te şifrelemeyi ve .</description><content>&lt;p>Dijital dünyada, farklı sistemler arasındaki iletişimin güvence altına alınması çok önemlidir. RSA şifreleme, iki adet anahtar kullanarak şifreleme ve şifre çözme için sağlam bir yol sağlar. Öte yandan, AES gibi simetrik şifreleme algoritmaları, şifreleme ve şifre çözme için tek bir anahtar kullanır. Bu nedenlerle, anahtarı halka açık olarak kullanmak ve hatta bir saldırganın eline geçse bile sorunları önlemek için asimetrik şifreleme algoritmalarından olan RSA tercih edilebilir.&lt;/p>
 &lt;p>Bu blog yazısında, OpenSSL ile RSA anahtar oluşturmayı, JavaScript&amp;rsquo;te şifrelemeyi ve .NET&amp;rsquo;te şifre çözmeyi, bir frontend uygulaması ile bir backend servisi arasında güvenli veri alışverişi sağlayacak uygulamayı ele alacağım.&lt;/p>
 &lt;h2 id="understanding-rsa-encryption">Understanding RSA Encryption&lt;/h2>
@@ -548,6 +1180,330 @@ Bu blog yazısında, Ocelot&amp;rsquo;u kullanan ve güçlü bir açık kaynak k
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:&lt;/p>
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-ocelot-and-keycloak">GitHub - berkslv/lecture-ocelot-and-keycloak&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>.NET ile Background jobs ve Hangfire</title><link>https://berkselvi.dev/tr/posts/background-jobs-and-hangife-in-net/</link><pubDate>Sun, 17 Sep 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/background-jobs-and-hangife-in-net/</guid><description>.NET ekosisteminde bir uygulama geliştirirken, işler karmaşıklaştığında, bazı yöntemlerimizin birden fazla servise gitmesi, yanıtlarını değerlendirmesi ve bu sonuçları farklı servislere bildirmesi gerekebilir ve bu uzun zaman alabilir! Bu tür uzun süre çalışan yöntemleri bir endpoint&amp;rsquo;in arkasına yerleştirerek ve TCP bağlantımızı o HTTP isteğinin yanıtı için açık tutarak kaynakları boşa harcamak istemeyiz. Bu kullanımı on demand job olarak adlandırabiliriz çünkü bir istek yapıldığında çalışacaktır. Ayrıca, belirli günler veya haftanın belirli zamanlarında otomatik olarak çalışmasını isteyebiliriz, bunu bir recurring job olarak adlandırabiliriz; Bu tür durumlarda, işimizi uygulamanın çalıştığı main thread&amp;rsquo;den farklı bir thread başlatarak &amp;ldquo;background job&amp;rdquo; kullanabiliriz.</description><content>&lt;p>.NET ekosisteminde bir uygulama geliştirirken, işler karmaşıklaştığında, bazı yöntemlerimizin birden fazla servise gitmesi, yanıtlarını değerlendirmesi ve bu sonuçları farklı servislere bildirmesi gerekebilir ve bu uzun zaman alabilir! Bu tür uzun süre çalışan yöntemleri bir endpoint&amp;rsquo;in arkasına yerleştirerek ve TCP bağlantımızı o HTTP isteğinin yanıtı için açık tutarak kaynakları boşa harcamak istemeyiz. Bu kullanımı on demand job olarak adlandırabiliriz çünkü bir istek yapıldığında çalışacaktır. Ayrıca, belirli günler veya haftanın belirli zamanlarında otomatik olarak çalışmasını isteyebiliriz, bunu bir recurring job olarak adlandırabiliriz; Bu tür durumlarda, işimizi uygulamanın çalıştığı main thread&amp;rsquo;den farklı bir thread başlatarak &amp;ldquo;background job&amp;rdquo; kullanabiliriz.&lt;/p>
+&lt;p>.NET&amp;rsquo;te arka plan işlerini yönetmenin birçok farklı yöntemi bulunmaktadır. Bu blog yazısında adım adım bu yöntemlerden bahsedeceğim, nasıl sorunları çözdüklerini ve bize hangi sorunları getirdiklerini anlatacağım ve background job&amp;rsquo;larıyla uğraşırken en çok sevdiğim paket olan Hangfire&amp;rsquo;da detaylı kullanım örnekleri sunacağım. Ayrıca, tüm kodlara repodan erişebilirsiniz:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-dotnet-background-jobs">GitHub - berkslv/lecture-dotnet-background-jobs&lt;/a>&lt;/p>
+&lt;h2 id="taskrun">Task.Run()&lt;/h2>
+&lt;p>Background job&amp;rsquo;larına ihtiyacım olduğunda aklıma ilk gelen çözüm, Task.Run() yöntemiyle yeni bir thread oluşturmak ve bir methodu onun üzerinde çalıştırmak oldu. Birçok dış servise bağımlılığı olan ve tamamlanması 5 dakikaya kadar sürebilen bir yöntemim var ve bu yöntemi oluşturduğum bir controller aracılığıyla bir HTTP isteği üzerinden çağırıyordum, ancak bu isteğe yanıt vermek sorunluydu çünkü TCP bağlantısının 5 dakika boyunca açık kalması gerekiyordu, bu yüzden isteği çağırdığımda, işlem başarıyla başlatıldıysa, istemciye işlemin başarıyla başlatıldığını 200 durum koduyla bildirmem gerekiyor.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// TestService.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TestService&lt;/span> : ITestService
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> ILogger&amp;lt;TestService&amp;gt; _logger;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> TestService(ILogger&amp;lt;TestService&amp;gt; logger)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger = logger;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">bool&lt;/span> RunTests()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogInformation(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} RunTests is started&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Thread.Sleep(&lt;span style="color:#ae81ff">5000&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogInformation(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} RunTests is finished&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddTransient&amp;lt;ITestService, TestService&amp;gt;();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Task.Run() kullanmadan işlemi çağırmazsam, bu örnekte tarayıcıda /job endpoint&amp;rsquo;ine yönelik istek 3 saniye boyunca yükleniyor olacak.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// JobController.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[ApiController]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Route(&amp;#34;[controller]&lt;/span>&lt;span style="color:#e6db74">&amp;#34;)]
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&lt;/span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">JobController&lt;/span> : ControllerBase
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> ITestService _testService;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> JobController(ITestService testService)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _testService = testService;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> IActionResult Get()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _testService.RunTests();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(&lt;span style="color:#e6db74">&amp;#34;Ok&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Task.Run() ile aşağıdaki gibi kullandığımda, controller başarılı bir şekilde yanıt verecek ve RunTests yöntemim arka planda çalışmaya devam edecek.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[HttpGet]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> IActionResult Get()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Task.Run(() =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _testService.RunTests();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(&lt;span style="color:#e6db74">&amp;#34;Ok&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="artılar">Artılar&lt;/h3>
+&lt;ul>
+&lt;li>İsteğe bağlı olarak arka planda bir işlem çalıştırabiliriz.&lt;/li>
+&lt;li>Ek bir paket gerektirmez.&lt;/li>
+&lt;/ul>
+&lt;h3 id="eksiler">Eksiler&lt;/h3>
+&lt;ul>
+&lt;li>Mevcut durumda recurring job desteği bulunmamaktadır, özel bir sistem geliştirilmesi gerekmektedir.&lt;/li>
+&lt;li>Dependency Injection kullanıldığında, enjekte edilen interface&amp;rsquo;ler main thread üzerinde kalacağından, gereken interface&amp;rsquo;ü Service scope aracılığıyla yeniden oluşturmamız gerekebilir.&lt;/li>
+&lt;li>Yöntem çalışırken bir hata oluşursa ne olur?&lt;/li>
+&lt;/ul>
+&lt;h2 id="hosted-service">Hosted Service&lt;/h2>
+&lt;p>Önceki örneğimizde uygulayamadığımız yinelenen işleri yönetmek için kendi sistemimizi geliştirmemiz gerekiyordu, ancak Hosted servis ile bu yönetimi kendimiz geliştirmemize gerek kalmaz, bunun yerine Program.cs dosyasında &lt;code>AddHostedService&lt;/code> yöntemimizi aşağıdaki gibi çağırırız ve TestService sınıfımızı BackgroundService sınıfından türetiriz. Bu örnekte, RunTests yöntemimiz her 10 saniyede bir çalışacaktır. Bu zaman aralığı, BackgroundService abstract sınıfından miras alınan ExecuteAsync yönteminden ayarlanır.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddHostedService&amp;lt;TestService&amp;gt;();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// TestService.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TestService&lt;/span> : BackgroundService, ITestService
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> ILogger&amp;lt;TestService&amp;gt; _logger;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> TestService(ILogger&amp;lt;TestService&amp;gt; logger)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger = logger;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">bool&lt;/span> RunTests(TestType testType)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> type = Enum.GetName(&lt;span style="color:#66d9ef">typeof&lt;/span>(TestType), testType);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogInformation(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} {type} RunTests is started&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Thread.Sleep(&lt;span style="color:#ae81ff">5000&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogInformation(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} {type} RunTests is finished&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">protected&lt;/span> &lt;span style="color:#66d9ef">override&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task ExecuteAsync(CancellationToken stoppingToken)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> timer = &lt;span style="color:#66d9ef">new&lt;/span> PeriodicTimer(TimeSpan.FromSeconds(&lt;span style="color:#ae81ff">10&lt;/span>));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">while&lt;/span> (&lt;span style="color:#66d9ef">await&lt;/span> timer.WaitForNextTickAsync(stoppingToken))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> RunTests(TestType.Recurring);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ancak, yöntemimizi on demand olarak çalıştırmak istiyorsak, Task.Run() yönteminin yardımıyla yeni bir thread üzerinden çalışırız, bu nedenle JobController.cs&amp;rsquo;de herhangi bir değişiklik yapmamıza gerek yoktur.&lt;/p>
+&lt;h3 id="artılar-1">Artılar&lt;/h3>
+&lt;ul>
+&lt;li>Recurring job yönetimi sağlar&lt;/li>
+&lt;li>Ek paket kurmaya gerek yoktur&lt;/li>
+&lt;/ul>
+&lt;h3 id="eksiler-1">Eksiler&lt;/h3>
+&lt;ul>
+&lt;li>Talep üzerine çalışma için bir sistem bulunmamaktadır.&lt;/li>
+&lt;li>Yöntem çalışırken bir hata alınırsa ne olur?&lt;/li>
+&lt;/ul>
+&lt;h2 id="hangfire">Hangfire&lt;/h2>
+&lt;p>Hangfire, job&amp;rsquo;ımızı tek bir sistem aracılığıyla talep üzerine ve recurring job&amp;rsquo;ları yönetmeyi çok daha kolay hale getirir. Diğer iki yöntemde bulunmayan job storage sistemi sayesinde, uygulama o anda çalışmıyor olsa bile cron job ile süresi gelmişse ilgili job&amp;rsquo;ı otomatik olarak çalıştırır. Belirli job&amp;rsquo;ları çalıştırabilir ve job oluşturulurken sağlanan id bilgileri ile o job&amp;rsquo;ı silme yeteneğine sahip oluruz. Ayrıca, /hangfire adresindeki bir dashboard üzerinden şu anda çalışan job&amp;rsquo;larımızı izleyebiliriz.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/background-jobs-and-hangife-in-net/hangfire-dashboard.webp" alt="Hangfire dashboard" loading="lazy" />
+&lt;p class="image-sub-title">Hangfire dashboard&lt;/p>
+&lt;p>Hangfire resmi olarak Sql Server veritabanını destekler, ancak açık kaynaklı bir uzantı ile Sqlite ve Postgresql gibi sık tercih edilen veritabanları da kullanılabilir. Ayrıca, Hangfire, ücretli sürümüyle Redis veritabanı desteği ve batch job&amp;rsquo;larının çalıştırılması gibi enterprise ihtiyaçları da karşılar.&lt;/p>
+&lt;p>&lt;a href="https://www.hangfire.io/extensions.html">Hangfire – Background Jobs for .NET and .NET Core&lt;/a>&lt;/p>
+&lt;p>Bu kısa Hangfire girişten sonra, Hangfire&amp;rsquo;ı uygulamamızda nasıl kullanabileceğimiz ve yeteneklerinden kısaca bahsedelim. Örneğimizde job storage olarak Postgresql kullanacağız, ancak yukarıdaki link üzerinden istediğiniz veritabanını seçebilirsiniz. Uygulamamıza aşağıdaki paketleri yükledikten ve Docker ile bir Postgre SQL veritabanı kurduktan sonra, kodlarımıza geçelim.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>dotnet add package Hangfire
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package Hangfire.Core
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package Hangfire.PostgreSql
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package TimeZoneConverter
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>docker run -d --name postgres_db -e POSTGRES_USER&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;root&amp;#34;&lt;/span> -e POSTGRES_PASSWORD&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;1234&amp;#34;&lt;/span> -e POSTGRES_DB&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#e6db74">&amp;#34;postgres&amp;#34;&lt;/span> -v postgres_data:/var/lib/postgresql/data -p 5432:5432 postgres
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>İlk olarak, appsettings.json dosyasında Postgresql için connection string bilgilerini aşağıdaki gibi sağlıyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&amp;#34;ConnectionStrings&amp;#34;&lt;/span>&lt;span style="color:#960050;background-color:#1e0010">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;HangfireConnection&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;Host=localhost;Port=5432;Password=1234;Username=root;Database=postgres;Pooling=true;Integrated Security=true;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Program.cs&amp;rsquo;de ilgili yapılandırmaları aşağıdaki gibi yapıyoruz.&lt;/p>
+&lt;p>TZConvert.GetTimeZoneInfo yöntemiyle gerekli zaman dilimi bilgisini işletim sisteminden alırsınız. Bu kod satırı, local makinenizin, frontend uygulamanızın ve cloud makinenizin farklı zaman dilimlerine sahip olabileceği için gereklidir.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddHangfire(config =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> config
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .UseSimpleAssemblyNameTypeSerializer()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .UseRecommendedSerializerSettings()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .UsePostgreSqlStorage(builder.Configuration.GetConnectionString(&lt;span style="color:#e6db74">&amp;#34;HangfireConnection&amp;#34;&lt;/span>));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> cronEveryMinute = &lt;span style="color:#e6db74">&amp;#34;*/1 * * * *&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> recurringJobOptions = &lt;span style="color:#66d9ef">new&lt;/span> RecurringJobOptions
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TimeZone = TZConvert.GetTimeZoneInfo(&lt;span style="color:#e6db74">&amp;#34;Etc/GMT+3&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> RecurringJob.AddOrUpdate&amp;lt;ITestService&amp;gt;(&lt;span style="color:#e6db74">&amp;#34;id-run-and-wait&amp;#34;&lt;/span>, x =&amp;gt; x.RunTests(Guid.NewGuid(), TestType.Recurring, CancellationToken.None), cronEveryMinute, recurringJobOptions);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddHangfireServer();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseHangfireDashboard();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapHangfireDashboard();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>To showcase Hangfire’s capabilities, we add a few more endpoints to our controller class.&lt;/p>
+&lt;p>&lt;strong>/run,&lt;/strong> we can start a job and that method returns us a job id&lt;/p>
+&lt;p>&lt;strong>/stop,&lt;/strong> we can stop the job related to the job id given to us by Hangfire.&lt;/p>
+&lt;p>&lt;strong>/continue,&lt;/strong> if many different jobs are to be run but they are dependent on each other, another job can be run after the parent job is finished with the given job id.&lt;/p>
+&lt;p>&lt;strong>/reschedule,&lt;/strong> the job’s working intervals can be dynamically adjusted by cron or TimeSpan.&lt;/p>
+&lt;p>&lt;strong>/deschedule,&lt;/strong> recurring jobs can be deleted by their unique id.&lt;/p>
+&lt;p>&lt;strong>/trigger,&lt;/strong> we can manually trigger a recurring job.&lt;/p>
+&lt;p>Hangfire&amp;rsquo;nin yeteneklerini sergilemek için, controller sınıfımıza birkaç ek endpoint ekliyoruz.&lt;/p>
+&lt;p>&lt;strong>/run,&lt;/strong> bir job başlatabilir ve bu yöntem bize job&amp;rsquo;ın id bilgisini döndürür.&lt;/p>
+&lt;p>&lt;strong>/stop,&lt;/strong> bize Hangfire tarafından verilen job id ile ilişkili job sürecini durdurabiliriz.&lt;/p>
+&lt;p>&lt;strong>/continue,&lt;/strong> birçok farklı job&amp;rsquo;ın çalıştırılması gerekiyorsa, ama bunlar birbirlerine bağımlıysa, verilen job id ile ana job tamamlandıktan sonra başka bir iş çalıştırılabilir.&lt;/p>
+&lt;p>&lt;strong>/reschedule,&lt;/strong> job&amp;rsquo;un çalışma aralıkları cron veya TimeSpan ile dinamik olarak ayarlanabilir.&lt;/p>
+&lt;p>&lt;strong>/deschedule,&lt;/strong> recurring job&amp;rsquo;lar, job id bilgileriyle silinebilir.&lt;/p>
+&lt;p>&lt;strong>/trigger,&lt;/strong> recurring bir job&amp;rsquo;ları manuel olarak tetikleyebiliriz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// JobController.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[ApiController]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Route(&amp;#34;[controller]&lt;/span>&lt;span style="color:#e6db74">&amp;#34;)]
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74">&lt;/span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">JobController&lt;/span> : ControllerBase
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;/run&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> IActionResult Run()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> jobId = BackgroundJob.Enqueue&amp;lt;ITestService&amp;gt;(x =&amp;gt; x.RunTests(Guid.NewGuid(), TestType.OnDemand, CancellationToken.None));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(jobId);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;/stop&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> IActionResult Stop(&lt;span style="color:#66d9ef">string&lt;/span> jobId)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> BackgroundJob.Delete(jobId);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(&lt;span style="color:#e6db74">&amp;#34;Stopped&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;/continue&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> IActionResult Continue(&lt;span style="color:#66d9ef">string&lt;/span> jobId)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> BackgroundJob.ContinueJobWith&amp;lt;ITestService&amp;gt;(jobId, x =&amp;gt; x.RunTests(Guid.NewGuid(), TestType.OnDemand, CancellationToken.None));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(&lt;span style="color:#e6db74">&amp;#34;Continued&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;/reschedule&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> IActionResult Reschedule(&lt;span style="color:#66d9ef">string&lt;/span> cron)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> recurringJobOptions = &lt;span style="color:#66d9ef">new&lt;/span> RecurringJobOptions
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> TimeZone = TZConvert.GetTimeZoneInfo(&lt;span style="color:#e6db74">&amp;#34;Etc/GMT+3&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> };
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> RecurringJob.AddOrUpdate&amp;lt;ITestService&amp;gt;(&lt;span style="color:#e6db74">&amp;#34;id-run-and-wait&amp;#34;&lt;/span>, x =&amp;gt; x.RunTests(Guid.NewGuid(), TestType.Recurring, CancellationToken.None), cron, recurringJobOptions);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(&lt;span style="color:#e6db74">&amp;#34;Rescheduled&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;/deschedule&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> IActionResult Deschedule(&lt;span style="color:#66d9ef">string&lt;/span> id)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (String.IsNullOrEmpty(id))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> id = &lt;span style="color:#e6db74">&amp;#34;id-run-and-wait&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> RecurringJob.RemoveIfExists(id);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(&lt;span style="color:#e6db74">&amp;#34;Descheduled&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e"> [HttpGet(&amp;#34;/trigger&amp;#34;)]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> IActionResult Trigger(&lt;span style="color:#66d9ef">string&lt;/span> id)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (String.IsNullOrEmpty(id))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> id = &lt;span style="color:#e6db74">&amp;#34;id-run-and-wait&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> RecurringJob.TriggerJob(id);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> Ok(&lt;span style="color:#e6db74">&amp;#34;Triggered&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Finally, error management, which is not in our toolkit previously with Task.Run and Hosted service but with Hangfire if an error occurs while running a method, Hangfire runs that method 10 more times with the same parameters at certain time intervals. As an example, we add a method called ThrowRandomly to our TestService class. With this method, we simply add a system that will throw an exception from the method that works with probability 1/2, but Hangfire will try to get successful results by re-running the methods that get errors for us. But errors that catches successfully cannot trigger the retry system. Therefore in the end of catch block we throw again.&lt;/p>
+&lt;p>Son olarak, önceki Task.Run() ve Hosted servis ile sahip olmadığımız hata yönetimi sayesinde Hangfire ile bir yöntem çalışırken bir hata oluşursa, Hangfire belirli zaman aralıklarında aynı parametrelerle bu yöntemi 10 kez daha çalıştırır. Bir örnek olarak, TestService sınıfımıza ThrowRandomly adında bir method ekliyoruz. Bu method ile, 1/2 olasılıkla gerçekleşen bir exception fırlatan yapı oluşturuyoruz, ancak Hangfire, bizim için hata alan methodları tekrar çalıştırarak başarılı sonuçlar elde etmeye çalışır. Ancak başarılı bir şekilde catch&amp;rsquo;lenen exception&amp;rsquo;lar, yeniden deneme sistemini tetiklemez. Bu nedenle catch bloğunun sonunda tekrar bir exception fırlatıyoruz.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cs" data-lang="cs">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// TestService.cs &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">TestService&lt;/span> : ITestService
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> ILogger&amp;lt;TestService&amp;gt; _logger;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> TestService(ILogger&amp;lt;TestService&amp;gt; logger)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger = logger;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">bool&lt;/span> RunTests(Guid id, TestType testType, CancellationToken cancellationToken)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> type = Enum.GetName(&lt;span style="color:#66d9ef">typeof&lt;/span>(TestType), testType);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">try&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogInformation(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} {type} RunTests is started. Id: {id}&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cancellationToken.ThrowIfCancellationRequested();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Thread.Sleep(&lt;span style="color:#ae81ff">5000&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ThrowRandomly();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// ... &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogInformation(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} {type} RunTests is finished. Id: {id}&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">true&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">catch&lt;/span> (OperationCanceledException exception)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogError(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} {type} RunTests is failed. Exception: {exception.Message} Id: {id}&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">catch&lt;/span>(Exception exception)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _logger.LogError(&lt;span style="color:#e6db74">$&amp;#34;{DateTime.Now} {type} RunTests is failed. Exception: {exception.Message} Id: {id}&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> ThrowRandomly()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> random = &lt;span style="color:#66d9ef">new&lt;/span> Random();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> number = random.Next(&lt;span style="color:#ae81ff">1&lt;/span>, &lt;span style="color:#ae81ff">3&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (number == &lt;span style="color:#ae81ff">2&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">throw&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> Exception(&lt;span style="color:#e6db74">&amp;#34;Error is throwed!&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ayrıca, Hangfire ayrı servis üzerinde çalışır, bu ihtiyaçlarınıza bağlı olarak iyi veya kötü olabilir. Ölçeklendirme gerektiğinde uygulama ve Hangfire sunucularını ayırabilir ve bunları farklı makinelerde çalıştırabiliriz.&lt;/p>
+&lt;h3 id="artılar-2">Artılar&lt;/h3>
+&lt;ul>
+&lt;li>Güçlü bir soyutlama ile talep üzerine ve yinelenen işleri birlikte yönetebilir.&lt;/li>
+&lt;li>Cron iş zamanlamasını dinamik olarak ayarlayabiliriz ve zamanlaması çok hassastır.&lt;/li>
+&lt;li>Çalışan ve cron job&amp;rsquo;larımızı Dashboard ile izleyebiliriz.&lt;/li>
+&lt;li>Zorunlu interface uygulaması veya başka özel bir uygulama yoktur, yalnızca Hangfire tarafından sağlanan yöntemleri kullanarak job&amp;rsquo;larımızı yönetebiliriz.&lt;/li>
+&lt;/ul>
+&lt;h3 id="eksiler-2">Eksiler&lt;/h3>
+&lt;ul>
+&lt;li>Harici depolama gereklidir, varsayılan olarak SQL Server ile çalışır.&lt;/li>
+&lt;/ul>
 &lt;hr>
 &lt;h2 id="sonuç">Sonuç&lt;/h2>
 &lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme dünyasındaki en son güncellemeleri ve düşüncelerimi kaçırmayın. Bağlantıdan beni takip ederek &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> ile bağlantıda ve iletişimde kalın.&lt;/p></content></item><item><title>Dotnet ve Vue.js uygulamasını Keycloak ile nasıl güvenliği sağlanır?</title><link>https://berkselvi.dev/tr/posts/how-to-secure-dotnet-vue-application-with-keycloak/</link><pubDate>Mon, 21 Aug 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/how-to-secure-dotnet-vue-application-with-keycloak/</guid><description>Bu yazıda, dotnet ve vue uygulamalarımızı keycloak kullanarak nasıl güvence altına alabileceğimizi konuşacağım.
