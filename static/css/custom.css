@@ -3,6 +3,15 @@ body {
   font-size: 1.2em;
 }
 
+.header__inner {
+  display: flex;
+  justify-content: end;
+}
+
+.header__inner .menu-trigger {
+  border: none;
+}
+
 .container {
   max-width: 1000px;
 }
