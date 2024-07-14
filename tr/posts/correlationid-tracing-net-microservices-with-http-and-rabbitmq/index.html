@@ -1,0 +1,259 @@
+<!doctype html><html lang=tr><head><title>HTTP ve RabbitMQ ile .NET Mikro Hizmetlerinde CorrelationId İzleme :: Berk Selvi | Software Developer</title>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content=".NET microservice mimarisinde, HTTP ve RabbitMQ istekleriyle CorrelationId kullanarak dağıtık izlenebilirliği arttırdığımız bu yazıda, CorrelationId değerinin farklı servisler arasında nasıl gezdirileceğini, Middleware ve Filter yapılarıyla gelen ve giden isteklerde header değerleri üzerinde nasıl manipülasyon yapılacağını ve Serilog'un LogContext yapısıyla contextlerin loglanmasını keşfedeceğiz."><meta name=keywords content="microservices,correlationId,distributed tracing,middleware,AsyncLocal"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/tr/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/tr/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="tr"><meta property="og:type" content="article"><meta property="og:title" content="HTTP ve RabbitMQ ile .NET Mikro Hizmetlerinde CorrelationId İzleme"><meta property="og:description" content=".NET microservice mimarisinde, HTTP ve RabbitMQ istekleriyle CorrelationId kullanarak dağıtık izlenebilirliği arttırdığımız bu yazıda, CorrelationId değerinin farklı servisler arasında nasıl gezdirileceğini, Middleware ve Filter yapılarıyla gelen ve giden isteklerde header değerleri üzerinde nasıl manipülasyon yapılacağını ve Serilog'un LogContext yapısıyla contextlerin loglanmasını keşfedeceğiz."><meta property="og:url" content="https://berkselvi.dev/tr/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/icon/favicon.ico"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2024-07-14 00:00:00 +0300 +0300"><script async src="https://www.googletagmanager.com/gtag/js?id=G-W0L24EMSQ5"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-W0L24EMSQ5")</script><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><div class=header__inner><div class=menu-trigger><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></div></div><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/tr>ana sayfa</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>türkçe ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/tr>ana sayfa</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h1 class=post-title><a href=https://berkselvi.dev/tr/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/>HTTP ve RabbitMQ ile .NET Mikro Hizmetlerinde CorrelationId İzleme</a></h1><div class=post-meta><span class=post-date>14 Temmuz 2024
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 7 min read (1424 words)</span></div><div class=post-content><div><p>Microservice mimarisinde dağıtık olarak çalışan uygulamaların kendi aralarında yaptıkları iletişimler sırasında devam eden işlemin takip edilebilirliği ve eğer bir serviste performans sebepli veya akışsal bir sorun varsa hangi adımlardan sonra buraya geldiğini anlamlandırabilmek için Distributed tracing başlığı altında CorrelationId çok önemli bir yere sahiptir.</p><p>CorrelationId, bir isteğin tüm yaşam döngüsü boyunca taşınarak, farklı servisler arasındaki bağıntıyı sağlamalıdır. Bu yazıda, .NET tabanlı bir microservice mimarisinde HTTP ve RabbitMQ istekleri kullanarak CorrelationId değerinin nasıl gezdirilebileceğini inceleyeceğiz. Bu çözüm sorunumuza net bir şekilde cevap olmak için tasarlandı ancak her türlü yoruma ve geliştirmeye açıktır, eğer aklınızda daha iyi bir çözüm gelirse lütfen bana ulaşın.</p><img src=/img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/big-picture.png alt="Big picture" loading=lazy><p class=image-sub-title>Big picture</p><p>CorrelationId değerini HTTP ve MassTransit kullanarak servisler arasındaki iletişim sırasında Middleware ve Filter yapılarıyla gelen ve giden isteklerde araya girerek header değerleri üzerinde manipulasyonda bulunarak CorrelationId değerini servisler arasında gezdireceğiz. Bu gezdirme sırasındada gelen isteklerle başlatılan contextlerin, verilen CorrelationId değeri ile loglanması için Serilog tarafından sağlanan LogContext sınıfından faydalanacağız. Tüm örneklere aşağıdaki repodan ulaşabilirsiniz.</p><p><a href=https://github.com/berkslv/lecture-correlation-id-microservices>GitHub - berkslv/lecture-correlation-id-microservices</a></p><p>Serivisimize gelen isteklerde aldığımız CorrelationId değerini, giden isteklerde göndermek için Scoped olarak tanımlayabileceğimiz Correlation sınıfımızdan yararlanabiliriz. Ancak bu şekilde Dependency Injection yöntemleri ile sınıflar arasında gezdirdiğimiz state değerimiz async olarak ilerleyen isteğimizde özel bir durumda erişilemez oluyor: DelegatingHandler sınıfı kullanarak HttpClient ile yapacağımız isteklerde araya girecek olan <code>CorrelationHeaderHandler</code> sınıfımız uygulamamızdan ayrı bir DI scope içerisinde çalışacağı için Scoped olarak tanımlayabileceğimiz Correlation sınıfımızın değerine bu özel durumda erişemeyeceğiz. Bu konu microsoft&rsquo;un kendi dökümantasyonundada şöyle aktarılıyor</p><blockquote><p>When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.</p></blockquote><p>Bu soruna çözüm olarak AsyncStorage isminde bir sınıf oluşturup Microsoft tarafından sağlanan <code>AsyncLocal</code> sınıfını kullanarak CorrelationId değerini async olarak ilerleyen isteğimizde aynı thread içerisinde dilediğimiz zaman erişebileceğimiz bir yapı oluşturacağız:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Order.API.Filters.Correlation;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// Stores and retrieves values in an async context.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;typeparam name=&#34;T&#34;&gt;What should be stored&lt;/typeparam&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>AsyncStorage</span>&lt;T&gt; <span style=color:#66d9ef>where</span> T : <span style=color:#66d9ef>new</span>()
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>readonly</span> AsyncLocal&lt;T&gt; _asyncLocal = <span style=color:#66d9ef>new</span> AsyncLocal&lt;T&gt;();
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> T Store(T val)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _asyncLocal.Value = val;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _asyncLocal.Value;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> T? Retrieve()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> _asyncLocal.Value;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>AsyncStorage sınıfına type olarak vereceğimiz Correlation sınıfını, aşağıdaki gibi tanımlayarak Id property&rsquo;sinde CorrelationId değerini barındıracağız.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Order.API.Filters.Correlation;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// It holds the CorrelationId value that comes with HTTP requests and events handled via MassTransit.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Correlation</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> Guid Id { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>init</span>; }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>CorrelationId değerini yapılan istek boyunca erişebileceğimiz bir konumda sakladığımıza göre, şimdi gelen isteklerde araya girerek header&rsquo;lardan CorrelationId değerini çekelim. Microservice mimarisinde geliştirilen uygulamalarda servisler arasında sadece HTTP değil, aynı zamanda event tabanlı yöntemlerle iletişim kurulabiliyor. Ancak bu şekilde başlatılan isteklerde, CorrelationId değerini HTTP header&rsquo;larında değil, MassTransit tarafından sağlanan header değerlerinde taşıyacağız.</p><img src=/img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/filters-for-correlationid.png alt="Filters for CorrelationId" loading=lazy><p class=image-sub-title>Filters for CorrelationId</p><h1 id=correlationmiddleware>CorrelationMiddleware<a href=#correlationmiddleware class=hanchor arialabel=Anchor>&#8983;</a></h1><p>Gelen HTTP isteklerinde araya girecek ve CorrelationId HTTP header&rsquo;ından değeri alacak olan CorrelationMiddleware sınıfımızı aşağıdaki gibi tanımlıyoruz. Eğer headerda değer varsa ilk önce Serilog tarafından sağlanan <code>LogContext</code> sınıfına bu değeri ayrı bir field olarak koyarak bir nevi enrich işlemi yapıyoruz. Daha sonra <code>AsyncStorage</code> sınıfımıza Correlation sınıfını vererek CorrelationId değerini saklıyoruz. Bu sayede gelen isteklerde CorrelationId değerini alıp, giden isteklerde bu değeri kullanabileceğiz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// When the Http request is made, it takes the CorrelationId value from the HttpContext Header and sets the Correlation.Id value.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CorrelationMiddleware</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> RequestDelegate _next;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> CorrelationMiddleware(RequestDelegate next)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _next = next;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task InvokeAsync(HttpContext context, Correlation correlation)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> correlationIdHeader = context.Request.Headers[<span style=color:#e6db74>&#34;CorrelationId&#34;</span>];
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (!<span style=color:#66d9ef>string</span>.IsNullOrWhiteSpace(correlationIdHeader))
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> correlationId = Guid.Parse(correlationIdHeader.ToString());
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            LogContext.PushProperty(<span style=color:#e6db74>&#34;CorrelationId&#34;</span>, <span style=color:#66d9ef>new</span> ScalarValue(correlationId));
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            AsyncStorage&lt;Correlation&gt;.Store(<span style=color:#66d9ef>new</span> Correlation
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                Id = correlationId
+</span></span><span style=display:flex><span>            });
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> _next(context);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Bu middleware&rsquo;i uygulamamıza eklemek için Progam.cs içerisinde aşağıdaki gibi düzenliyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>//...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.UseMiddleware&lt;CorrelationMiddleware&gt;();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>//...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><h1 id=correlationconsumefilter>CorrelationConsumeFilter<a href=#correlationconsumefilter class=hanchor arialabel=Anchor>&#8983;</a></h1><p>Eğer servisimize gelen istek HTTP değil, event ile tetiklenen bir istek ise ortada bir HTTP headerı olmayacaktır. Bu sebeple MassTransit tarafından sağlanan header değerlerinden CorrelationId değerini almak için CorrelationConsumeFilter sınıfımızı aşağıdaki gibi tanımlıyoruz. Bu sınıfımızda IConsumer ile imzalanan sınıflarda consume işlemi gerçekleştirilmeden önce, gelen eventlerde araya girerek CorrelationId değerini alıp, <code>LogContext</code> ve <code>AsyncStorage&lt;Correlation></code> içerisine ekliyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Order.API.Filters.Correlation;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// It is triggered when there is an event consumed by MassTransit and sets the CorrelationId value to the Correlation class.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CorrelationConsumeFilter</span>&lt;T&gt; : IFilter&lt;ConsumeContext&lt;T&gt;&gt; <span style=color:#66d9ef>where</span> T : <span style=color:#66d9ef>class</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> Task Send(ConsumeContext&lt;T&gt; context, IPipe&lt;ConsumeContext&lt;T&gt;&gt; next)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> correlationIdHeader = context.CorrelationId;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (correlationIdHeader.HasValue)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> correlationId = correlationIdHeader.Value;
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            LogContext.PushProperty(<span style=color:#e6db74>&#34;CorrelationId&#34;</span>, <span style=color:#66d9ef>new</span> ScalarValue(correlationId));
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            AsyncStorage&lt;Correlation&gt;.Store(<span style=color:#66d9ef>new</span> Correlation
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                Id = correlationId
+</span></span><span style=display:flex><span>            });
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> next.Send(context);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> Probe(ProbeContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Bu şekilde gelen isteklerde <code>AsyncStorage&lt;Correlation></code> içerisinde tuttuğumuz Correlation değerimizi, yapılacak olan event isteklerinde ilgili header alanlarına eklemek için neler yapabileceğimizi inceleyelim.</p><h1 id=correlationpublishfilter>CorrelationPublishFilter<a href=#correlationpublishfilter class=hanchor arialabel=Anchor>&#8983;</a></h1><p>MassTransit tarafından sağlanan <code>IPublishEndpoint</code> ile publish edilen eventlerde araya girecek olan <code>CorrelationPublishFilter</code> sınıfımızı aşağıdaki gibi tanımlıyoruz. Bu sınıfımız, publish edilen eventlerde araya girerek <code>AsyncStorage&lt;Correlation></code> içerisinden CorrelationId değerini alıp, MassTransit&rsquo;in CorrelationId header değerine ekleyecektir.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Order.API.Filters.Correlation;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// Sets the CorrelationId value of events published via MassTransit.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CorrelationPublishFilter</span>&lt;T&gt; : IFilter&lt;PublishContext&lt;T&gt;&gt; <span style=color:#66d9ef>where</span> T : <span style=color:#66d9ef>class</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> Task Send(PublishContext&lt;T&gt; context, IPipe&lt;PublishContext&lt;T&gt;&gt; next)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> correlation = AsyncStorage&lt;Correlation&gt;.Retrieve();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (correlation <span style=color:#66d9ef>is</span> not <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            context.CorrelationId = Guid.Parse(correlation.Id.ToString()!);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> next.Send(context);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> Probe(ProbeContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h1 id=correlationsendfilter>CorrelationSendFilter<a href=#correlationsendfilter class=hanchor arialabel=Anchor>&#8983;</a></h1><p>Eğer MassTransit&rsquo;e gönderilen event publish edilmemiş ve request/response yapısı ile <code>IRequestClient&lt;T></code> kullanılarak gönderildiyse <code>CorrelationPublishFilter</code> değil <code>CorrelationSendFilter</code> sınıfımız araya girecek. Bu sınıfımızda send edilen eventlerde araya girerek <code>AsyncStorage&lt;Correlation></code> içersinden CorrelationId değerini alıp, MassTransit&rsquo;in CorrelationId header değerininin içerisine ekliyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Order.API.Filters.Correlation;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// Sets the CorrelationId value of events sent via MassTransit.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CorrelationSendFilter</span>&lt;T&gt; : IFilter&lt;SendContext&lt;T&gt;&gt; <span style=color:#66d9ef>where</span> T : <span style=color:#66d9ef>class</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> Task Send(SendContext&lt;T&gt; context, IPipe&lt;SendContext&lt;T&gt;&gt; next)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> correlation = AsyncStorage&lt;Correlation&gt;.Retrieve();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (correlation <span style=color:#66d9ef>is</span> not <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            context.CorrelationId = Guid.Parse(correlation.Id.ToString());
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> next.Send(context);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> Probe(ProbeContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p><code>CorrelationConsumeFilter</code>, <code>CorrelationPublishFilter</code> ve <code>CorrelationSendFilter</code> sınıflarımızı uygulamamıza eklemek için aşağıdaki gibi ConfigureServices sınıfımızı tanımlayıp bu methodu Program.cs içerisinde kullanıyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ConfigureServices</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> WebApplicationBuilder AddMassTransit(<span style=color:#66d9ef>this</span> WebApplicationBuilder builder, IConfiguration configuration)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> messageBroker = builder.Configuration.GetSection(<span style=color:#e6db74>&#34;MessageBroker&#34;</span>);
+</span></span><span style=display:flex><span>        builder.Services.AddMassTransit(cfg =&gt;
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            cfg.SetKebabCaseEndpointNameFormatter();
+</span></span><span style=display:flex><span>            
+</span></span><span style=display:flex><span>            cfg.AddConsumers(Assembly.GetExecutingAssembly());
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            cfg.UsingRabbitMq((context, config) =&gt;
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                config.UseSendFilter(<span style=color:#66d9ef>typeof</span>(CorrelationSendFilter&lt;&gt;), context);
+</span></span><span style=display:flex><span>                config.UsePublishFilter(<span style=color:#66d9ef>typeof</span>(CorrelationPublishFilter&lt;&gt;), context);
+</span></span><span style=display:flex><span>                config.UseConsumeFilter(<span style=color:#66d9ef>typeof</span>(CorrelationConsumeFilter&lt;&gt;), context);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>                config.Host(messageBroker[<span style=color:#e6db74>&#34;Host&#34;</span>], messageBroker[<span style=color:#e6db74>&#34;VirtualHost&#34;</span>], h =&gt;
+</span></span><span style=display:flex><span>                {
+</span></span><span style=display:flex><span>                    h.Username(messageBroker[<span style=color:#e6db74>&#34;Username&#34;</span>]!);
+</span></span><span style=display:flex><span>                    h.Password(messageBroker[<span style=color:#e6db74>&#34;Password&#34;</span>]!);
+</span></span><span style=display:flex><span>                });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>                config.ConfigureEndpoints(context);
+</span></span><span style=display:flex><span>            });
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> builder;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.AddMassTransit(builder.Configuration);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><h1 id=correlationheaderhandler>CorrelationHeaderHandler<a href=#correlationheaderhandler class=hanchor arialabel=Anchor>&#8983;</a></h1><p>Eğer servisimizden yapılan istek event değil HTTP isteği ise <code>IHttpClientFactory</code> ile oluşturacağımız HttpClient sınıfımızdan yapacağımız isteklerde araya girecek olan <code>CorrelationHeaderHandler</code> sınıfımızı aşağıdaki gibi tanımlıyoruz. Bu sınıfımızda uygulamamızdan yapılan HTTP isteklerinde araya girerek <code>AsyncStorage&lt;Correlation></code> içersinden CorrelationId değerini alıp, HTTP header olarak ekliyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// Middleware to be used in requests made with HttpClient. Adds the CorrelationId header to the requests made.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CorrelationHeaderHandler</span> : DelegatingHandler
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>protected</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task&lt;HttpResponseMessage&gt; SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> correlation = AsyncStorage&lt;Correlation&gt;.Retrieve();
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (correlation <span style=color:#66d9ef>is</span> not <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            request.Headers.Add(<span style=color:#e6db74>&#34;CorrelationId&#34;</span>, correlation.Id.ToString());
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>base</span>.SendAsync(request, cancellationToken);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Bu middleware&rsquo;i uygulamamıza eklemek için Progam.cs içerisinde aşağıdaki gibi Named Http Client tanımlayıp <code>AddHttpMessageHandler</code> ile yapılacak isteklerde araya girecek olan middleware&rsquo;i ekliyoruz.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddTransient&lt;CorrelationHeaderHandler&gt;();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddHttpClient(<span style=color:#e6db74>&#34;Inventory&#34;</span>, c =&gt;
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        c.BaseAddress = <span style=color:#66d9ef>new</span> Uri(<span style=color:#e6db74>&#34;http://localhost:5053&#34;</span>);
+</span></span><span style=display:flex><span>    })
+</span></span><span style=display:flex><span>    .AddHttpMessageHandler&lt;CorrelationHeaderHandler&gt;();;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// ...</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><p>Oluşturduğumuz Named Http Client için kullanımı aşağıdaki gibi yapıyoruz. Burada yapacağımız isteklerin async olmazsa middleware araya giremiyor.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>InventoryService</span> : IInventoryService
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> IHttpClientFactory _httpClientFactory;
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> InventoryService(IHttpClientFactory httpClientFactory)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _httpClientFactory = httpClientFactory;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task RemoveStockAsync(<span style=color:#66d9ef>string</span> productId, <span style=color:#66d9ef>int</span> quantity)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> httpClient = _httpClientFactory.CreateClient(<span style=color:#e6db74>&#34;Inventory&#34;</span>);
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> httpClient.PostAsync(<span style=color:#e6db74>$&#34;remove-stock/{productId}/{quantity}&#34;</span>, <span style=color:#66d9ef>null</span>);
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        response.EnsureSuccessStatusCode();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Bu makalede, HTTP ve RabbitMQ kullanarak .NET microservice mimarisinde dağıtık izlenebilirliği artırmak için CorrelationId&rsquo;yi nasıl etkili bir şekilde kullanabileceğimizi inceledik. Middleware ve Filter yapılarından yararlanarak, farklı servisler arasında CorrelationId&rsquo;yi yayarak header değerlerini manipüle edebildik ve Serilog&rsquo;un LogContext framework&rsquo;ü ile kapsamlı loglama ve izleme sağladık.</p><p>CorrelationId&rsquo;yi hem HTTP isteklerinde hem de MassTransit tarafından sağlanan event tabanlı iletişimde nasıl ele alacağımızı gösterdik. HTTP için <code>CorrelationMiddleware</code> ve <code>CorrelationHeaderHandler</code> sınıflarını; event tabanlı iletişim için ise <code>CorrelationConsumeFilter</code>, <code>CorrelationPublishFilter</code> ve <code>CorrelationSendFilter</code> sınıflarını uygulayarak, CorrelationId&rsquo;nin bir isteğin tüm yaşam döngüsü boyunca tutarlı bir şekilde taşınmasını sağladık. Bu, işlem akışının net bir şekilde izlenmesini sağladı ve performans veya akış sorunlarını belirlemeye yardımcı oldu.</p><p><code>AsyncLocal</code> sınıfıyla birlikte <code>AsyncStorage&lt;Correlation></code> kullanımı, CorrelationId değerini farklı kapsamlar arasında saklamak ve almak için güvenilir bir yol sağladı ve Dependency Injection ve asenkron işlemeyle ilgili zorlukları ele aldı.</p><p>Umarım bu rehber, kendi microservice mimarinizde sağlam bir dağıtık izleme çözümü uygulamanıza yardımcı olur. Daha detaylı örnekler için, GitHub reposunu inceleyebilirsiniz:</p><p><a href=https://github.com/berkslv/lecture-correlation-id-microservices>GitHub - berkslv/lecture-correlation-id-microservices</a></p><h1 id=kaynaklar>Kaynaklar<a href=#kaynaklar class=hanchor arialabel=Anchor>&#8983;</a></h1><p>AsyncLocal sınıfnın doğru kullanımı için yararlandığım kaynak:</p><p><a href=https://medium.com/@mbearz/how-to-log-everything-using-middleware-and-httpclient-handler-42b8f628fe84>https://medium.com/@mbearz/how-to-log-everything-using-middleware-and-httpclient-handler-42b8f628fe84</a></p><hr><h2 id=sonuç>Sonuç<a href=#sonuç class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme alanındaki araştırmalarımı kaçırmamak için <a href=https://x.com/berkslv>@berkslv</a> adresinden takipte kalabilirsiniz.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Diğer yazıları oku</span><hr></div><div class=pagination__buttons><span class="button next"><a href=https://berkselvi.dev/tr/posts/api-gateway-alternatives-from-a-net-developer-standpoint/><span class=button__text>.NET Geliştiricisi Perspektifinden API Gateway Alternatifleri: YARP, Ocelot, Kong, APISIX ve KrakenD</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>
