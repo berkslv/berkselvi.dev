@@ -653,4 +653,4 @@ If you want to access the source code, you can find the whole project on my GitH
 
 ## Conclusion
 
-Thank you for reading 🎉 Don't miss out on the latest updates and insights in the world of software development. Follow me on [@berkslv](https://x.com/berkslv) to stay connected and join the conversation
+Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at [@berkslv](https://x.com/berkslv).

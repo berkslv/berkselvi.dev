@@ -451,4 +451,4 @@ If we try a similar process in an app service deployment that does not implement
 
 ## Conclusion
 
-Thank you for reading 🎉 Don't miss out on the latest updates and insights in the world of software development. Follow me on [@berkslv](https://x.com/berkslv) to stay connected and join the conversation
+Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at [@berkslv](https://x.com/berkslv).
