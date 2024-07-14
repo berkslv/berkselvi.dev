@@ -1,5 +1,5 @@
 +++
-title = "HTTP ve RabbitMQ ile .NET Mikro Hizmetlerinde CorrelationId İzleme"
+title = "HTTP ve RabbitMQ ile .NET Mikroservislerinde CorrelationId Takibi"
 # CorrelationId Tracing in .NET Microservices with HTTP and RabbitMQ
 date = "2024-07-14T00:00:00+03:00"
 author = "Berk Selvi"
@@ -25,7 +25,7 @@ Serivisimize gelen isteklerde aldığımız CorrelationId değerini, giden istek
 
 > When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler's constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.
 
-Bu soruna çözüm olarak AsyncStorage isminde bir sınıf oluşturup Microsoft tarafından sağlanan `AsyncLocal` sınıfını kullanarak CorrelationId değerini async olarak ilerleyen isteğimizde aynı thread içerisinde dilediğimiz zaman erişebileceğimiz bir yapı oluşturacağız:
+Bu soruna çözüm olarak `AsyncStorage` isminde bir sınıf oluşturup Microsoft tarafından sağlanan `AsyncLocal` sınıfını kullanarak CorrelationId değerini async olarak ilerleyen isteğimizde aynı thread içerisinde dilediğimiz zaman erişebileceğimiz bir yapı oluşturacağız:
 
 ```csharp
 
@@ -79,6 +79,8 @@ CorrelationId değerini yapılan istek boyunca erişebileceğimiz bir konumda sa
 Gelen HTTP isteklerinde araya girecek ve CorrelationId HTTP header'ından değeri alacak olan CorrelationMiddleware sınıfımızı aşağıdaki gibi tanımlıyoruz. Eğer headerda değer varsa ilk önce Serilog tarafından sağlanan `LogContext` sınıfına bu değeri ayrı bir field olarak koyarak bir nevi enrich işlemi yapıyoruz. Daha sonra `AsyncStorage` sınıfımıza Correlation sınıfını vererek CorrelationId değerini saklıyoruz. Bu sayede gelen isteklerde CorrelationId değerini alıp, giden isteklerde bu değeri kullanabileceğiz. 
 
 ```csharp
+
+namespace Order.API.Filters.Correlation;
 
 /// <summary>
 /// When the Http request is made, it takes the CorrelationId value from the HttpContext Header and sets the Correlation.Id value.
