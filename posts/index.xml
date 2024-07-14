@@ -1,4 +1,301 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Mon, 20 May 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>API Gateway Alternatives from a .NET Developer's Perspective: YARP, Ocelot, Kong, APISIX, and KrakenD</title><link>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</link><pubDate>Mon, 20 May 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</guid><description>We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Sun, 14 Jul 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>CorrelationId Tracing in .NET Microservices with HTTP and MassTransit</title><link>https://berkselvi.dev/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/</link><pubDate>Sun, 14 Jul 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/</guid><description>CorrelationId has a very important place under the title of Distributed Tracing in order to be able to trace the ongoing process during the communication between applications running distributed in the microservice architecture and to understand which steps came to this point if there is a performance-related or flow problem in a service.
+CorrelationId must be carried throughout the entire lifecycle of a request, ensuring the correlation between different services. In this article, we will examine how to navigate the CorrelationId value using HTTP and RabbitMQ requests in a .</description><content>&lt;p>CorrelationId has a very important place under the title of Distributed Tracing in order to be able to trace the ongoing process during the communication between applications running distributed in the microservice architecture and to understand which steps came to this point if there is a performance-related or flow problem in a service.&lt;/p>
+&lt;p>CorrelationId must be carried throughout the entire lifecycle of a request, ensuring the correlation between different services. In this article, we will examine how to navigate the CorrelationId value using HTTP and RabbitMQ requests in a .NET based microservice architecture. This solution was designed to be a clear answer to our problem, but it is open to any comments and improvements, if you have a better solution in mind, please contact me.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/big-picture.png" alt="Big picture" loading="lazy" />
+&lt;p class="image-sub-title">Big picture&lt;/p>
+&lt;p>We will manipulate the CorrelationId value between services by manipulating the header values ​​by intervening in incoming and outgoing requests with Middleware and Filter structures during communication between services using HTTP and MassTransit. During this travel between services, we will use the LogContext class provided by Serilog to log the contexts initiated by incoming requests with the given CorrelationId value. You can access all examples from the repo below.&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-correlation-id-microservices">GitHub - berkslv/lecture-correlation-id-microservices&lt;/a>&lt;/p>
+&lt;p>We can use our Correlation class, which we could define as Scoped, to send the CorrelationId value we receive in incoming requests to our service in outgoing requests. However, in this way, our state value, which we move between classes with Dependency Injection methods, becomes inaccessible in a special case in our request that proceeds asynchronously: Since our &lt;code>CorrelationHeaderHandler&lt;/code> class, which will intervene in the requests we make with the HttpClient using the DelegatingHandler class, will work in a separate DI scope from our application, the value of our Correlation class, which we could define as Scoped, becomes inaccessible in a this special case. This issue is also explained in Microsoft&amp;rsquo;s own documentation as follows:&lt;/p>
+&lt;blockquote>
+&lt;p>When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&amp;rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.&lt;/p>
+&lt;/blockquote>
+&lt;p>As a solution to this problem, we will create a class called &lt;code>AsyncStorage&lt;/code> and use the &lt;code>AsyncLocal&lt;/code> class provided by Microsoft to create a structure that we can access at any time within the same thread in our async request to set the CorrelationId value:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// Stores and retrieves values in an async context.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;/summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;typeparam name=&amp;#34;T&amp;#34;&amp;gt;What should be stored&amp;lt;/typeparam&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">AsyncStorage&lt;/span>&amp;lt;T&amp;gt; &lt;span style="color:#66d9ef">where&lt;/span> T : &lt;span style="color:#66d9ef">new&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> AsyncLocal&amp;lt;T&amp;gt; _asyncLocal = &lt;span style="color:#66d9ef">new&lt;/span> AsyncLocal&amp;lt;T&amp;gt;();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> T Store(T val)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _asyncLocal.Value = val;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> _asyncLocal.Value;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> T? Retrieve()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> _asyncLocal.Value;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We will define the Correlation class, which we will provide as a type to the AsyncStorage class, as shown below. The Id property will contain the CorrelationId value.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// It holds the CorrelationId value that comes with HTTP requests and events handled via MassTransit.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;/summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">Correlation&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> Guid Id { &lt;span style="color:#66d9ef">get&lt;/span>; &lt;span style="color:#66d9ef">init&lt;/span>; }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Since we are storing the CorrelationId value in a location that is accessible throughout the request, let&amp;rsquo;s now intercept incoming requests and extract the CorrelationId value from the headers. In microservice architecture, applications communicate between services not only via HTTP but also through event-based methods. However, in such initiated requests, we will carry the CorrelationId value in the headers provided by MassTransit, not in the HTTP headers.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/filters-for-correlationid.png" alt="Filters for CorrelationId" loading="lazy" />
+&lt;p class="image-sub-title">Filters for CorrelationId&lt;/p>
+&lt;h1 id="correlationmiddleware">CorrelationMiddleware&lt;/h1>
+&lt;p>We define our CorrelationMiddleware class, which will intercept incoming HTTP requests and get the value from the CorrelationId HTTP header, as follows. If there is a value in the header, we first enrich it by putting this value as a separate field in the &lt;code>LogContext&lt;/code> class provided by Serilog. Then, we store the CorrelationId value by giving the Correlation class to our &lt;code>AsyncStorage&lt;/code> class. In this way, we will be able to get the CorrelationId value in incoming requests and use this value in outgoing requests.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// When the Http request is made, it takes the CorrelationId value from the HttpContext Header and sets the Correlation.Id value.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;/summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CorrelationMiddleware&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> RequestDelegate _next;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> CorrelationMiddleware(RequestDelegate next)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _next = next;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task InvokeAsync(HttpContext context, Correlation correlation)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> correlationIdHeader = context.Request.Headers[&lt;span style="color:#e6db74">&amp;#34;CorrelationId&amp;#34;&lt;/span>];
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (!&lt;span style="color:#66d9ef">string&lt;/span>.IsNullOrWhiteSpace(correlationIdHeader))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> correlationId = Guid.Parse(correlationIdHeader.ToString());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> LogContext.PushProperty(&lt;span style="color:#e6db74">&amp;#34;CorrelationId&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">new&lt;/span> ScalarValue(correlationId));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> AsyncStorage&amp;lt;Correlation&amp;gt;.Store(&lt;span style="color:#66d9ef">new&lt;/span> Correlation
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Id = correlationId
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> _next(context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>To add this middleware to our application, we edit Program.cs as follows.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.UseMiddleware&amp;lt;CorrelationMiddleware&amp;gt;();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="correlationconsumefilter">CorrelationConsumeFilter&lt;/h1>
+&lt;p>If the request coming to our service is not HTTP, but a request triggered by an event, there will not be an HTTP header. For this reason, we define our CorrelationConsumeFilter class as follows to get the CorrelationId value from the header values ​​provided by MassTransit. In this class, before consuming the classes signed with IConsumer, we intercept the incoming events and get the CorrelationId value and add it to &lt;code>LogContext&lt;/code> and &lt;code>AsyncStorage&amp;lt;Correlation&amp;gt;&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// It is triggered when there is an event consumed by MassTransit and sets the CorrelationId value to the Correlation class.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;/summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CorrelationConsumeFilter&lt;/span>&amp;lt;T&amp;gt; : IFilter&amp;lt;ConsumeContext&amp;lt;T&amp;gt;&amp;gt; &lt;span style="color:#66d9ef">where&lt;/span> T : &lt;span style="color:#66d9ef">class&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> Task Send(ConsumeContext&amp;lt;T&amp;gt; context, IPipe&amp;lt;ConsumeContext&amp;lt;T&amp;gt;&amp;gt; next)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> correlationIdHeader = context.CorrelationId;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (correlationIdHeader.HasValue)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> correlationId = correlationIdHeader.Value;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> LogContext.PushProperty(&lt;span style="color:#e6db74">&amp;#34;CorrelationId&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">new&lt;/span> ScalarValue(correlationId));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> AsyncStorage&amp;lt;Correlation&amp;gt;.Store(&lt;span style="color:#66d9ef">new&lt;/span> Correlation
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Id = correlationId
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> next.Send(context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> Probe(ProbeContext context)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s examine what we can do to add the Correlation value, which we store in &lt;code>AsyncStorage&amp;lt;Correlation&amp;gt;&lt;/code>, to the relevant header fields in the event requests.&lt;/p>
+&lt;h1 id="correlationpublishfilter">CorrelationPublishFilter&lt;/h1>
+&lt;p>We define our &lt;code>CorrelationPublishFilter&lt;/code> class, which will intercept events published with MassTransit&amp;rsquo;s &lt;code>IPublishEndpoint&lt;/code>, as follows. This class intercepts published events, retrieves the CorrelationId value from &lt;code>AsyncStorage&amp;lt;Correlation&amp;gt;&lt;/code>, and adds it to MassTransit&amp;rsquo;s CorrelationId header.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// Sets the CorrelationId value of events published via MassTransit.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;/summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CorrelationPublishFilter&lt;/span>&amp;lt;T&amp;gt; : IFilter&amp;lt;PublishContext&amp;lt;T&amp;gt;&amp;gt; &lt;span style="color:#66d9ef">where&lt;/span> T : &lt;span style="color:#66d9ef">class&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> Task Send(PublishContext&amp;lt;T&amp;gt; context, IPipe&amp;lt;PublishContext&amp;lt;T&amp;gt;&amp;gt; next)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> correlation = AsyncStorage&amp;lt;Correlation&amp;gt;.Retrieve();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (correlation &lt;span style="color:#66d9ef">is&lt;/span> not &lt;span style="color:#66d9ef">null&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> context.CorrelationId = Guid.Parse(correlation.Id.ToString()!);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> next.Send(context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> Probe(ProbeContext context)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="correlationsendfilter">CorrelationSendFilter&lt;/h1>
+&lt;p>If the event sent to MassTransit is not published and is sent using &lt;code>IRequestClient&amp;lt;T&amp;gt;&lt;/code> with the request/response pattern, our &lt;code>CorrelationSendFilter&lt;/code> class will intervene, not &lt;code>CorrelationPublishFilter&lt;/code>. In this class, we intervene in the sent events, get the CorrelationId value from &lt;code>AsyncStorage&amp;lt;Correlation&amp;gt;&lt;/code> and add it to the CorrelationId header value of MassTransit.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// Sets the CorrelationId value of events sent via MassTransit.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;/summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CorrelationSendFilter&lt;/span>&amp;lt;T&amp;gt; : IFilter&amp;lt;SendContext&amp;lt;T&amp;gt;&amp;gt; &lt;span style="color:#66d9ef">where&lt;/span> T : &lt;span style="color:#66d9ef">class&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> Task Send(SendContext&amp;lt;T&amp;gt; context, IPipe&amp;lt;SendContext&amp;lt;T&amp;gt;&amp;gt; next)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> correlation = AsyncStorage&amp;lt;Correlation&amp;gt;.Retrieve();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (correlation &lt;span style="color:#66d9ef">is&lt;/span> not &lt;span style="color:#66d9ef">null&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> context.CorrelationId = Guid.Parse(correlation.Id.ToString());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> next.Send(context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">void&lt;/span> Probe(ProbeContext context)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>To add our &lt;code>CorrelationConsumeFilter&lt;/code>, &lt;code>CorrelationPublishFilter&lt;/code> and &lt;code>CorrelationSendFilter&lt;/code> classes to our application, we define our ConfigureServices class as follows and use this method in Program.cs.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">ConfigureServices&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">static&lt;/span> WebApplicationBuilder AddMassTransit(&lt;span style="color:#66d9ef">this&lt;/span> WebApplicationBuilder builder, IConfiguration configuration)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> messageBroker = builder.Configuration.GetSection(&lt;span style="color:#e6db74">&amp;#34;MessageBroker&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> builder.Services.AddMassTransit(cfg =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cfg.SetKebabCaseEndpointNameFormatter();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cfg.AddConsumers(Assembly.GetExecutingAssembly());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cfg.UsingRabbitMq((context, config) =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> config.UseSendFilter(&lt;span style="color:#66d9ef">typeof&lt;/span>(CorrelationSendFilter&amp;lt;&amp;gt;), context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> config.UsePublishFilter(&lt;span style="color:#66d9ef">typeof&lt;/span>(CorrelationPublishFilter&amp;lt;&amp;gt;), context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> config.UseConsumeFilter(&lt;span style="color:#66d9ef">typeof&lt;/span>(CorrelationConsumeFilter&amp;lt;&amp;gt;), context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> config.Host(messageBroker[&lt;span style="color:#e6db74">&amp;#34;Host&amp;#34;&lt;/span>], messageBroker[&lt;span style="color:#e6db74">&amp;#34;VirtualHost&amp;#34;&lt;/span>], h =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> h.Username(messageBroker[&lt;span style="color:#e6db74">&amp;#34;Username&amp;#34;&lt;/span>]!);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> h.Password(messageBroker[&lt;span style="color:#e6db74">&amp;#34;Password&amp;#34;&lt;/span>]!);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> config.ConfigureEndpoints(context);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> builder;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.AddMassTransit(builder.Configuration);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="correlationheaderhandler">CorrelationHeaderHandler&lt;/h1>
+&lt;p>If the request made from our service is an HTTP request, not an event, we define our &lt;code>CorrelationHeaderHandler&lt;/code> class, which will intervene in the requests we make from our HttpClient class, which we will create with &lt;code>IHttpClientFactory&lt;/code>, as follows. In this class, we intervene in HTTP requests made from our application, get the CorrelationId value from &lt;code>AsyncStorage&amp;lt;Correlation&amp;gt;&lt;/code> and add it as a HTTP header.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// Middleware to be used in requests made with HttpClient. Adds the CorrelationId header to the requests made.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">/// &amp;lt;/summary&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">CorrelationHeaderHandler&lt;/span> : DelegatingHandler
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">protected&lt;/span> &lt;span style="color:#66d9ef">override&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task&amp;lt;HttpResponseMessage&amp;gt; SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> correlation = AsyncStorage&amp;lt;Correlation&amp;gt;.Retrieve();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (correlation &lt;span style="color:#66d9ef">is&lt;/span> not &lt;span style="color:#66d9ef">null&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> request.Headers.Add(&lt;span style="color:#e6db74">&amp;#34;CorrelationId&amp;#34;&lt;/span>, correlation.Id.ToString());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> &lt;span style="color:#66d9ef">await&lt;/span> &lt;span style="color:#66d9ef">base&lt;/span>.SendAsync(request, cancellationToken);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>To add this middleware to our application, we define Named Http Client in Progam.cs as follows and add the middleware that will intervene in requests made with &lt;code>AddHttpMessageHandler&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddTransient&amp;lt;CorrelationHeaderHandler&amp;gt;();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddHttpClient(&lt;span style="color:#e6db74">&amp;#34;Inventory&amp;#34;&lt;/span>, c =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> c.BaseAddress = &lt;span style="color:#66d9ef">new&lt;/span> Uri(&lt;span style="color:#e6db74">&amp;#34;http://localhost:5053&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddHttpMessageHandler&amp;lt;CorrelationHeaderHandler&amp;gt;();;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// ...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We use the Named Http Client we created as follows. If the requests we make here are not asynchronous, the middleware cannot intervene.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">InventoryService&lt;/span> : IInventoryService
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">private&lt;/span> &lt;span style="color:#66d9ef">readonly&lt;/span> IHttpClientFactory _httpClientFactory;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> InventoryService(IHttpClientFactory httpClientFactory)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> _httpClientFactory = httpClientFactory;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task RemoveStockAsync(&lt;span style="color:#66d9ef">string&lt;/span> productId, &lt;span style="color:#66d9ef">int&lt;/span> quantity)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> httpClient = _httpClientFactory.CreateClient(&lt;span style="color:#e6db74">&amp;#34;Inventory&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> response = &lt;span style="color:#66d9ef">await&lt;/span> httpClient.PostAsync(&lt;span style="color:#e6db74">$&amp;#34;remove-stock/{productId}/{quantity}&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">null&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> response.EnsureSuccessStatusCode();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>In this article, we explored how to effectively use CorrelationId to enhance distributed traceability in a .NET microservice architecture using HTTP and RabbitMQ. By leveraging Middleware and Filter structures, we were able to manipulate header values and propagate the CorrelationId across different services, ensuring comprehensive logging and monitoring with Serilog&amp;rsquo;s LogContext framework.&lt;/p>
+&lt;p>We demonstrated how to handle CorrelationId in both HTTP requests and event-driven communication facilitated by MassTransit. By implementing &lt;code>CorrelationMiddleware&lt;/code> and &lt;code>CorrelationHeaderHandler&lt;/code> for HTTP; &lt;code>CorrelationConsumeFilter&lt;/code>, &lt;code>CorrelationPublishFilter&lt;/code>, and &lt;code>CorrelationSendFilter&lt;/code> for event-driven communication. We ensured that the CorrelationId is consistently carried through the entire lifecycle of a request, providing a clear trace of the process flow and helping to identify performance or flow issues.&lt;/p>
+&lt;p>The use of &lt;code>AsyncStorage&amp;lt;Correlation&amp;gt;&lt;/code> with the &lt;code>AsyncLocal&lt;/code> class provided a reliable way to store and retrieve the CorrelationId value across different scopes, addressing challenges related to Dependency Injection and asynchronous processing.&lt;/p>
+&lt;p>I hope this guide helps you implement a robust distributed tracing solution in your own microservice architecture. For more detailed examples, you can check out the complete code repository on GitHub:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-correlation-id-microservices">GitHub - berkslv/lecture-correlation-id-microservices&lt;/a>&lt;/p>
+&lt;h1 id="resources">Resources&lt;/h1>
+&lt;p>The source I used for the correct use of the AsyncLocal class:&lt;/p>
+&lt;p>&lt;a href="https://medium.com/@mbearz/how-to-log-everything-using-middleware-and-httpclient-handler-42b8f628fe84">https://medium.com/@mbearz/how-to-log-everything-using-middleware-and-httpclient-handler-42b8f628fe84&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>API Gateway Alternatives from a .NET Developer's Perspective: YARP, Ocelot, Kong, APISIX, and KrakenD</title><link>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</link><pubDate>Mon, 20 May 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</guid><description>We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.
 What is an API Gateway? An API Gateway provides an entry point to our systems as shown below, isolating them from the outside world.</description><content>&lt;p>We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.&lt;/p>
 &lt;h2 id="what-is-an-api-gateway">What is an API Gateway?&lt;/h2>
 &lt;p>An API Gateway provides an entry point to our systems as shown below, isolating them from the outside world. It solves common issues such as authorization, logging, and rate limiting with a single service that would otherwise need to be implemented repeatedly in each sub-service.&lt;/p>
