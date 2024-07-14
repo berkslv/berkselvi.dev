@@ -1,6 +1,5 @@
 +++
-title = "HTTP ve RabbitMQ ile .NET Mikroservislerinde CorrelationId Takibi"
-# CorrelationId Tracing in .NET Microservices with HTTP and RabbitMQ
+title = "HTTP ve MassTransit ile .NET Mikroservislerinde CorrelationId Takibi"
 date = "2024-07-14T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
