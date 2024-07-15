@@ -7,6 +7,7 @@ keywords = ["development", "software"]
 description = "Explore the power of effective learning in this concise guide. Learn why knowledge is key, how to cultivate self-discipline, and discover actionable techniques for better retention and comprehension. Dive into recall methods..."
 showFullContent = false
 readingTime = true
+cover = "img/how-to-learn-something-very-well/cover.webp"
 +++
 
 When you learn how to learn, you unlock almost all the possibilities in the world with knowledge. Some of you can think practice more important than knowledge, but trust me, if you don’t know something about your working area, you won’t get practice, and if you can, it won’t work, because you don’t know the underlying processes.

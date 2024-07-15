@@ -7,6 +7,7 @@ keywords = ["api gateway","yarp","ocelot","kong","apisix","krakend"]
 description = "We explore API Gateway alternatives for .NET developers. Starting with .NET-based solutions like YARP and Ocelot, we evaluate OpenResty-based Kong and Apache APISIX as well as Go-based KrakenD. By detailing the features, performance, and use cases of each API Gateway, we aim to help you make the right choice."
 showFullContent = false
 readingTime = true
+cover = "img/api-gateway-alternatives-from-a-net-developer-standpoint/cover.webp"
 +++
 
 We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.

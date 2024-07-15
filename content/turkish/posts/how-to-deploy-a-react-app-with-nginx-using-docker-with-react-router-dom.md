@@ -7,6 +7,7 @@ keywords = ["react","nginx","docker","deployment"]
 description = "Bu adım adım kılavuzda, bir React uygulamasını Nginx kullanarak Docker ile nasıl dağıtacağınızı öğreneceksiniz. Bu kılavuz, React uygulamanız için bir Docker dosyası oluşturmaktan Docker Compose kullanımına kadar her şeyi kapsar..." 
 showFullContent = false
 readingTime = true
+cover = "img/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/cover.webp"
 +++
 
 Bir React uygulamasını deploy etmek istiyorsanız, web sunucusuna deployment veya Docker gibi bir container aracı kullanma gibi birkaç seçenek mevcuttur. Bu kılavuzda, bir React uygulamasını Nginx kullanarak Docker ile nasıl deploy edebileceğimizi göreceğiz. Nginx, yüksek performansı ve düşük kaynak kullanımı ile tanınan popüler bir açık kaynaklı web sunucusudur. React uygulamamız için bir Docker dosyası oluşturacağız ve uygulamayı sunmak için Nginx'i kullanacağız. Ayrıca, Nginx'e uygulamayı nasıl sunacağını söylemek için bir Nginx yapılandırma dosyası da oluşturacağız. Son olarak, uygulamamızın bir Docker image'ini oluşturacak ve uygulamayı deploy etmek için bir Docker container çalıştıracağız.

@@ -7,6 +7,7 @@ keywords = ["ci/cd","azure devops","azure app service",".NET","azure"]
 description = "Azure App Service'te tek örnek olarak çalışan uygulamamızı Azure DevOps pipeline ile deploy ederken büyük olasılıkla birkaç saniyelik kesinti yaşanacaktır. Çünkü uygulama…"
 showFullContent = false
 readingTime = true
+cover = "img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/cover.webp"
 +++
 
 Selamlar! Azure App Service'te tek instance olarak çalışan uygulamamızı Azure DevOps işlem hatlarını kullanarak dağıtırken büyük olasılıkla birkaç saniyelik kesinti yaşanacaktır. Çünkü tek instance olarak çalışan uygulamanın yeni sürüme güncellenmesi için yeniden başlatılması gerekecektir. En kötü senaryoda, uygulama sürümlerimizin geçişinde bir hata oluşması durumunda geri alma nedeniyle kesinti süresi uzayacaktır.

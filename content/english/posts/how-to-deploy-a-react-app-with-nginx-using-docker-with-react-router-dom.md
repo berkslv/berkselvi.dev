@@ -7,6 +7,7 @@ keywords = ["react","nginx","docker","deployment"]
 description = "Learn how to deploy a React app with Nginx using Docker in this step-by-step tutorial. This tutorial covers everything from creating a Dockerfile for your React app to using Docker Compose to ..." 
 showFullContent = false
 readingTime = true
+cover = "img/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/cover.webp"
 +++
 
 If you're looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we'll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We'll create a Dockerfile for our React app that uses Nginx to serve the app, and we'll also create an Nginx configuration file to tell Nginx how to serve the app. Finally, we'll build a Docker image of our app and run a Docker container to deploy the app.

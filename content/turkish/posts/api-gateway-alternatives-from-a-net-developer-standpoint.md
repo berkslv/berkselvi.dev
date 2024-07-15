@@ -7,6 +7,7 @@ keywords = ["api gateway","yarp","ocelot","kong","apisix","krakend"]
 description = ".NET geliştirici bakışından API Gateway alternatiflerini inceliyoruz. YARP ve Ocelot gibi .NET tabanlı çözümlerden başlayarak, OpenResty tabanlı Kong ve Apache APISIX ile Go tabanlı KrakenD'yi değerlendiriyoruz. Her bir API Gateway'in özelliklerini, performansını ve kullanım senaryolarını detaylı bir şekilde ele alıyoruz."
 showFullContent = false
 readingTime = true
+cover = "img/api-gateway-alternatives-from-a-net-developer-standpoint/cover.webp"
 +++
 
 API Gateway servislerini microservice mimarisinde servislerimizi dış dünyaya açarken bir ara katman olarak kullanabiliyoruz. Bu yazımızda kısaca API Gateway nedirden bahsedip sonrasında kullanabileceğimiz .NET, OpenResty ve Go tabanlı API Gateway alternatiflerinden performans testleri ile beraber bahsedip sonlandıracağız.

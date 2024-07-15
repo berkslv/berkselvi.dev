@@ -7,6 +7,7 @@ keywords = ["keycloak",".NET","vue","microservices"]
 description = "Dotnet ve Vue uygulamalarını Keycloak ile nasıl güvence altına alınacağını keşfedin. Bu rehber, Docker kurulumu, alan ve istemci yapılandırması, Vue.js uygulamalarını güvence altına alma, Dotnet WebAPI oluşturma, API'yi Vue'dan tüketme ve daha fazlasını içerir..."
 showFullContent = false
 readingTime = true
+cover = "img/how-to-secure-dotnet-vue-application-with-keycloak/cover.webp"
 +++
 
 Bu yazıda, dotnet ve vue uygulamalarımızı keycloak kullanarak nasıl güvence altına alabileceğimizi konuşacağım.

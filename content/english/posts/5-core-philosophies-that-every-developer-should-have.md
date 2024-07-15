@@ -7,6 +7,7 @@ keywords = ["learning", "study", "knowledge"]
 description = "Explore the philosophical foundations of software development in this article. Learn key principles like responsibility in coding, embracing imperfection, continuous learning, and community building. Ready to adopt a new mindset for success?"
 showFullContent = false
 readingTime = true
+cover = "img/5-core-philosophies-that-every-developer-should-have/cover.webp"
 +++
 
 I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.

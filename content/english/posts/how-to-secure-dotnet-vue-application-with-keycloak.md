@@ -7,6 +7,7 @@ keywords = ["keycloak",".NET","vue","microservices"]
 description = "Discover how to secure dotnet and Vue apps with Keycloak. This guide covers Docker setup, realm and client configuration, securing Vue.js apps, creating a Dotnet WebAPI, consuming the API from Vue, and more..."
 showFullContent = false
 readingTime = true
+cover = "img/how-to-secure-dotnet-vue-application-with-keycloak/cover.webp"
 +++
 
 

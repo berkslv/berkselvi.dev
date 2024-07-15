@@ -7,6 +7,7 @@ keywords = ["rsa", "cryptography", ".NET", "security"]
 description = "In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of…"
 showFullContent = false
 readingTime = true
+cover = "img/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/cover.webp"
 +++
 
 In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of keys: one for encryption and one for decryption. On the other hand, symmetric encryption algorithms, such as AES, use a single key for encryption and decryption. For these reasons, asymmetric encryption algorithms may be preferred in order to use the key publicly and avoid problems even if it falls into the hands of an attacker.

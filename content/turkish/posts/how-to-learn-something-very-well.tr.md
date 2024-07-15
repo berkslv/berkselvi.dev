@@ -7,6 +7,7 @@ keywords = ["development", "software"]
 description = "Bu kısa kılavuzla etkili öğrenmenin gücünü keşfedin. Bilginin neden önemli olduğunu, öz disiplinin nasıl geliştirileceğini öğrenin ve daha iyi akılda tutma ve kavrama için uygulanabilir teknikleri keşfedin. Geri çağırma yöntemlerine dalın..."
 showFullContent = false
 readingTime = true
+cover = "img/how-to-learn-something-very-well/cover.webp"
 +++
 
 Nasıl öğreneceğinizi öğrendiğinizde, bilgi ile dünyadaki hemen hemen tüm olasılıkların kilidini açarsınız. Bazılarınız pratiğin bilgiden daha önemli olduğunu düşünebilir, ama inanın bana, çalışma alanınız hakkında bir şey bilmiyorsanız, pratik yapamazsınız ve yapabilirseniz de işe yaramaz çünkü altta yatan süreçleri bilmiyorsunuzdur.

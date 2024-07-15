@@ -7,6 +7,7 @@ keywords = [".NET","hangfire","background jobs"]
 description = ".NET'te arka plan işlerini yönetme hakkında Task.Run(), Hosted Service ve Hangfire gibi çeşitli yöntemlerle ilgili bilgi edinin. Bu kapsamlı blog yazısı, avantajları, dezavantajları ve uygulama detaylarıyla birlikte Hangfire'a odaklanarak bu yöntemleri inceliyoruz." 
 showFullContent = false
 readingTime = true
+cover = "img/background-jobs-and-hangife-in-net/cover.webp"
 +++
 
 .NET ekosisteminde bir uygulama geliştirirken, işler karmaşıklaştığında, bazı yöntemlerimizin birden fazla servise gitmesi, yanıtlarını değerlendirmesi ve bu sonuçları farklı servislere bildirmesi gerekebilir ve bu uzun zaman alabilir! Bu tür uzun süre çalışan yöntemleri bir endpoint'in arkasına yerleştirerek ve TCP bağlantımızı o HTTP isteğinin yanıtı için açık tutarak kaynakları boşa harcamak istemeyiz. Bu kullanımı on demand job olarak adlandırabiliriz çünkü bir istek yapıldığında çalışacaktır. Ayrıca, belirli günler veya haftanın belirli zamanlarında otomatik olarak çalışmasını isteyebiliriz, bunu bir recurring job olarak adlandırabiliriz; Bu tür durumlarda, işimizi uygulamanın çalıştığı main thread'den farklı bir thread başlatarak "background job" kullanabiliriz.

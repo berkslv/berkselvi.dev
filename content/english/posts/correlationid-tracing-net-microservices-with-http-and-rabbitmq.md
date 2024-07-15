@@ -7,6 +7,7 @@ keywords = ["microservices", "correlationId", "distributed tracing", "middleware
 description = "In this article on .NET microservice architecture, we will explore how to use CorrelationId with HTTP and RabbitMQ requests to enhance distributed traceability. We will examine how to propagate the CorrelationId value across different services, manipulate header values in incoming and outgoing requests using Middleware and Filter structures, and log contexts using Serilog's LogContext framework."
 showFullContent = false
 readingTime = true
+cover = "img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/cover.webp"
 +++
 
 CorrelationId has a very important place under the title of Distributed Tracing in order to be able to trace the ongoing process during the communication between applications running distributed in the microservice architecture and to understand which steps came to this point if there is a performance-related or flow problem in a service.

@@ -7,6 +7,7 @@ keywords = ["microservices", "correlationId", "distributed tracing", "middleware
 description = ".NET microservice mimarisinde, HTTP ve RabbitMQ istekleriyle CorrelationId kullanarak dağıtık izlenebilirliği arttırdığımız bu yazıda, CorrelationId değerinin farklı servisler arasında nasıl gezdirileceğini, Middleware ve Filter yapılarıyla gelen ve giden isteklerde header değerleri üzerinde nasıl manipülasyon yapılacağını ve Serilog'un LogContext yapısıyla contextlerin loglanmasını keşfedeceğiz."
 showFullContent = false
 readingTime = true
+cover = "img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/cover.webp"
 +++
 
 Microservice mimarisinde dağıtık olarak çalışan uygulamaların kendi aralarında yaptıkları iletişimler sırasında devam eden işlemin takip edilebilirliği ve eğer bir serviste performans sebepli veya akışsal bir sorun varsa hangi adımlardan sonra buraya geldiğini anlamlandırabilmek için Distributed tracing başlığı altında CorrelationId çok önemli bir yere sahiptir.

@@ -7,6 +7,7 @@ keywords = ["keycloak","ocelot","microservices","api gateway","oauth"]
 description = "In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently…"
 showFullContent = false
 readingTime = true
+cover = "img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/cover.webp"
 +++
 
 In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently deployable services, ensuring the integrity and confidentiality of data exchanged between these services becomes a critical concern.

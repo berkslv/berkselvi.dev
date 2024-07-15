@@ -7,6 +7,7 @@ keywords = ["keycloak","ocelot","microservices","api gateway","oauth"]
 description = "Mikroservis mimarisinin dinamik dünyasında, güçlü bir güvenliğe olan ihtiyaç çok daha önemli hale gelmiştir. Kuruluşlar uygulamalarını daha küçük, bağımsız bir şekilde deploy edilebilir servislere böldükçe…"
 showFullContent = false
 readingTime = true
+cover = "img/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/Microservice-architecture-with-Ocelot-and-Keycloak.webp"
 +++
 
 Mikroservis mimarisinin dinamik dünyasında, güçlü bir güvenliğe olan ihtiyaç çok daha önemli hale gelmiştir. Kuruluşlar uygulamalarını daha küçük, bağımsız bir şekilde deploy edilebilir servislere böldükçe, bu servisler arasında alınan ve gönderilen verilerin bütünlüğünü ve gizliliğini sağlamak kritik bir önem haline gelir.

@@ -7,6 +7,7 @@ keywords = [".NET","hangfire","background jobs"]
 description = "Learn about managing background jobs in .NET with various methods like Task.Run(), Hosted Service, and Hangfire. This comprehensive blog post explores their pros, cons, and implementation details, with a focus on Hangfire..." 
 showFullContent = false
 readingTime = true
+cover = "img/background-jobs-and-hangife-in-net/cover.webp"
 +++
 
 When developing an application in the .Net ecosystem, when things get complicated, we may need some of our methods to go to multiple services, evaluate their responses, and report these results to different services and this takes long time! We do not want to waste resources by placing such long-running methods behind an endpoint and keeping our TCP connection open for the response from that HTTP request. We can call this usage on demand job because it will run when a request is made. We may also want it to run automatically at certain times of the day or week, without putting it behind an endpoint; in this case, we can call it a recurring job. In such cases, we use “background job” by starting our work on a different thread other than the main thread where the application runs.

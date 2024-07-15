@@ -7,6 +7,7 @@ keywords = ["öğrenme", "çalışma", "bilgi"]
 description = "Bu makalede yazılım geliştirmenin felsefi temellerini keşfedin. Kodlamada sorumluluk, kusurları benimsemek, sürekli öğrenme ve topluluk oluşturma gibi temel ilkeleri öğrenin. Başarı için yeni bir zihniyet benimsemeye hazır mısınız?"
 showFullContent = false
 readingTime = true
+cover = "img/5-core-philosophies-that-every-developer-should-have/cover.webp"
 +++
 
 Ben kendim, yazılımın bir işten önce bir yaşam felsefesi olduğunu düşünüyorum ve çoğu sorunu bir yazılım geliştirici olarak yaklaşarak ve bu şekilde çözerek büyük keyif alıyorum. Bu makalede, bu felsefenin temel taşlarından bahsedeceğim.

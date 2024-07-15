@@ -7,6 +7,7 @@ keywords = ["ci/cd","azure devops","azure app service",".NET","azure"]
 description = "When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application…"
 showFullContent = false
 readingTime = true
+cover = "img/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/cover.webp"
 +++
 
 Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.

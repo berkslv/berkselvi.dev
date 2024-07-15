@@ -7,6 +7,7 @@ keywords = ["rsa", "cryptography", ".NET", "security"]
 description = "In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of…"
 showFullContent = false
 readingTime = true
+cover = "img/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/cover.webp"
 +++
 
 Dijital dünyada, farklı sistemler arasındaki iletişimin güvence altına alınması çok önemlidir. RSA şifreleme, iki adet anahtar kullanarak şifreleme ve şifre çözme için sağlam bir yol sağlar. Öte yandan, AES gibi simetrik şifreleme algoritmaları, şifreleme ve şifre çözme için tek bir anahtar kullanır. Bu nedenlerle, anahtarı halka açık olarak kullanmak ve hatta bir saldırganın eline geçse bile sorunları önlemek için asimetrik şifreleme algoritmalarından olan RSA tercih edilebilir.
