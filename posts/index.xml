@@ -1,5 +1,98 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Sun, 14 Jul 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>CorrelationId Tracing in .NET Microservices with HTTP and MassTransit</title><link>https://berkselvi.dev/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/</link><pubDate>Sun, 14 Jul 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/</guid><description>CorrelationId has a very important place under the title of Distributed Tracing in order to be able to trace the ongoing process during the communication between applications running distributed in the microservice architecture and to understand which steps came to this point if there is a performance-related or flow problem in a service.
-CorrelationId must be carried throughout the entire lifecycle of a request, ensuring the correlation between different services. In this article, we will examine how to navigate the CorrelationId value using HTTP and RabbitMQ requests in a .</description><content>&lt;p>CorrelationId has a very important place under the title of Distributed Tracing in order to be able to trace the ongoing process during the communication between applications running distributed in the microservice architecture and to understand which steps came to this point if there is a performance-related or flow problem in a service.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi</copyright><lastBuildDate>Sat, 07 Sep 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Event-Driven Architecture: Do you need other service’s data in microservice architecture</title><link>https://berkselvi.dev/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</link><pubDate>Sat, 07 Sep 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</guid><description>&lt;p>In applications developed in microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.&lt;/p>
+&lt;p>However, the &lt;code>createUnit()&lt;/code> request we will make to create a sales consultant in the organization service will need the data of the product service for validation reasons. Shouldn&amp;rsquo;t the unit be given the permission to create a product that doesn&amp;rsquo;t exist? In this case, the organization service will need the data of the product service, which is not in its domain and is not under its responsibility.&lt;/p></description><content>&lt;p>In applications developed in microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.&lt;/p>
+&lt;p>However, the &lt;code>createUnit()&lt;/code> request we will make to create a sales consultant in the organization service will need the data of the product service for validation reasons. Shouldn&amp;rsquo;t the unit be given the permission to create a product that doesn&amp;rsquo;t exist? In this case, the organization service will need the data of the product service, which is not in its domain and is not under its responsibility.&lt;/p>
+&lt;p>We can access this data either synchronously or asynchronously. First, we’ll look at accessing it synchronously and the problems we may encounter, then we’ll address the potential issues with using the asynchronous method. Let’s begin.&lt;/p>
+&lt;h2 id="synchronous-communication">Synchronous communication&lt;/h2>
+&lt;p>With the request we will send to our organization service via REST, we will trigger the &lt;code>createUnit()&lt;/code> method and create a unit. However, since this service will need product data for validation purposes, it will need to retrieve this data synchronously through an HTTP REST &lt;code>getProduct()&lt;/code> request.&lt;/p>
+&lt;p>During runtime, for the &lt;code>createUnit()&lt;/code> method to be processed, both the organization service and the product service need to be up and accessible, and there must be no issues with the network connection between them. If the product service is not operational, the organization service will also not function. Even when both services are up and accessible, if the product service is slow, the synchronous request flow will be blocked, causing the organization service to slow down as well. To overcome this issue, the organization service will need to scale during periods of high demand. However, since the product service has a runtime dependency, it will also need to be scaled in the same way to handle the large number of requests coming from the organization. If we apply this practice to all services, all services will need to scale together. As a result, the organization service will be highly dependent on the product service, and they will have to continue operating together rather than independently. If all the services in our microservice architecture become dependent on each other in this way, the inaccessibility of a single service could lead to all other services becoming inaccessible as well.&lt;/p>
+&lt;p>During design time, if a change is made to the &lt;code>getProduct()&lt;/code> API in the product service, the developers of the organization service would also need to update their HTTP client integrations accordingly. This change would likely require modifying the organization service&amp;rsquo;s codebase as well.&lt;/p>
+&lt;p>In conclusion, since coupling will occur both at runtime and design time, the two services will be tightly coupled, leading to what Jonathan Tower calls a &lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;t=1203s">distributed monolith&lt;/a>. Any change in one service will directly affect the other, making it difficult to quickly respond to constantly changing business requirements. Any improvements made to the &lt;code>getProduct()&lt;/code> method in the product service would also need to be implemented by the other services that consume it. After completing these updates, all services connected synchronously must be accessible for end-users to use the application.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/synchronous-communication.png" alt="Synchronous communication" loading="lazy" />
+&lt;p class="image-sub-title">Synchronous communication&lt;/p>
+&lt;p>In a scenario where we want to guarantee an SLA to our customer, if we optimistically offer a 99.5% uptime guarantee for both the product and organization services, we are accepting that there could be up to 43 hours of downtime annually. In a scenario where the product and organization services are dependent on each other during runtime, using the calculation $0.995 * 0.995 = 0.990$, the dependency created by synchronous communication results in our services offering twice the downtime guarantee, potentially leading to 87 hours of downtime annually.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: left">&lt;/th>
+&lt;th style="text-align: left">Product&lt;/th>
+&lt;th style="text-align: left">Organization&lt;/th>
+&lt;th style="text-align: left">Product &amp;amp; Organization&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: left">Uptime percentage&lt;/td>
+&lt;td style="text-align: left">99.5&lt;/td>
+&lt;td style="text-align: left">99.5&lt;/td>
+&lt;td style="text-align: left">99.0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">Month&lt;/td>
+&lt;td style="text-align: left">716&lt;/td>
+&lt;td style="text-align: left">716&lt;/td>
+&lt;td style="text-align: left">712&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">Downtime in month&lt;/td>
+&lt;td style="text-align: left">4&lt;/td>
+&lt;td style="text-align: left">4&lt;/td>
+&lt;td style="text-align: left">7&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">Year&lt;/td>
+&lt;td style="text-align: left">8716&lt;/td>
+&lt;td style="text-align: left">8716&lt;/td>
+&lt;td style="text-align: left">8672&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">Downtime in year&lt;/td>
+&lt;td style="text-align: left">43&lt;/td>
+&lt;td style="text-align: left">43&lt;/td>
+&lt;td style="text-align: left">87&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>So, how do we avoid this method, which can cause so many headaches? Let&amp;rsquo;s look at another solution for communication between services.&lt;/p>
+&lt;h2 id="asynchronous-communication">Asynchronous communication&lt;/h2>
+&lt;p>If we don’t want to choose synchronous communication, which increases inter-service dependency in every possible direction, we can proceed with the alternative: asynchronous communication. By reversing the arrows with this method, the product service publishes a domain event called &lt;code>ProductCreatedEvent&lt;/code> whenever there is an update in the product table. All services listening to this event update their own local &lt;code>products&lt;/code> tables.&lt;/p>
+&lt;p>When the organization service needs product data, it reads from its own &lt;code>products&lt;/code> table. This table is unaffected by the organization&amp;rsquo;s workflows and is only read from. This way, in the &lt;code>createUnit()&lt;/code> method, we query the product data from the same database where we save the unit data.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/asynchronous-communication.png" alt="Asynchronous communication" loading="lazy" />
+&lt;p class="image-sub-title">Asynchronous communication&lt;/p>
+&lt;p>With this method, we access the product data from the organization&amp;rsquo;s database in the &lt;code>createUnit()&lt;/code> flow, eliminating runtime dependency on the product service.&lt;/p>
+&lt;p>By eliminating runtime dependency, we stop making synchronous queries to the product service’s &lt;code>getProduct()&lt;/code> endpoint. At design time, the dependency we faced while developing is also removed. After making a change in the &lt;code>getProduct()&lt;/code> method of the product service, the team managing the organization service no longer needs to make any changes.&lt;/p>
+&lt;p>During design time, we only have an asynchronous dependency, and we only need to make changes when necessary. If a new column is added to the product domain model, it can be added directly to the event as a new field. If a column is removed from the product table, it can be sent with default values without being removed from the event type and marked as obsolete. Services can respond to these added or removed columns as needed or continue without making any changes.&lt;/p>
+&lt;p>The product service does not need to care about who is processing the published event. Anyone who needs this data can consume the event, maintain their own copy of the product data, and carry on their work without having to synchronize communication with the product service. This leads to more scalable and accessible applications since they can now operate independently without depending on other services.&lt;/p>
+&lt;p>If we worry that our tables will mix domains, we can keep tables from different domains in a separate database schema as shown in the example below.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/asynchronous-communication-2.png" alt="Asynchronous communication 2" loading="lazy" />
+&lt;p class="image-sub-title">Asynchronous communication 2&lt;/p>
+&lt;h2 id="eventual-consistency">Eventual consistency&lt;/h2>
+&lt;p>The biggest issue that may arise from this method is eventual consistency. The update of the relevant table in the organization service may not reflect at the exact same moment a product is added to the product service. Depending on the availability of the message broker, there could be a delay of a few milliseconds or seconds.&lt;/p>
+&lt;p>We can also explain this situation with CAP theory. If we keep the Partition tolerance leg, which is one of the 3 legs of CAP theory, constant, one of the Consistency and Availability legs will increase while the other will decrease. Therefore, we will not be able to provide these three options at the same time. Here, we need to decide according to the workflow we are working with.&lt;/p>
+&lt;p>For example, in an e-commerce system, the &amp;ldquo;add to cart&amp;rdquo; feature might need to be highly available. If the &amp;ldquo;add to cart&amp;rdquo; feature isn’t working, receiving an error message like “please try again later” might cause customers to switch to a competitor&amp;rsquo;s site. However, if we see 2 instead of 1 of the same item in our cart, we can simply adjust our cart and continue the payment process.&lt;/p>
+&lt;p>However, the same approach may not work for hotel reservations. In contrast to the cart example, consistency is probably more critical. Returning an error message like &amp;ldquo;please try again later&amp;rdquo; is much more logical than renting out the same room to multiple customers.&lt;/p>
+&lt;p>In conclusion, synchronous communication is suitable for workflows that need immediate consistency, while asynchronous communication is better for workflows that require high availability. Typically, in microservice architecture, high availability is preferred, as synchronous communication tightly couples all services together.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/high-avalability-vs-immidiate-consistency.png" alt="High availability vs Immediate consistency" loading="lazy" />
+&lt;p class="image-sub-title">High availability vs Immediate consistency&lt;/p>
+&lt;h2 id="edge-cases-in-asynchronous-communication">Edge cases in asynchronous communication&lt;/h2>
+&lt;p>If you have decided to proceed with event-driven architecture in the communication between your services, you will need to do something to ensure data consistency in the system. If a create request comes to one of our services and we publish CreatedEvent, we first update the database and then publish the event, if the transaction we execute in the database results in an error, and we publish the event without following it, or if the transaction we execute in the database results in success but the event bus cannot be accessed afterwards, the data that is distributed in our applications may fall into an inconsistent state. In order to prevent this situation, while the product service updates the product data in its own database, it also adds the relevant event to the outbox table in the same database, and then a different thread continuously scans this table and publishes the new events. Since the record we make to the database will be processed atomically, it is guaranteed that the event data will be created in the outbox table while the product data is being created. However, in an application that works as multiple instances, situations such as an event reading from the same outbox table twice and publishing it twice may be encountered. In this case, the idempotency problem already arises.&lt;/p>
+&lt;p>If the result of a method being called once is the same as the result of multiple calls, then this is an idempotent method. In order to prevent an event from being processed multiple times due to different reasons and thus disrupting data consistency in the system, we will need to save the unique message id values ​​of the events to the database after they are consumed, and continue processing if the message id value is not in the database when a new event is to be consumed. Chris Richardson (microservices.io) also touches on this issue in his article Pattern: &lt;a href="https://microservices.io/patterns/communication-style/idempotent-consumer.html">Idempotent Consumer&lt;/a>.&lt;/p>
+&lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/without-outbox-idempotency.png" alt="Without Outbox &amp; Idempotency" loading="lazy" />
+&lt;p class="image-sub-title">Without Outbox &amp; Idempotency&lt;/p>
+&lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/outbox-idempotency.png" alt="Outbox &amp; Idempotency" loading="lazy" />
+&lt;p class="image-sub-title">Outbox &amp; Idempotency&lt;/p>
+&lt;p>As a result, as with most solutions to problems in the field of Computer Science, we do not have a silver bullet. After considering the advantages and disadvantages of both methods in detail and in the domain we are working in, we can continue with the method we want. However, my suggestion would be to eliminate the dependency between services by using asynchronous communication whenever possible.&lt;/p>
+&lt;p>You can access the .NET project I developed to simulate situations that may occur while working with asynchronous and synchronous data communication from the github repo below. In the example, the infrastructure provided by MassTransit was used for the outbox structure, and no special development was made for this feature.&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-fetch-other-service-data-with-event-driven-architecture">GitHub - berkslv/lecture-fetch-other-service-data-with-event-driven-architecture&lt;/a>&lt;/p>
+&lt;h2 id="resources">Resources&lt;/h2>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;t=1203s">Don’t Build a Distributed Monolith - Jonathan &amp;ldquo;J.&amp;rdquo; Tower - NDC London 2023&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=STKCRSUsyP0">The Many Meanings of Event-Driven Architecture • Martin Fowler • GOTO 2017&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=AEbJgpamZ4w&amp;t=898s">Solving distributed data problems in a microservice architecture | Microservices.io&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=rZxIzrjvSGg&amp;t=716s">You Keep Using That Word • Sam Newman • GOTO 2023&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://microservices.io/patterns/communication-style/idempotent-consumer.html">Microservices Pattern: Pattern: Idempotent Consumer&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.reactivemanifesto.org/en">The Reactive Manifesto&lt;/a>&lt;/p>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>CorrelationId Tracing in .NET Microservices with HTTP and MassTransit</title><link>https://berkselvi.dev/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/</link><pubDate>Sun, 14 Jul 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/correlationid-tracing-net-microservices-with-http-and-rabbitmq/</guid><description>&lt;p>CorrelationId has a very important place under the title of Distributed Tracing in order to be able to trace the ongoing process during the communication between applications running distributed in the microservice architecture and to understand which steps came to this point if there is a performance-related or flow problem in a service.&lt;/p>
+&lt;p>CorrelationId must be carried throughout the entire lifecycle of a request, ensuring the correlation between different services. In this article, we will examine how to navigate the CorrelationId value using HTTP and RabbitMQ requests in a .NET based microservice architecture. This solution was designed to be a clear answer to our problem, but it is open to any comments and improvements, if you have a better solution in mind, please contact me.&lt;/p></description><content>&lt;p>CorrelationId has a very important place under the title of Distributed Tracing in order to be able to trace the ongoing process during the communication between applications running distributed in the microservice architecture and to understand which steps came to this point if there is a performance-related or flow problem in a service.&lt;/p>
 &lt;p>CorrelationId must be carried throughout the entire lifecycle of a request, ensuring the correlation between different services. In this article, we will examine how to navigate the CorrelationId value using HTTP and RabbitMQ requests in a .NET based microservice architecture. This solution was designed to be a clear answer to our problem, but it is open to any comments and improvements, if you have a better solution in mind, please contact me.&lt;/p>
 &lt;img src="https://berkselvi.dev/img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/big-picture.png" alt="Big picture" loading="lazy" />
 &lt;p class="image-sub-title">Big picture&lt;/p>
@@ -295,8 +388,9 @@ CorrelationId must be carried throughout the entire lifecycle of a request, ensu
 &lt;p>&lt;a href="https://medium.com/@mbearz/how-to-log-everything-using-middleware-and-httpclient-handler-42b8f628fe84">https://medium.com/@mbearz/how-to-log-everything-using-middleware-and-httpclient-handler-42b8f628fe84&lt;/a>&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>API Gateway Alternatives from a .NET Developer's Perspective: YARP, Ocelot, Kong, APISIX, and KrakenD</title><link>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</link><pubDate>Mon, 20 May 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</guid><description>We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.
-What is an API Gateway? An API Gateway provides an entry point to our systems as shown below, isolating them from the outside world.</description><content>&lt;p>We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>API Gateway Alternatives from a .NET Developer's Perspective: YARP, Ocelot, Kong, APISIX, and KrakenD</title><link>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</link><pubDate>Mon, 20 May 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/api-gateway-alternatives-from-a-net-developer-standpoint/</guid><description>&lt;p>We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.&lt;/p>
+&lt;h2 id="what-is-an-api-gateway">What is an API Gateway?&lt;/h2>
+&lt;p>An API Gateway provides an entry point to our systems as shown below, isolating them from the outside world. It solves common issues such as authorization, logging, and rate limiting with a single service that would otherwise need to be implemented repeatedly in each sub-service.&lt;/p></description><content>&lt;p>We can use API Gateway services as an intermediary layer while exposing our services to the outside world in microservice architecture. In this article, we will briefly discuss what an API Gateway is and then talk about .NET, OpenResty, and Go-based API Gateway alternatives along with performance tests.&lt;/p>
 &lt;h2 id="what-is-an-api-gateway">What is an API Gateway?&lt;/h2>
 &lt;p>An API Gateway provides an entry point to our systems as shown below, isolating them from the outside world. It solves common issues such as authorization, logging, and rate limiting with a single service that would otherwise need to be implemented repeatedly in each sub-service.&lt;/p>
 &lt;p>They can apply transformations to URLs, body information, and even protocols while routing requests. For example, an HTTP request can be transmitted to sub-services using the gRPC protocol for better performance. They can use flat files or databases to find the addresses of the services they will route incoming requests to.&lt;/p>
@@ -416,46 +510,46 @@ What is an API Gateway? An API Gateway provides an entry point to our systems as
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th>Feature&lt;/th>
-&lt;th>YARP&lt;/th>
-&lt;th>Ocelot&lt;/th>
+&lt;th style="text-align: left">Feature&lt;/th>
+&lt;th style="text-align: left">YARP&lt;/th>
+&lt;th style="text-align: left">Ocelot&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td>Routing &amp;amp; Request mapping&lt;/td>
-&lt;td>Yes&lt;/td>
-&lt;td>Yes&lt;/td>
+&lt;td style="text-align: left">Routing &amp;amp; Request mapping&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Authn &amp;amp; Authz&lt;/td>
-&lt;td>Yes&lt;/td>
-&lt;td>Yes&lt;/td>
+&lt;td style="text-align: left">Authn &amp;amp; Authz&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Rate limiting&lt;/td>
-&lt;td>Yes&lt;/td>
-&lt;td>Yes&lt;/td>
+&lt;td style="text-align: left">Rate limiting&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Load balancing&lt;/td>
-&lt;td>Yes&lt;/td>
-&lt;td>Yes&lt;/td>
+&lt;td style="text-align: left">Load balancing&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>gRPC&lt;/td>
-&lt;td>Yes&lt;/td>
-&lt;td>No, old packages available&lt;/td>
+&lt;td style="text-align: left">gRPC&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td style="text-align: left">No, old packages available&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Request aggregation&lt;/td>
-&lt;td>No, custom development required&lt;/td>
-&lt;td>Yes, can be done with configuration&lt;/td>
+&lt;td style="text-align: left">Request aggregation&lt;/td>
+&lt;td style="text-align: left">No, custom development required&lt;/td>
+&lt;td style="text-align: left">Yes, can be done with configuration&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Distributed tracing&lt;/td>
-&lt;td>Yes&lt;/td>
-&lt;td>Yes&lt;/td>
+&lt;td style="text-align: left">Distributed tracing&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td style="text-align: left">Yes&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
@@ -840,78 +934,78 @@ What is an API Gateway? An API Gateway provides an entry point to our systems as
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th>Feature&lt;/th>
-&lt;th>YARP&lt;/th>
-&lt;th>Ocelot&lt;/th>
-&lt;th>Kong&lt;/th>
-&lt;th>APISIX&lt;/th>
-&lt;th>KrakenD&lt;/th>
+&lt;th style="text-align: left">Feature&lt;/th>
+&lt;th style="text-align: left">YARP&lt;/th>
+&lt;th style="text-align: left">Ocelot&lt;/th>
+&lt;th style="text-align: left">Kong&lt;/th>
+&lt;th style="text-align: left">APISIX&lt;/th>
+&lt;th style="text-align: left">KrakenD&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td>Request aggregation&lt;/td>
-&lt;td>NO&lt;/td>
-&lt;td>Simple, can be done with configuration&lt;/td>
-&lt;td>NO&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>Powerful,, can be done with configuration&lt;/td>
+&lt;td style="text-align: left">Request aggregation&lt;/td>
+&lt;td style="text-align: left">NO&lt;/td>
+&lt;td style="text-align: left">Simple, can be done with configuration&lt;/td>
+&lt;td style="text-align: left">NO&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">Powerful,, can be done with configuration&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>OAuth &amp;amp; OpenID&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
+&lt;td style="text-align: left">OAuth &amp;amp; OpenID&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Request validation&lt;/td>
-&lt;td>Needs custom logic&lt;/td>
-&lt;td>Needs custom logic&lt;/td>
-&lt;td>Comes with enterprise&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
+&lt;td style="text-align: left">Request validation&lt;/td>
+&lt;td style="text-align: left">Needs custom logic&lt;/td>
+&lt;td style="text-align: left">Needs custom logic&lt;/td>
+&lt;td style="text-align: left">Comes with enterprise&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>HTTP to gRPC&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>NO&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
+&lt;td style="text-align: left">HTTP to gRPC&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">NO&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Websocket&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>?&lt;/td>
-&lt;td>YES&lt;/td>
-&lt;td>Comes with enterprise&lt;/td>
+&lt;td style="text-align: left">Websocket&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">?&lt;/td>
+&lt;td style="text-align: left">YES&lt;/td>
+&lt;td style="text-align: left">Comes with enterprise&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>State&lt;/td>
-&lt;td>File&lt;/td>
-&lt;td>File&lt;/td>
-&lt;td>File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka&lt;/td>
-&lt;td>File, etcd&lt;/td>
-&lt;td>File&lt;/td>
+&lt;td style="text-align: left">State&lt;/td>
+&lt;td style="text-align: left">File&lt;/td>
+&lt;td style="text-align: left">File&lt;/td>
+&lt;td style="text-align: left">File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka&lt;/td>
+&lt;td style="text-align: left">File, etcd&lt;/td>
+&lt;td style="text-align: left">File&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Plugin&lt;/td>
-&lt;td>C#&lt;/td>
-&lt;td>C#&lt;/td>
-&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
-&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
-&lt;td>Go &amp;amp; Lua&lt;/td>
+&lt;td style="text-align: left">Plugin&lt;/td>
+&lt;td style="text-align: left">C#&lt;/td>
+&lt;td style="text-align: left">C#&lt;/td>
+&lt;td style="text-align: left">&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td style="text-align: left">&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td style="text-align: left">Go &amp;amp; Lua&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td>Performance&lt;/td>
-&lt;td>&lt;strong>Mean response&lt;/strong>: 1029ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
-&lt;td>&lt;strong>Mean response&lt;/strong>: 1030ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
-&lt;td>&lt;strong>Mean response&lt;/strong>: 1035ms, &lt;strong>Memory&lt;/strong>: 280MB, &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
-&lt;td>&lt;strong>Mean response&lt;/strong>: 1025ms, &lt;strong>Memory&lt;/strong>: 100MB &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
-&lt;td>&lt;strong>Mean response&lt;/strong>: 1024ms, &lt;strong>Memory&lt;/strong>: 30MB, &lt;strong>CPU&lt;/strong>: %4 - %6&lt;/td>
+&lt;td style="text-align: left">Performance&lt;/td>
+&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1029ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1030ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1035ms, &lt;strong>Memory&lt;/strong>: 280MB, &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1025ms, &lt;strong>Memory&lt;/strong>: 100MB &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1024ms, &lt;strong>Memory&lt;/strong>: 30MB, &lt;strong>CPU&lt;/strong>: %4 - %6&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
@@ -919,7 +1013,7 @@ What is an API Gateway? An API Gateway provides an entry point to our systems as
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-api-gateway-comparison">GitHub - berkslv/lecture-api-gateway-comparison&lt;/a>&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion-1">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to Use RSA for Encryption in JavaScript and Decryption in .NET</title><link>https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</link><pubDate>Thu, 07 Mar 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</guid><description>In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of keys: one for encryption and one for decryption. On the other hand, symmetric encryption algorithms, such as AES, use a single key for encryption and decryption. For these reasons, asymmetric encryption algorithms may be preferred in order to use the key publicly and avoid problems even if it falls into the hands of an attacker.</description><content>&lt;p>In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of keys: one for encryption and one for decryption. On the other hand, symmetric encryption algorithms, such as AES, use a single key for encryption and decryption. For these reasons, asymmetric encryption algorithms may be preferred in order to use the key publicly and avoid problems even if it falls into the hands of an attacker.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to Use RSA for Encryption in JavaScript and Decryption in .NET</title><link>https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</link><pubDate>Thu, 07 Mar 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-use-rsa-for-encryption-in-javascript-and-decryption-in-net/</guid><description>&lt;p>In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of keys: one for encryption and one for decryption. On the other hand, symmetric encryption algorithms, such as AES, use a single key for encryption and decryption. For these reasons, asymmetric encryption algorithms may be preferred in order to use the key publicly and avoid problems even if it falls into the hands of an attacker.&lt;/p></description><content>&lt;p>In the digital world, securing communication between different systems is paramount. RSA encryption is an asymmetric encryption algorithm and provides a robust way to achieve this by using a pair of keys: one for encryption and one for decryption. On the other hand, symmetric encryption algorithms, such as AES, use a single key for encryption and decryption. For these reasons, asymmetric encryption algorithms may be preferred in order to use the key publicly and avoid problems even if it falls into the hands of an attacker.&lt;/p>
 &lt;p>In this blog post I will guide you through implementing RSA key generation with OpenSSL, encryption in JavaScript and decryption in .NET, ensuring secure data exchange between a frontend application and a backend service.&lt;/p>
 &lt;h2 id="understanding-rsa-encryption">Understanding RSA Encryption&lt;/h2>
 &lt;p>RSA (Rivest-Shamir-Adleman) is one of the first public-key cryptosystems and is widely used for secure data transmission. It involves two keys: a public key, which can be shared openly, for encrypting messages, and a private key, must be kept secret, for decrypting them. The strength of RSA lies in the difficulty of factoring the product of two large prime numbers, which underpins its security.&lt;/p>
@@ -1204,8 +1298,8 @@ What is an API Gateway? An API Gateway provides an entry point to our systems as
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-rsa-dotnet-javascript">GitHub - berkslv/lecture-rsa-dotnet-javascript&lt;/a>&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to use Ocelot and Keycloak together to secure Microservices from API Gateway</title><link>https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/</link><pubDate>Tue, 30 Jan 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/</guid><description>In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently deployable services, ensuring the integrity and confidentiality of data exchanged between these services becomes a critical concern.
-In this blog post, we will explore a comprehensive solution for securing microservices using Ocelot, an API Gateway with Keycloak, a powerful open-source identity and access management solution.</description><content>&lt;p>In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently deployable services, ensuring the integrity and confidentiality of data exchanged between these services becomes a critical concern.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to use Ocelot and Keycloak together to secure Microservices from API Gateway</title><link>https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/</link><pubDate>Tue, 30 Jan 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-use-ocelot-and-keycloak-together-to-secure-microservices-from-api-gateway/</guid><description>&lt;p>In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently deployable services, ensuring the integrity and confidentiality of data exchanged between these services becomes a critical concern.&lt;/p>
+&lt;p>In this blog post, we will explore a comprehensive solution for securing microservices using Ocelot, an API Gateway with Keycloak, a powerful open-source identity and access management solution. By placing Keycloak behind the API Gateway, we’ll delve into how this integration safeguards resources, authenticates requests to other services, and authorizes access using claims, offering a seamless and secure communication framework for your microservices ecosystem. Let’s get started.&lt;/p></description><content>&lt;p>In the dynamic landscape of microservices architecture, the need for robust security has become much more important. As organizations break down their applications into smaller, independently deployable services, ensuring the integrity and confidentiality of data exchanged between these services becomes a critical concern.&lt;/p>
 &lt;p>In this blog post, we will explore a comprehensive solution for securing microservices using Ocelot, an API Gateway with Keycloak, a powerful open-source identity and access management solution. By placing Keycloak behind the API Gateway, we’ll delve into how this integration safeguards resources, authenticates requests to other services, and authorizes access using claims, offering a seamless and secure communication framework for your microservices ecosystem. Let’s get started.&lt;/p>
 &lt;h2 id="create-keycloak-instance">Create Keycloak instance&lt;/h2>
 &lt;p>Running keycloak within Docker is very easy. Just place this Dockerfile in /Identity directory in your project. You can find all of the codes in my repository from end of the post.&lt;/p>
@@ -1469,7 +1563,7 @@ In this blog post, we will explore a comprehensive solution for securing microse
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-ocelot-and-keycloak">GitHub - berkslv/lecture-ocelot-and-keycloak&lt;/a>&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>Achieving Zero Downtime: Azure App Service Deployment using Azure DevOps and Deployment Slots</title><link>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</link><pubDate>Tue, 21 Nov 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</guid><description>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.</description><content>&lt;p>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>Achieving Zero Downtime: Azure App Service Deployment using Azure DevOps and Deployment Slots</title><link>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</link><pubDate>Tue, 21 Nov 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/achieving-zero-downtime-azure-app-service-deployment-using-azure-devops-and-deployment-slots/</guid><description>&lt;p>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.&lt;/p></description><content>&lt;p>Hello! When deploying our application, which runs as a single instance in Azure App Service, using Azure DevOps pipelines, there will most likely be a few seconds of downtime. Because the application running as a single instance will need to be restarted to update it with a new version. In a worst case scenario, if an error occurs in the transition of our application versions, downtime will be extended due to rollback.&lt;/p>
 &lt;p>We can use the deployment slots feature to solve this problem specifically for the app service. With this feature, 2 different instances, usually staging and production applications, are running in a single app service plan as a separate instances, and when switching to production, the swap operation is managed by the app service and no downtime is experienced.&lt;/p>
 &lt;p>In this post, we will create a very simple Dotnet Web API project, host it in the Azure DevOps repository, deploy it to Azure App Service by creating a CI/CD pipeline with the Azure DevOps pipeline, and perform zero downtime deployment with the deployment slots feature. We will complete the entire process in 5 steps as follows. Let’s begin.&lt;/p>
 &lt;ol>
@@ -1753,7 +1847,7 @@ In this blog post, we will explore a comprehensive solution for securing microse
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>2023-11-14T12:28:39.506Z, &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health error is request to &lt;span style="color:#f92672">[&lt;/span>some-url&lt;span style="color:#f92672">]&lt;/span>/health failed, reason: connect ETIMEDOUT 100.100.100.100:443
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>Background jobs and Hangfire in .NET</title><link>https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/</link><pubDate>Sun, 17 Sep 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/</guid><description>When developing an application in the .Net ecosystem, when things get complicated, we may need some of our methods to go to multiple services, evaluate their responses, and report these results to different services and this takes long time! We do not want to waste resources by placing such long-running methods behind an endpoint and keeping our TCP connection open for the response from that HTTP request. We can call this usage on demand job because it will run when a request is made.</description><content>&lt;p>When developing an application in the .Net ecosystem, when things get complicated, we may need some of our methods to go to multiple services, evaluate their responses, and report these results to different services and this takes long time! We do not want to waste resources by placing such long-running methods behind an endpoint and keeping our TCP connection open for the response from that HTTP request. We can call this usage on demand job because it will run when a request is made. We may also want it to run automatically at certain times of the day or week, without putting it behind an endpoint; in this case, we can call it a recurring job. In such cases, we use “background job” by starting our work on a different thread other than the main thread where the application runs.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>Background jobs and Hangfire in .NET</title><link>https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/</link><pubDate>Sun, 17 Sep 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/background-jobs-and-hangife-in-net/</guid><description>&lt;p>When developing an application in the .Net ecosystem, when things get complicated, we may need some of our methods to go to multiple services, evaluate their responses, and report these results to different services and this takes long time! We do not want to waste resources by placing such long-running methods behind an endpoint and keeping our TCP connection open for the response from that HTTP request. We can call this usage on demand job because it will run when a request is made. We may also want it to run automatically at certain times of the day or week, without putting it behind an endpoint; in this case, we can call it a recurring job. In such cases, we use “background job” by starting our work on a different thread other than the main thread where the application runs.&lt;/p></description><content>&lt;p>When developing an application in the .Net ecosystem, when things get complicated, we may need some of our methods to go to multiple services, evaluate their responses, and report these results to different services and this takes long time! We do not want to waste resources by placing such long-running methods behind an endpoint and keeping our TCP connection open for the response from that HTTP request. We can call this usage on demand job because it will run when a request is made. We may also want it to run automatically at certain times of the day or week, without putting it behind an endpoint; in this case, we can call it a recurring job. In such cases, we use “background job” by starting our work on a different thread other than the main thread where the application runs.&lt;/p>
 &lt;p>There are many different methods of managing background jobs in .Net. This will be a blog post where I will talk about them step by step, how they solve problems and what problems they cause us, and give in-depth usage examples in Hangfire, which is the package I like the most when dealing with background jobs. You can also access all the codes from the repo:&lt;/p>
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-dotnet-background-jobs">GitHub - berkslv/lecture-dotnet-background-jobs&lt;/a>&lt;/p>
 &lt;h2 id="taskrun">Task.Run()&lt;/h2>
@@ -2070,9 +2164,10 @@ In this blog post, we will explore a comprehensive solution for securing microse
 &lt;/ul>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to Secure Dotnet &amp; Vue.js Application with Keycloak</title><link>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</link><pubDate>Mon, 21 Aug 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</guid><description>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.
-First, we run our keycloak application using docker, if you publish this application using Azure or a similar cloud provider, you can easily use it in your production applications.
-docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.1 start-dev After Keycloak is running, we create realm for our application from the left side after logging in from localhost:8080/admin with username: admin and password: admin.</description><content>&lt;p>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to Secure Dotnet &amp; Vue.js Application with Keycloak</title><link>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</link><pubDate>Mon, 21 Aug 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-secure-dotnet-vue-application-with-keycloak/</guid><description>&lt;p>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.&lt;/p>
+&lt;p>First, we run our keycloak application using docker, if you publish this application using Azure or a similar cloud provider, you can easily use it in your production applications.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker run -p 8080:8080 -e KEYCLOAK_ADMIN&lt;span style="color:#f92672">=&lt;/span>admin -e KEYCLOAK_ADMIN_PASSWORD&lt;span style="color:#f92672">=&lt;/span>admin quay.io/keycloak/keycloak:22.0.1 start-dev
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After Keycloak is running, we create realm for our application from the left side after logging in from localhost:8080/admin with username: admin and password: admin. Since master realm is assigned to keycloak’s own use, we need to work on another realm.&lt;/p></description><content>&lt;p>In this post, I will talk about how we can secure our dotnet and vue applications using keycloak.&lt;/p>
 &lt;p>First, we run our keycloak application using docker, if you publish this application using Azure or a similar cloud provider, you can easily use it in your production applications.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker run -p 8080:8080 -e KEYCLOAK_ADMIN&lt;span style="color:#f92672">=&lt;/span>admin -e KEYCLOAK_ADMIN_PASSWORD&lt;span style="color:#f92672">=&lt;/span>admin quay.io/keycloak/keycloak:22.0.1 start-dev
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After Keycloak is running, we create realm for our application from the left side after logging in from localhost:8080/admin with username: admin and password: admin. Since master realm is assigned to keycloak’s own use, we need to work on another realm.&lt;/p>
@@ -2296,7 +2391,7 @@ docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-dotnet-vue-keycloak">GitHub - berkslv/lecture-dotnet-vue-keycloak&lt;/a>&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to Deploy a React App with Nginx using Docker with react-router-dom</title><link>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</link><pubDate>Sat, 21 Jan 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</guid><description>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app.</description><content>&lt;p>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app. Finally, we&amp;rsquo;ll build a Docker image of our app and run a Docker container to deploy the app.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to Deploy a React App with Nginx using Docker with react-router-dom</title><link>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</link><pubDate>Sat, 21 Jan 2023 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-deploy-a-react-app-with-nginx-using-docker-with-react-router-dom/</guid><description>&lt;p>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app. Finally, we&amp;rsquo;ll build a Docker image of our app and run a Docker container to deploy the app.&lt;/p></description><content>&lt;p>If you&amp;rsquo;re looking to deploy a React app, there are several options available, including deploying it to a web server or using a containerization tool like Docker. In this tutorial, we&amp;rsquo;ll show you how to deploy a React app with Nginx using Docker. Nginx is a popular open-source web server that is known for its high performance and low resource usage. We&amp;rsquo;ll create a Dockerfile for our React app that uses Nginx to serve the app, and we&amp;rsquo;ll also create an Nginx configuration file to tell Nginx how to serve the app. Finally, we&amp;rsquo;ll build a Docker image of our app and run a Docker container to deploy the app.&lt;/p>
 &lt;h2 id="prerequisites">Prerequisites:&lt;/h2>
 &lt;ul>
 &lt;li>A basic understanding of Docker&lt;/li>
@@ -2381,8 +2476,8 @@ try_files $uri $uri/ /index.html;
 &lt;p>Congratulations! You have successfully deployed a React app with Nginx using Docker and Docker Compose. You can now easily deploy your React apps to any server or hosting platform that supports Docker.&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to learn something very well</title><link>https://berkselvi.dev/posts/how-to-learn-something-very-well/</link><pubDate>Wed, 09 Mar 2022 10:01:10 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-learn-something-very-well/</guid><description>When you learn how to learn, you unlock almost all the possibilities in the world with knowledge. Some of you can think practice more important than knowledge, but trust me, if you don’t know something about your working area, you won’t get practice, and if you can, it won’t work, because you don’t know the underlying processes.
-This guide is simple and results oriented, you can learn more about it with this great book.</description><content>&lt;p>When you learn how to learn, you unlock almost all the possibilities in the world with knowledge. Some of you can think practice more important than knowledge, but trust me, if you don’t know something about your working area, you won’t get practice, and if you can, it won’t work, because you don’t know the underlying processes.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>How to learn something very well</title><link>https://berkselvi.dev/posts/how-to-learn-something-very-well/</link><pubDate>Wed, 09 Mar 2022 10:01:10 +0300</pubDate><guid>https://berkselvi.dev/posts/how-to-learn-something-very-well/</guid><description>&lt;p>When you learn how to learn, you unlock almost all the possibilities in the world with knowledge. Some of you can think practice more important than knowledge, but trust me, if you don’t know something about your working area, you won’t get practice, and if you can, it won’t work, because you don’t know the underlying processes.&lt;/p>
+&lt;p>This guide is simple and results oriented, you can learn more about it with &lt;a href="https://www.goodreads.com/book/show/18770267-make-it-stick">this great book&lt;/a>.&lt;/p></description><content>&lt;p>When you learn how to learn, you unlock almost all the possibilities in the world with knowledge. Some of you can think practice more important than knowledge, but trust me, if you don’t know something about your working area, you won’t get practice, and if you can, it won’t work, because you don’t know the underlying processes.&lt;/p>
 &lt;p>This guide is simple and results oriented, you can learn more about it with &lt;a href="https://www.goodreads.com/book/show/18770267-make-it-stick">this great book&lt;/a>.&lt;/p>
 &lt;h2 id="before-the-learning">Before the learning&lt;/h2>
 &lt;p>Mind is not fixed and can be developed, not only mind and IQ, intellectual skills also be developed with working. First of all you must have iron-strong self discipline, this can be earned in different ways, but you must find and follow your own path. If you wish, you can follow the military discipline methods, or you can stay loyal to the Far East philosophies. It’s entirely up to you.&lt;/p>
@@ -2401,8 +2496,17 @@ This guide is simple and results oriented, you can learn more about it with this
 &lt;p>Blend recall and detailing. After a topic or class, ask yourself, “How did it go? Could it be better? Does this remind you of something from the past?” Asking questions like these helps learning, and this is called &lt;strong>reflection&lt;/strong>.&lt;/p>
 &lt;hr>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
-&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>5 Core Philosophies That Every Developer Should Have</title><link>https://berkselvi.dev/posts/5-core-philosophies-that-every-developer-should-have/</link><pubDate>Sun, 26 Sep 2021 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/5-core-philosophies-that-every-developer-should-have/</guid><description>I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.
-Table of Contents Be a responsible person Don’t ruin anything in your code Don’t be a perfectionist Your asset is your knowledge Develop your community!</description><content>&lt;p>I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.&lt;/p>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>5 Core Philosophies That Every Developer Should Have</title><link>https://berkselvi.dev/posts/5-core-philosophies-that-every-developer-should-have/</link><pubDate>Sun, 26 Sep 2021 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/5-core-philosophies-that-every-developer-should-have/</guid><description>&lt;p>I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.&lt;/p>
+&lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
+&lt;ul>
+&lt;li>Be a responsible person&lt;/li>
+&lt;li>Don’t ruin anything in your code&lt;/li>
+&lt;li>Don’t be a perfectionist&lt;/li>
+&lt;li>Your asset is your knowledge&lt;/li>
+&lt;li>Develop your community!&lt;/li>
+&lt;/ul>
+&lt;h2 id="be-a-responsible-person">Be a responsible person&lt;/h2>
+&lt;p>As a programmer, if there is an error in the JavaScript code you write, you cannot say that the reason for this error is C++ compiler. This may sound a nonsense, but consider adapting this situation to yourself!&lt;/p></description><content>&lt;p>I myself think that software is a philosophy of life before it is a job, and I take great pleasure in approaching most of the problems in my life as a software developer and solving them that way. In this article, I will talk about the cornerstones of this philosophy.&lt;/p>
 &lt;h2 id="table-of-contents">Table of Contents&lt;/h2>
 &lt;ul>
 &lt;li>Be a responsible person&lt;/li>
