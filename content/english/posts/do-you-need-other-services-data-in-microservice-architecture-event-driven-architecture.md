@@ -10,7 +10,7 @@ readingTime = true
 cover = "img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/cover.jpg"
 +++
 
-In applications developed in microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.
+In applications developed with microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.
 
 However, the `createUnit()` request we will make to create a sales consultant in the organization service will need the data of the product service for validation reasons. Shouldn't the unit be given the permission to create a product that doesn't exist? In this case, the organization service will need the data of the product service, which is not in its domain and is not under its responsibility.
 
