@@ -83,7 +83,7 @@ googleAnalytics = 'G-W0L24EMSQ5'
     olderPosts = "Older posts"
     missingContentMessage = "Page not found..."
     missingBackButtonLabel = "Back to home page"
-    translations = "For turkish translation;"
+    translations = "For turkish version;"
 
     [languages.en.params.logo]
       logoText = "Berk Selvi"
@@ -114,7 +114,7 @@ googleAnalytics = 'G-W0L24EMSQ5'
     olderPosts = "Eski yazılar"
     missingContentMessage = "Sayfa bulunamadı..."
     missingBackButtonLabel = "Ana sayfaya dön"
-    translations = "İngilizce çevirisi için;"
+    translations = "İngilizce versiyonu için;"
 
     [languages.tr.params.logo]
       logoText = "Berk Selvi"
