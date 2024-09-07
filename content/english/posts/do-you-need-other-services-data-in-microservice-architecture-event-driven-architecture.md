@@ -7,7 +7,7 @@ keywords = ["microservices", "event", "service to service comminication", "synch
 description = "In microservice architecture, data dependency between services can be managed with synchronous or asynchronous communication. Synchronous communication can cause scalability and accessibility issues due to tight service coupling, while asynchronous communication reduces dependency, allowing services to operate independently. Choosing the right method depends on the specific scenario, but asynchronous communication generally provides more scalable and accessible solutions."
 showFullContent = false
 readingTime = true
-cover = "img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/cover.jpg"
+cover = "img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/cover.jpg"
 +++
 
 In applications developed with microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.

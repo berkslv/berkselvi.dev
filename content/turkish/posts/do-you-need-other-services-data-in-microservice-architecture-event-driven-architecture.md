@@ -7,7 +7,7 @@ keywords = ["microservices", "event", "service to service comminication", "synch
 description = "Mikroservis mimarisinde, servisler arasındaki veri bağımlılığı senkron veya asenkron iletişimle yönetilebilir. Senkron iletişim, sıkı servis bağlantısı nedeniyle ölçeklenebilirlik ve erişilebilirlik sorunlarına neden olabilirken, asenkron iletişim bağımlılığı azaltarak servislerin bağımsız olarak çalışmasına olanak tanır. Doğru yöntemi seçmek belirli senaryoya bağlıdır, ancak asenkron iletişim genellikle daha ölçeklenebilir ve erişilebilir çözümler sunar."
 showFullContent = false
 readingTime = true
-cover = "img/correlationid-tracing-net-microservices-with-http-and-rabbitmq/cover.jpg"
+cover = "img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/cover.jpg"
 +++
 
 Microservice mimarisinde geliştirilen uygulamalarda domainler genellikle birbirlerinden sıkı bir şekilde ayrılmaya çalışılıyor, inceleyeceğimiz örnekte ürün ile ilgili tüm logic ve data product servisinde yer alırken, bu ürün ile sipariş oluşturabilecek satış danışmanlarını yöneten organization serviside kendi logic ve datasını barındırıyor. 
