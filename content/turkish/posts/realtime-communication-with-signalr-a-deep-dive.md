@@ -306,7 +306,7 @@ Veya istemci tarafında JavaScript ile şu şekilde yapılandırabilirsiniz:
 ```js
 
 let connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chathub", { 
+    .withUrl("/hubs/notification", { 
 	    transport: signalR.HttpTransportType.WebSockets 
 		    | signalR.HttpTransportType.LongPolling })
     .build();

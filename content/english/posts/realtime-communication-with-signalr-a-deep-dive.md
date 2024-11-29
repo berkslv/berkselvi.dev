@@ -304,7 +304,7 @@ Or in the client side with JavaScript:
 ```js
 
 let connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chathub", { 
+    .withUrl("/hubs/notification", { 
 	    transport: signalR.HttpTransportType.WebSockets 
 		    | signalR.HttpTransportType.LongPolling })
     .build();
