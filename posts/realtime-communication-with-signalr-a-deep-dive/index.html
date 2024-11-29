@@ -117,7 +117,7 @@
 </span></span><span style=display:flex><span>});
 </span></span></code></pre></div><p>Or in the client side with JavaScript:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>connection</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>signalR</span>.<span style=color:#a6e22e>HubConnectionBuilder</span>()
-</span></span><span style=display:flex><span>    .<span style=color:#a6e22e>withUrl</span>(<span style=color:#e6db74>&#34;/chathub&#34;</span>, { 
+</span></span><span style=display:flex><span>    .<span style=color:#a6e22e>withUrl</span>(<span style=color:#e6db74>&#34;/hubs/notification&#34;</span>, { 
 </span></span><span style=display:flex><span>	    <span style=color:#a6e22e>transport</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>signalR</span>.<span style=color:#a6e22e>HttpTransportType</span>.<span style=color:#a6e22e>WebSockets</span> 
 </span></span><span style=display:flex><span>		    <span style=color:#f92672>|</span> <span style=color:#a6e22e>signalR</span>.<span style=color:#a6e22e>HttpTransportType</span>.<span style=color:#a6e22e>LongPolling</span> })
 </span></span><span style=display:flex><span>    .<span style=color:#a6e22e>build</span>();
