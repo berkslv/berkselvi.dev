@@ -11,7 +11,8 @@
 </span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> Clients.All.SendAsync(<span style=color:#e6db74>&#34;ReceiveNotification&#34;</span>, content);
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><h3 id=3-configure-the-hub-in-programcs>3. Configure the Hub in <code>Program.cs</code><a href=#3-configure-the-hub-in-programcs class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Just register SignalR services and map the hub endpoint as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span></code></pre></div><h3 id=3-configure-the-hub-in-programcs>3. Configure the Hub in <code>Program.cs</code><a href=#3-configure-the-hub-in-programcs class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Just register SignalR services and map the hub endpoint as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#75715e>//...</span>
 </span></span><span style=display:flex><span>
