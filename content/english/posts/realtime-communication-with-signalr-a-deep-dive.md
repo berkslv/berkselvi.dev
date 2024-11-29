@@ -54,6 +54,7 @@ public class NotificationsHub : Hub
 Just register SignalR services and map the hub endpoint as follows:
 
 ```csharp
+
 var builder = WebApplication.CreateBuilder(args);
 
 //...
