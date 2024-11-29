@@ -1,4 +1,199 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br> Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a> olarak yayınlanmıştır.</copyright><lastBuildDate>Sat, 07 Sep 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/index.xml" rel="self" type="application/rss+xml"/><item><title>Event-Driven Architecture: Mikroservis mimarisinde başka servislerin verilerine mi ihtiyacınız var</title><link>https://berkselvi.dev/tr/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</link><pubDate>Sat, 07 Sep 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</guid><description>&lt;p>Microservice mimarisinde geliştirilen uygulamalarda domainler genellikle birbirlerinden sıkı bir şekilde ayrılmaya çalışılıyor, inceleyeceğimiz örnekte ürün ile ilgili tüm logic ve data product servisinde yer alırken, bu ürün ile sipariş oluşturabilecek satış danışmanlarını yöneten organization serviside kendi logic ve datasını barındırıyor.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br> Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a> olarak yayınlanmıştır.</copyright><lastBuildDate>Fri, 29 Nov 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/index.xml" rel="self" type="application/rss+xml"/><item><title>SignalR ile Gerçek Zamanlı İletişim: Derinlemesine İnceleme</title><link>https://berkselvi.dev/tr/posts/realtime-communication-with-signalr-a-deep-dive/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/realtime-communication-with-signalr-a-deep-dive/</guid><description>&lt;p>Günümüz dünyasında verilerin hızla hareket ettiği bir ortamda, modern uygulamaların kullanıcılarına sorunsuz deneyimler sunabilmesi için gerçek zamanlı iletişim bir zorunluluk haline gelmiştir. SignalR, .NET uygulamaları için gerçek zamanlı iletişim özelliklerini kolayca hayata geçirmenize yardımcı olan temel bir kütüphanedir. SignalR kullanırken tüm iletişim ve network gereksinimleri kütüphane tarafından soyutlanır; sadece bir RPC çağrısı yapar gibi yöntem çağrısında bulunmanız yeterlidir. SignalR sayesinde canlı panolar, sohbet uygulamaları veya web uygulamalarında sıkça ihtiyaç duyulan basit bildirim özelliklerini kolayca oluşturabilirsiniz. Haydi başlayalım.&lt;/p></description><content>&lt;p>Günümüz dünyasında verilerin hızla hareket ettiği bir ortamda, modern uygulamaların kullanıcılarına sorunsuz deneyimler sunabilmesi için gerçek zamanlı iletişim bir zorunluluk haline gelmiştir. SignalR, .NET uygulamaları için gerçek zamanlı iletişim özelliklerini kolayca hayata geçirmenize yardımcı olan temel bir kütüphanedir. SignalR kullanırken tüm iletişim ve network gereksinimleri kütüphane tarafından soyutlanır; sadece bir RPC çağrısı yapar gibi yöntem çağrısında bulunmanız yeterlidir. SignalR sayesinde canlı panolar, sohbet uygulamaları veya web uygulamalarında sıkça ihtiyaç duyulan basit bildirim özelliklerini kolayca oluşturabilirsiniz. Haydi başlayalım.&lt;/p>
+&lt;h2 id="neden-signalr">Neden SignalR?&lt;/h2>
+&lt;p>Geleneksel istemci-sunucu iletişim modelleri, yüksek etkileşim ihtiyaçları için daha az verimli ve sınırlı olan istek-cevap modeline dayanır ve veriye ihtiyaç duyulduğunda istemcinin bir istek göndermesini gerektirir. SignalR, istemci ile sunucu arasındaki aynı bağlantıyı sürekli açık tutarak bu zorlukları ortadan kaldırmak için tasarlanmıştır.&lt;/p>
+&lt;h3 id="signalrın-temel-avantajları">SignalR’ın Temel Avantajları:&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>Gerçek Zamanlı İletişim:&lt;/strong> İstemciler, yeni bir istek göndermeye gerek kalmadan anında güncellemeleri alır.&lt;/li>
+&lt;li>&lt;strong>Çapraz Platform Desteği:&lt;/strong> SignalR, platform ve tarayıcıdan bağımsızdır.&lt;/li>
+&lt;li>&lt;strong>Karmaşık Protokollerin Soyutlanması:&lt;/strong> SignalR, WebSocket, Server-Sent Events ve Long Polling protokollerini kullanma yeteneğine sahiptir. Bu, istemci ve sunucu arasında daha verimli bir ilişki sağlar ve en uygun protokolün seçilmesine olanak tanır. WebSocket protokolü istemci tarafından desteklenmiyorsa, SignalR kendi iç algoritmasına göre diğer yöntemleri seçerek kullanır.&lt;/li>
+&lt;li>&lt;strong>.NET Uygulamaları ile Entegrasyon:&lt;/strong> .NET ile başarılı bir şekilde entegre olarak modern .NET uygulamalarında sorunsuz bir kullanım sağlar.&lt;/li>
+&lt;/ul>
+&lt;h3 id="signalr-ile-başlangıç">SignalR ile Başlangıç&lt;/h3>
+&lt;p>.NET projenize SignalR’ı entegre etmek için aşağıdaki adımları takip edebilirsiniz:&lt;/p>
+&lt;h3 id="1-signalr-nuget-paketi">1. SignalR NuGet Paketi&lt;/h3>
+&lt;p>SignalR, .NET sistem kütüphaneleriyle birlikte gelir, bu nedenle ek bir paket yüklemenize gerek yoktur. Ancak Visual Studio saçmalamaya başlarsa &lt;code>Microsoft.AspNetCore.SignalR&lt;/code> paketini yüklemeyi deneyebilirsiniz.&lt;/p>
+&lt;h3 id="2-hub-sınıfı-oluşturma">2. Hub Sınıfı Oluşturma&lt;/h3>
+&lt;p>Hub, bağlantıları yöneten ve istemcilere mesaj gönderen merkezi bir bileşen görevi görür. Bu sınıfı, HTTP isteklerini kabul ettiğiniz Controller&amp;rsquo;lara benzetebilirsiniz, ancak burada istemciden gelen istekleri kabul edebilir veya istemciye doğrudan istek gönderebilirsiniz. Basit bir örnek:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> Microsoft.AspNetCore.SignalR;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationsHub&lt;/span> : Hub
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotification(&lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> Clients.All.SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="3-programcs-dosyasında-hubı-yapılandırma">3. Program.cs Dosyasında Hub’ı Yapılandırma&lt;/h3>
+&lt;p>SignalR servislerini kaydedin ve hub uç noktasını şu şekilde eşleyin:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddSignalR();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapHub&amp;lt;NotificationsHub&amp;gt;(&lt;span style="color:#e6db74">&amp;#34;hubs/notification&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="4-signalr-istemcisi">4. SignalR İstemcisi&lt;/h3>
+&lt;p>SignalR, Javascript, .NET ve Java gibi çeşitli istemci platformlarını destekler. Eğer bu platformlarda SignalR kütüphanesini uygulamak istemiyorsanız, uç noktanızı test etmek için basitçe Postman kullanabilirsiniz. Ancak JSON sonuna 0x1E karakterini eklemeniz gerekir. SignalR’ın dahili protokol gerekliliği budur. Javascript kütüphanesi kullanıyorsanız bu detayla uğraşmanıza gerek yoktur.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;protocol&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;version&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>SignalR Hub’a mesaj göndermek ve almak için şu şekilde bir JSON kullanabilirsiniz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;arguments&amp;#34;&lt;/span> : [&lt;span style="color:#e6db74">&amp;#34;hello world&amp;#34;&lt;/span>],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;target&amp;#34;&lt;/span> : &lt;span style="color:#e6db74">&amp;#34;SendNotification&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;type&amp;#34;&lt;/span> : &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kısa bir Postman ve SignalR demosu:&lt;/p>
+&lt;img src="https://berkselvi.dev/img/realtime-communication-with-signalr-a-deep-dive/postman-signalr-demo.gif" alt="SignalR ve Postman demo" loading="lazy" />
+&lt;p class="image-sub-title">SignalR ve Postman demo&lt;/p>
+&lt;h2 id="gelişmiş-özellikler">Gelişmiş Özellikler&lt;/h2>
+&lt;h3 id="1-tip-güvenli-hublar">1. Tip Güvenli Hub’lar&lt;/h3>
+&lt;p>Bakımı daha kolay hale getirmek için hub arayüzünü belirterek tip güvenli hub’lar kullanabilirsiniz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">interface&lt;/span> &lt;span style="color:#a6e22e">INotificationsClient&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Task ReceiveNotification(&lt;span style="color:#66d9ef">string&lt;/span> content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationsHub&lt;/span> : Hub&amp;lt;INotificationsClient&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotification(&lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> Clients.All.ReceiveNotification(content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="2-belirli-istemcilere-mesaj-gönderme">2. Belirli İstemcilere Mesaj Gönderme&lt;/h3>
+&lt;p>SignalR, belirli kullanıcılar veya gruplara mesaj gönderme yeteneğine sahiptir. Kullanıcıyı bir grup adına ekledikten sonra yalnızca ilgili kullanıcıya bildirim gönderebilirsiniz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> Clients.User(userId).ReceiveNotification(&lt;span style="color:#e6db74">&amp;#34;Hello, User!&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> Clients.Group(groupName).ReceiveNotification(&lt;span style="color:#e6db74">&amp;#34;Hello, Group!&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kullanıcı kimliği (userId) ile hedefleme yapmak için IUserIdProvider uygulamanız gerekir:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">UserIdProvider&lt;/span> : IUserIdProvider
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> GetUserId(HubConnectionContext connection)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>services.AddSingleton&amp;lt;IUserIdProvider, CustomUserIdProvider&amp;gt;();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="3-hub-dışından-ihubcontext-kullanımı">3. Hub Dışından IHubContext Kullanımı&lt;/h3>
+&lt;p>Hub dışında istemcilere mesaj göndermek için aşağıdaki şekilde bir yaklaşım izleyebilirsiniz. IHubContext türünü enjekte edin ve mesajınızı istemcilere gönderin.&lt;/p>
+&lt;p>Sisteminizde bir olay gerçekleştiğinde bu özelliği kullanarak hub&amp;rsquo;ı tetikleyebilirsiniz. Örneğin, uzun süren bir toplu işlem tamamlandığında kullanıcılarınıza sonuç hakkında bildirim gönderebilirsiniz.&lt;/p>
+&lt;p>Kısa bir not: Kodunuzu daha temiz hale getirmek için bu IHubContext arayüzünü, örneğin &lt;code>INotificationDispatcher&lt;/code> gibi başka bir arayüzle soyutlamanız iyi bir fikir olabilir.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationDispatcher&lt;/span>(IHubContext&amp;lt;NotificationsHub&amp;gt; hubContext) : INotificationDispatcher
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotification(&lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> hubContext.Clients.All.SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotificationToUser(&lt;span style="color:#66d9ef">string&lt;/span> userId, &lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> hubContext.Clients.User(userId).SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotificationToGroup(&lt;span style="color:#66d9ef">string&lt;/span> groupName, &lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> hubContext.Clients.Group(groupName).SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="4">
+&lt;li>SignalR Güvenliğini Sağlama&lt;/li>
+&lt;/ol>
+&lt;p>SignalR hub’larını [Authorize] özniteliği ile güvence altına alabilirsiniz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Authorize]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationsHub&lt;/span> : Hub
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Hub methods&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="5">
+&lt;li>Redis Backplane ile SignalR Ölçekleme&lt;/li>
+&lt;/ol>
+&lt;p>SignalR’ı birden fazla sunucuya ölçeklendirmek, birden çok instance üzerinde çalışan yüksek talep gören uygulamalar için güvenilir gerçek zamanlı iletişim sağlar. Redis backplane, SignalR sunucuları arasındaki mesajları senkronize ederek, farklı sunuculara bağlı istemcilerin sorunsuz bir şekilde mesaj almasını sağlar. İşte Microsoft belgelerinden bir alıntı:&lt;/p>
+&lt;blockquote>
+&lt;p>SignalR Redis backplane, mesajları diğer sunuculara iletmek için pub/sub özelliğini kullanır. Bir istemci bağlantı kurduğunda, bağlantı bilgileri backplane’e iletilir. Bir sunucu tüm istemcilere mesaj göndermek istediğinde, bunu backplane’e iletir. Backplane, tüm bağlı istemcileri ve hangi sunucularda olduklarını bilir. Mesajı ilgili sunucular aracılığıyla tüm istemcilere gönderir.&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddSignalR()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddStackExchangeRedis(&lt;span style="color:#e6db74">&amp;#34;localhost:6379&amp;#34;&lt;/span>, options =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.Configuration.ChannelPrefix = &lt;span style="color:#e6db74">&amp;#34;SignalR&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Eğer bana inanmıyorsanız, SignalR uygulamanızı yerel test ortamında birden fazla instance ile çalıştırmayı Docker Compose kullanarak deneyebilirsiniz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">signalr&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">your-app&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;5000:5000&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">depends_on&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">redis&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">redis&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">redis:latest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;6379:6379&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>docker-compose up --scale signalr&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">3&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="signalr-iletişim-modelleri">SignalR İletişim Modelleri&lt;/h2>
+&lt;p>SignalR, uyumluluk ve performansı sağlamak için birden fazla taşıma yöntemini soyutlar:&lt;/p>
+&lt;h3 id="websocket-websockets">&lt;strong>WebSocket (&lt;/strong>&lt;code>webSockets&lt;/code>&lt;strong>)&lt;/strong>:&lt;/h3>
+&lt;p>WebSockets, SignalR için en verimli ve tercih edilen gerçek zamanlı, çift yönlü iletişim yöntemidir. Tek bir TCP kanalı üzerinden kalıcı, tam çift yönlü bir bağlantı kurarak istemci ve sunucu arasında eşzamanlı mesaj alışverişine olanak tanır. Bu, canlı sohbetler, ortak düzenleme araçları, çevrimiçi oyunlar ve finansal veri akışları gibi düşük gecikme ve yüksek hız gerektiren uygulamalar için idealdir.&lt;/p>
+&lt;p>WebSockets, ilk HTTP el sıkışmasının ardından kendi hafif protokolüne (&lt;code>ws://&lt;/code> veya &lt;code>wss://&lt;/code>) geçerek geleneksel HTTP tabanlı iletişimin getirdiği yükü azaltır. Ancak, WebSockets&amp;rsquo;in ölçeklendirilmesi, WebSocket uyumlu yük dengeleyiciler ve yapışkan oturumlar gibi özel altyapılar gerektirir. SignalR, bağlantı sürekliliğini, otomatik yeniden bağlantıları ve WebSockets kullanılamadığında alternatif protokollere geçişi yöneterek bu zorlukları basitleştirir.&lt;/p>
+&lt;h3 id="server-sent-events-serversentevents">&lt;strong>Server-Sent Events (&lt;/strong>&lt;code>serverSentEvents&lt;/code>&lt;strong>):&lt;/strong>&lt;/h3>
+&lt;p>SSE (Server-Sent Events), uzun ömürlü bir bağlantı üzerinden sunucudan istemciye gerçek zamanlı güncellemeler sağlayan hafif bir HTTP tabanlı mekanizmadır. Standartlaştırılmış EventSource API&amp;rsquo;sini kullanır ve verileri &lt;code>text/event-stream&lt;/code> formatında iletir. Bu, canlı panolar, bildirimler ve haber akışları gibi yalnızca sunucudan istemciye veri aktarımı gerektiren durumlar için basit ve etkilidir.&lt;/p>
+&lt;p>SSE, standart HTTP üzerinde çalıştığı için mevcut HTTP altyapısı ile kolayca entegre olur ve WebSockets&amp;rsquo;e kıyasla daha kolay ölçeklenebilir. Ancak, SSE Internet Explorer tarafından desteklenmez ve istemciden sunucuya iletişim gerektiren durumlar için ayrı HTTP istekleri gerektirir. SignalR, WebSockets kullanılamadığında otomatik olarak SSE&amp;rsquo;yi tercih ederek kesintisiz bir deneyim sunar.&lt;/p>
+&lt;h3 id="long-polling-longpolling">&lt;strong>Long Polling (&lt;/strong>&lt;code>longPolling&lt;/code>&lt;strong>):&lt;/strong>&lt;/h3>
+&lt;p>Long Polling, sürekli olarak HTTP bağlantıları açıp kapatarak gerçek zamanlı iletişimi taklit eder. İstemci, sunucuya bir istek gönderir ve sunucu veri gönderene kadar bağlantıyı açık tutar. Veriler iletildikten sonra istemci hemen yeni bir istek oluşturur. Bu yöntem, güncellemeler arasındaki gecikmeyi en aza indirir ve bir tür push tabanlı bağlantı hissi yaratır.&lt;/p>
+&lt;p>Long Polling, tüm tarayıcılarla çalışabilir ve uygulanması kolaydır. Ancak, sık HTTP istekleri ve yanıtları nedeniyle daha fazla yük oluşturur. Bu, özellikle yüksek frekanslı güncellemelerde, WebSockets veya SSE&amp;rsquo;ye kıyasla daha az verimlidir. SignalR, WebSockets veya SSE desteklenmediğinde Long Polling’i bir yedek çözüm olarak kullanır.&lt;/p>
+&lt;h3 id="forever-frame-foreverframe">&lt;strong>Forever Frame (&lt;/strong>&lt;code>foreverFrame&lt;/code>&lt;strong>):&lt;/strong>&lt;/h3>
+&lt;p>Forever Frame, eski Internet Explorer sürümlerine özgü bir protokoldür ve gerçek zamanlı, tek yönlü iletişim sağlar. İstemci tarayıcısında gizli bir iframe oluşturur ve sunucu bu iframe’e sürekli olarak çalıştırılabilir komut dosyaları gönderir.&lt;/p>
+&lt;p>Forever Frame, çift yönlü iletişimi desteklememesi ve yüksek ek yük getirmesi gibi sınırlamalara sahiptir. İstemciden sunucuya iletişim, ayrı standart HTTP istekleri gerektirir ve bu da uygulamayı daha az verimli ve zahmetli hale getirir. SignalR, yalnızca eski Internet Explorer tarayıcılarına özgü ortamlar için bir son çare olarak Forever Frame’i kullanır.&lt;/p>
+&lt;h3 id="websockets-ve-server-sent-events-karşılaştırması">WebSockets ve Server-Sent Events Karşılaştırması&lt;/h3>
+&lt;p>WebSockets ve Server-Sent Events (SSE), farklı gerçek zamanlı iletişim ihtiyaçlarına hitap eder. &lt;strong>WebSockets&lt;/strong>, düşük gecikmeli, çift yönlü iletişim sunarak sohbet, oyun ve ortak çalışma araçları için idealdir. &lt;strong>SSE&lt;/strong> ise hafif, tek yönlü güncellemeler sağlayarak canlı panolar ve bildirimler gibi durumlar için mükemmeldir.&lt;/p>
+&lt;p>WebSockets, etkili iki yönlü mesajlaşma için özel bir protokol (&lt;code>ws://&lt;/code> veya &lt;code>wss://&lt;/code>) kullanır ancak ölçeklendirme için WebSocket uyumlu altyapı gerektirir. SSE ise standart HTTP (&lt;code>text/event-stream&lt;/code>) üzerinde çalışır ve geleneksel HTTP araçları ile daha kolay ölçeklenebilir. Ancak, yalnızca sunucudan istemciye iletişim sağlar ve Internet Explorer desteği bulunmaz.&lt;/p>
+&lt;p>SignalR, bu farklılıkları soyutlayarak performans için WebSockets&amp;rsquo;i önceliklendirir ve kesintisiz gerçek zamanlı işlevsellik sağlamak için SSE veya diğer yöntemlere otomatik olarak geçiş yapar.&lt;/p>
+&lt;h2 id="protokolü-belirleme">Protokolü Belirleme&lt;/h2>
+&lt;p>SignalR, gerçek zamanlı iletişim için kullanılacak taşıma protokolünü açıkça belirtmenize olanak tanır. Varsayılan olarak, SignalR dahili algoritmasıyla mevcut en iyi protokolü otomatik olarak seçer. Ancak, bu davranışı uygulamanızın ihtiyaçlarına göre özelleştirebilirsiniz.&lt;/p>
+&lt;p>WebSockets’in verimliliğinden yararlanmak ve WebSockets kullanılamadığında Long Polling’e geçiş yapmak için &lt;code>Program.cs&lt;/code> dosyasına şu kodu ekleyebilirsiniz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapHub&amp;lt;NotificationsHub&amp;gt;(&lt;span style="color:#e6db74">&amp;#34;/hubs/notification&amp;#34;&lt;/span>, opt =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> opt.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Veya istemci tarafında JavaScript ile şu şekilde yapılandırabilirsiniz:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">connection&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">signalR&lt;/span>.&lt;span style="color:#a6e22e">HubConnectionBuilder&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">withUrl&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/chathub&amp;#34;&lt;/span>, {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">transport&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#a6e22e">signalR&lt;/span>.&lt;span style="color:#a6e22e">HttpTransportType&lt;/span>.&lt;span style="color:#a6e22e">WebSockets&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#a6e22e">signalR&lt;/span>.&lt;span style="color:#a6e22e">HttpTransportType&lt;/span>.&lt;span style="color:#a6e22e">LongPolling&lt;/span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">build&lt;/span>();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="özet">Özet&lt;/h2>
+&lt;p>SignalR, .NET uygulamalarına gerçek zamanlı özellikler eklemeyi kolay ve verimli hale getirir. Karmaşık ağ protokollerini soyutlayarak, alt yapı detaylarıyla uğraşmadan canlı panolar, sohbet uygulamaları veya bildirimler oluşturmanıza olanak tanır. WebSockets, Server-Sent Events (SSE) ve Long Polling gibi protokolleri destekleyen SignalR, ortamınıza en uygun protokolü otomatik olarak seçerek kesintisiz bir deneyim sunar.&lt;/p>
+&lt;p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-signalr-deep-dive">GitHub - berkslv/lecture-signalr-deep-dive&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme alanındaki araştırmalarımı kaçırmamak için &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> adresinden takipte kalabilirsiniz.&lt;/p></content></item><item><title>Event-Driven Architecture: Mikroservis mimarisinde başka servislerin verilerine mi ihtiyacınız var</title><link>https://berkselvi.dev/tr/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</link><pubDate>Sat, 07 Sep 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</guid><description>&lt;p>Microservice mimarisinde geliştirilen uygulamalarda domainler genellikle birbirlerinden sıkı bir şekilde ayrılmaya çalışılıyor, inceleyeceğimiz örnekte ürün ile ilgili tüm logic ve data product servisinde yer alırken, bu ürün ile sipariş oluşturabilecek satış danışmanlarını yöneten organization serviside kendi logic ve datasını barındırıyor.&lt;/p>
 &lt;p>Ancak organization servisinde satış danışmanı oluşturmak için yapacağımız &lt;code>createUnit()&lt;/code> isteği validasyon sebepleri için product servisinin verisine ihtiyaç duyacaktır. Var olmayan bir ürün için oluşturma izni unit’e verilmemeli değil mi? Bu durumda organization servisi kendi domain’inde yer almayan ve kendi sorumluluğunda olmayan product servisinin verisine ihtiyaç duyacak.&lt;/p></description><content>&lt;p>Microservice mimarisinde geliştirilen uygulamalarda domainler genellikle birbirlerinden sıkı bir şekilde ayrılmaya çalışılıyor, inceleyeceğimiz örnekte ürün ile ilgili tüm logic ve data product servisinde yer alırken, bu ürün ile sipariş oluşturabilecek satış danışmanlarını yöneten organization serviside kendi logic ve datasını barındırıyor.&lt;/p>
 &lt;p>Ancak organization servisinde satış danışmanı oluşturmak için yapacağımız &lt;code>createUnit()&lt;/code> isteği validasyon sebepleri için product servisinin verisine ihtiyaç duyacaktır. Var olmayan bir ürün için oluşturma izni unit’e verilmemeli değil mi? Bu durumda organization servisi kendi domain’inde yer almayan ve kendi sorumluluğunda olmayan product servisinin verisine ihtiyaç duyacak.&lt;/p>
 &lt;p>Bu veriye senkron veya asenkron olarak erişebiliriz. ilk olarak senkron olarak erişecek ve yaşayacağımız sorunları ele aldıktan sonra, asenkron methodu kullanıp yaşayabileceğimiz sorunları ele alacağız, hadi başlayalım.&lt;/p>
@@ -13,42 +208,42 @@
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th style="text-align: left">&lt;/th>
-&lt;th style="text-align: left">Product&lt;/th>
-&lt;th style="text-align: left">Organization&lt;/th>
-&lt;th style="text-align: left">Product &amp;amp; Organization&lt;/th>
+&lt;th>&lt;/th>
+&lt;th>Product&lt;/th>
+&lt;th>Organization&lt;/th>
+&lt;th>Product &amp;amp; Organization&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td style="text-align: left">Uptime percentege&lt;/td>
-&lt;td style="text-align: left">99.5&lt;/td>
-&lt;td style="text-align: left">99.5&lt;/td>
-&lt;td style="text-align: left">99.0&lt;/td>
+&lt;td>Uptime percentege&lt;/td>
+&lt;td>99.5&lt;/td>
+&lt;td>99.5&lt;/td>
+&lt;td>99.0&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Month&lt;/td>
-&lt;td style="text-align: left">716&lt;/td>
-&lt;td style="text-align: left">716&lt;/td>
-&lt;td style="text-align: left">712&lt;/td>
+&lt;td>Month&lt;/td>
+&lt;td>716&lt;/td>
+&lt;td>716&lt;/td>
+&lt;td>712&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Downtime in month&lt;/td>
-&lt;td style="text-align: left">4&lt;/td>
-&lt;td style="text-align: left">4&lt;/td>
-&lt;td style="text-align: left">7&lt;/td>
+&lt;td>Downtime in month&lt;/td>
+&lt;td>4&lt;/td>
+&lt;td>4&lt;/td>
+&lt;td>7&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Year&lt;/td>
-&lt;td style="text-align: left">8716&lt;/td>
-&lt;td style="text-align: left">8716&lt;/td>
-&lt;td style="text-align: left">8672&lt;/td>
+&lt;td>Year&lt;/td>
+&lt;td>8716&lt;/td>
+&lt;td>8716&lt;/td>
+&lt;td>8672&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Downtime in year&lt;/td>
-&lt;td style="text-align: left">43&lt;/td>
-&lt;td style="text-align: left">43&lt;/td>
-&lt;td style="text-align: left">87&lt;/td>
+&lt;td>Downtime in year&lt;/td>
+&lt;td>43&lt;/td>
+&lt;td>43&lt;/td>
+&lt;td>87&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
@@ -513,51 +708,51 @@
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th style="text-align: left">Özellik&lt;/th>
-&lt;th style="text-align: left">YARP&lt;/th>
-&lt;th style="text-align: left">Ocelot&lt;/th>
+&lt;th>Özellik&lt;/th>
+&lt;th>YARP&lt;/th>
+&lt;th>Ocelot&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td style="text-align: left">Routing &amp;amp; Request mapping&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
+&lt;td>Routing &amp;amp; Request mapping&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Authn &amp;amp; Authz&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
+&lt;td>Authn &amp;amp; Authz&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Rate limiting&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
+&lt;td>Rate limiting&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Load balancing&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
+&lt;td>Load balancing&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">gRPC&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
-&lt;td style="text-align: left">Yok, Eski paketler mevcut&lt;/td>
+&lt;td>gRPC&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Yok, Eski paketler mevcut&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Request aggregation&lt;/td>
-&lt;td style="text-align: left">Yok, Özel geliştirme gerekiyor&lt;/td>
-&lt;td style="text-align: left">Var, Basit ise konfigurasyon ile yapılabilir&lt;/td>
+&lt;td>Request aggregation&lt;/td>
+&lt;td>Yok, Özel geliştirme gerekiyor&lt;/td>
+&lt;td>Var, Basit ise konfigurasyon ile yapılabilir&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Distributed tracing&lt;/td>
-&lt;td style="text-align: left">&lt;/td>
-&lt;td style="text-align: left">&lt;/td>
+&lt;td>Distributed tracing&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Var&lt;/td>
-&lt;td style="text-align: left">Var&lt;/td>
-&lt;td style="text-align: left">&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>Var&lt;/td>
+&lt;td>&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
@@ -943,78 +1138,78 @@
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th style="text-align: left">Feature&lt;/th>
-&lt;th style="text-align: left">YARP&lt;/th>
-&lt;th style="text-align: left">Ocelot&lt;/th>
-&lt;th style="text-align: left">Kong&lt;/th>
-&lt;th style="text-align: left">APISIX&lt;/th>
-&lt;th style="text-align: left">KrakenD&lt;/th>
+&lt;th>Feature&lt;/th>
+&lt;th>YARP&lt;/th>
+&lt;th>Ocelot&lt;/th>
+&lt;th>Kong&lt;/th>
+&lt;th>APISIX&lt;/th>
+&lt;th>KrakenD&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td style="text-align: left">Request aggregation&lt;/td>
-&lt;td style="text-align: left">NO&lt;/td>
-&lt;td style="text-align: left">Simple, can be done with configuration&lt;/td>
-&lt;td style="text-align: left">NO&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">Powerful,, can be done with configuration&lt;/td>
+&lt;td>Request aggregation&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>Simple, can be done with configuration&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>Powerful,, can be done with configuration&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">OAuth &amp;amp; OpenID&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
+&lt;td>OAuth &amp;amp; OpenID&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Request validation&lt;/td>
-&lt;td style="text-align: left">Needs custom logic&lt;/td>
-&lt;td style="text-align: left">Needs custom logic&lt;/td>
-&lt;td style="text-align: left">Comes with enterprise&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
+&lt;td>Request validation&lt;/td>
+&lt;td>Needs custom logic&lt;/td>
+&lt;td>Needs custom logic&lt;/td>
+&lt;td>Comes with enterprise&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">HTTP to gRPC&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">NO&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
+&lt;td>HTTP to gRPC&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Websocket&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">?&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">Comes with enterprise&lt;/td>
+&lt;td>Websocket&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>?&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>Comes with enterprise&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">State&lt;/td>
-&lt;td style="text-align: left">File&lt;/td>
-&lt;td style="text-align: left">File&lt;/td>
-&lt;td style="text-align: left">File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka&lt;/td>
-&lt;td style="text-align: left">File, etcd&lt;/td>
-&lt;td style="text-align: left">File&lt;/td>
+&lt;td>State&lt;/td>
+&lt;td>File&lt;/td>
+&lt;td>File&lt;/td>
+&lt;td>File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka&lt;/td>
+&lt;td>File, etcd&lt;/td>
+&lt;td>File&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Plugin&lt;/td>
-&lt;td style="text-align: left">C#&lt;/td>
-&lt;td style="text-align: left">C#&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
-&lt;td style="text-align: left">Go &amp;amp; Lua&lt;/td>
+&lt;td>Plugin&lt;/td>
+&lt;td>C#&lt;/td>
+&lt;td>C#&lt;/td>
+&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td>Go &amp;amp; Lua&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Performance&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1029ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1030ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1035ms, &lt;strong>Memory&lt;/strong>: 280MB, &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1025ms, &lt;strong>Memory&lt;/strong>: 100MB &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1024ms, &lt;strong>Memory&lt;/strong>: 30MB, &lt;strong>CPU&lt;/strong>: %4 - %6&lt;/td>
+&lt;td>Performance&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1029ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1030ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1035ms, &lt;strong>Memory&lt;/strong>: 280MB, &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1025ms, &lt;strong>Memory&lt;/strong>: 100MB &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1024ms, &lt;strong>Memory&lt;/strong>: 30MB, &lt;strong>CPU&lt;/strong>: %4 - %6&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>

@@ -1,4 +1,194 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br> This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a></copyright><lastBuildDate>Sat, 07 Sep 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Event-Driven Architecture: Do you need other service’s data in microservice architecture</title><link>https://berkselvi.dev/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</link><pubDate>Sat, 07 Sep 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</guid><description>&lt;p>In applications developed with microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br> This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a></copyright><lastBuildDate>Fri, 29 Nov 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Real-Time Communication with SignalR: A Deep Dive</title><link>https://berkselvi.dev/posts/realtime-communication-with-signalr-a-deep-dive/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/realtime-communication-with-signalr-a-deep-dive/</guid><description>&lt;p>In today&amp;rsquo;s world where data is moving very quickly, real-time communication is a must for modern applications to give users smooth experiences. SignalR is an essential library when you want to create .NET application that communicates in real-time with others. When using SignalR, all communication and network requirements are abstracted by the library and you only need to call the method like in the RPC. By leveraging SignalR, you can easily create live dashboards, chat applications, or simple notification features that many web applications need. Let’s get started.&lt;/p></description><content>&lt;p>In today&amp;rsquo;s world where data is moving very quickly, real-time communication is a must for modern applications to give users smooth experiences. SignalR is an essential library when you want to create .NET application that communicates in real-time with others. When using SignalR, all communication and network requirements are abstracted by the library and you only need to call the method like in the RPC. By leveraging SignalR, you can easily create live dashboards, chat applications, or simple notification features that many web applications need. Let’s get started.&lt;/p>
+&lt;h2 id="why-signalr">Why SignalR?&lt;/h2>
+&lt;p>Traditional models of client-server communication revolve around the request-response model, which is considered less efficient and limited for high interaction needs, and requires the client to making a request when data is needed. SignalR is designed to eliminate these challenges by keeping the same connection alive from the client to the server.&lt;/p>
+&lt;h3 id="key-advantages-of-signalr">Key Advantages of SignalR:&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>Real-Time Communication:&lt;/strong> Clients receive the updates as soon as possible without necessarily making new requests.&lt;/li>
+&lt;li>&lt;strong>Cross-Platform Support:&lt;/strong> SignalR now has a full range of functionality independent of any platform and browsers.&lt;/li>
+&lt;li>&lt;strong>Abstraction of Complex Protocols:&lt;/strong> SignalR has the ability to use WebSocket, Server-Sent Events and Long Polling protocols, which provide a better relationship between the client and the server and allow them to choose the most efficient protocol. If the WebSocket protocol is not available by the client, SignalR tries to use other methods by selecting them according to its internal algorithm. (&lt;a href="https://learn.microsoft.com/en-us/aspnet/signalr/overview/getting-started/introduction-to-signalr#transport-selection-process">https://learn.microsoft.com/en-us/aspnet/signalr/overview/getting-started/introduction-to-signalr#transport-selection-process&lt;/a>)&lt;/li>
+&lt;li>&lt;strong>Integration with .NET apps:&lt;/strong> Effective incorporation of .NET successfully guarantees the smooth through incorporation to modern .NET applications.&lt;/li>
+&lt;/ul>
+&lt;h3 id="getting-started-with-signalr">Getting Started with SignalR&lt;/h3>
+&lt;p>To implement SignalR in your .NET project, you can follow these steps:&lt;/p>
+&lt;h3 id="1-signalr-nuget-package">1. SignalR NuGet Package&lt;/h3>
+&lt;p>SignalR comes with .NET system libraries therefore you don’t need to install any additional packages. However if Visual Studio goes crazy you may want to try install the &lt;code>Microsoft.AspNetCore.SignalR&lt;/code> package.&lt;/p>
+&lt;h3 id="2-create-a-hub-class">2. Create a Hub Class&lt;/h3>
+&lt;p>The Hub acts as the central component that manages connections and sends messages to clients. You can compare this class to Controllers where you accept HTTP requests, except here we can accept requests or make a request directly to the client. Here’s a simple example, clients invoke &lt;code>SendNotification(string content)&lt;/code> method to make a call to server and server send a message to all or specific clients with &lt;code>Clients.All.SendAsync(&amp;quot;ReceiveNotification&amp;quot;, content)&lt;/code> method:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> Microsoft.AspNetCore.SignalR;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationsHub&lt;/span> : Hub
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotification(&lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> Clients.All.SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="3-configure-the-hub-in-programcs">3. Configure the Hub in &lt;code>Program.cs&lt;/code>&lt;/h3>
+&lt;p>Just register SignalR services and map the hub endpoint as follows:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddSignalR();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">//...&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapHub&amp;lt;NotificationsHub&amp;gt;(&lt;span style="color:#e6db74">&amp;#34;hubs/notification&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="4-signalr-client">4. SignalR Client&lt;/h3>
+&lt;p>SignalR supports various client platforms, including Javascript, .NET, and Java. If you don’t want to implement SignalR library in that platforms, you can simply use Postman to test your endpoint. But you must insert &lt;strong>0x1E&lt;/strong> character at the end of the json. This is a requirement of the SignalR internal protocol. If you use Javascript library to implement SignalR you don’t need to deal with this kind of details.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;protocol&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;version&amp;#34;&lt;/span>: &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After specifying the protocol, you can send and receive message from SignalR Hub as follows:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;arguments&amp;#34;&lt;/span> : [&lt;span style="color:#e6db74">&amp;#34;hello world&amp;#34;&lt;/span>],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;target&amp;#34;&lt;/span> : &lt;span style="color:#e6db74">&amp;#34;SendNotification&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;type&amp;#34;&lt;/span> : &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Here is a quick demo:&lt;/p>
+&lt;img src="https://berkselvi.dev/img/realtime-communication-with-signalr-a-deep-dive/postman-signalr-demo.gif" alt="SignalR and Postman demo" loading="lazy" />
+&lt;p class="image-sub-title">SignalR and Postman demo&lt;/p>
+&lt;h2 id="advanced-features">Advanced Features&lt;/h2>
+&lt;h3 id="1-strongly-typed-hubs">1. Strongly Typed Hubs&lt;/h3>
+&lt;p>For better maintainability, use strongly typed hubs to specify interface of the hub:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">interface&lt;/span> &lt;span style="color:#a6e22e">INotificationsClient&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Task ReceiveNotification(&lt;span style="color:#66d9ef">string&lt;/span> content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationsHub&lt;/span> : Hub&amp;lt;INotificationsClient&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotification(&lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> Clients.All.ReceiveNotification(content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="2-targeting-specific-clients">2. Targeting Specific Clients&lt;/h3>
+&lt;p>SignalR enables sending messages to specific users or groups. You can use this feature to send notification to only related ones, just add user to group using their userId or groupName, then send a notification to this userId:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> Clients.User(userId).ReceiveNotification(&lt;span style="color:#e6db74">&amp;#34;Hello, User!&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> Clients.Group(groupName).ReceiveNotification(&lt;span style="color:#e6db74">&amp;#34;Hello, Group!&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you want to target specific clients with SignalR using userId, you have to implement &lt;code>IUserIdProvider&lt;/code> that coming from SignalR package like that:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">UserIdProvider&lt;/span> : IUserIdProvider
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">string&lt;/span> GetUserId(HubConnectionContext connection)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span> connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>services.AddSingleton&amp;lt;IUserIdProvider, CustomUserIdProvider&amp;gt;();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="3-using-ihubcontext-to-access-the-hub-from-outside-the-hub">3. Using &lt;code>IHubContext&lt;/code> to access the hub from outside the hub&lt;/h3>
+&lt;p>You can send message to clients in outside of the hub as follows. Just Inject the IHubContext of type, and send a message to them.&lt;/p>
+&lt;p>You can trigger the hub when some event is occured in your system with this greate feature. For example, when a long running batch job is completed you can notify your users about the result.&lt;/p>
+&lt;p>Just a quick note, your code can be much cleaner if you abstract this IHubContext interface with another interface like &lt;code>INotificationDispatcher&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationDispatcher&lt;/span>(IHubContext&amp;lt;NotificationsHub&amp;gt; hubContext) : INotificationDispatcher
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotification(&lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> hubContext.Clients.All.SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotificationToUser(&lt;span style="color:#66d9ef">string&lt;/span> userId, &lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> hubContext.Clients.User(userId).SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">async&lt;/span> Task SendNotificationToGroup(&lt;span style="color:#66d9ef">string&lt;/span> groupName, &lt;span style="color:#66d9ef">string&lt;/span> content)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> hubContext.Clients.Group(groupName).SendAsync(&lt;span style="color:#e6db74">&amp;#34;ReceiveNotification&amp;#34;&lt;/span>, content);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="4-securing-signalr">4. Securing SignalR&lt;/h3>
+&lt;p>By default, SignalR hubs can be accessed by any client. To restrict access, use the classic &lt;code>[Authorize]&lt;/code> attribute. Ensure that users authenticate using mechanisms like JWT, which SignalR leverages to identify connected users:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">[Authorize]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">public&lt;/span> &lt;span style="color:#66d9ef">class&lt;/span> &lt;span style="color:#a6e22e">NotificationsHub&lt;/span> : Hub
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Hub methods&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="5-scaling-signalr-with-redis-backplane">5. Scaling SignalR with Redis backplane&lt;/h3>
+&lt;p>Scaling SignalR across multiple servers ensures reliable real-time communication for high-demand applications that running in multiple instances. A &lt;strong>Redis backplane&lt;/strong> synchronizes messages between SignalR servers, ensuring clients connected to different servers receive messages seamlessly. Here is a quote from microsoft docs:&lt;/p>
+&lt;blockquote>
+&lt;p>The SignalR Redis backplane uses the pub/sub feature to forward messages to other servers. When a client makes a connection, the connection information is passed to the backplane. When a server wants to send a message to all clients, it sends to the backplane. The backplane knows all connected clients and which servers they&amp;rsquo;re on. It sends the message to all clients via their respective servers.&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">// Program.cs&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>builder.Services.AddSignalR()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .AddStackExchangeRedis(&lt;span style="color:#e6db74">&amp;#34;localhost:6379&amp;#34;&lt;/span>, options =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> options.Configuration.ChannelPrefix = &lt;span style="color:#e6db74">&amp;#34;SignalR&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you don’t belive me, you can try to run your signalr app in more than one instance in the local testing enviroment with docker compose:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">signalr&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">your-app&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;5000:5000&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">depends_on&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">redis&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">redis&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">redis:latest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;6379:6379&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>docker-compose up --scale signalr&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">3&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="signalr-communication-models">SignalR Communication Models&lt;/h2>
+&lt;p>SignalR abstracts multiple transport methods to ensure compatibility and performance:&lt;/p>
+&lt;h3 id="websocket-websockets">&lt;strong>WebSocket (&lt;/strong>&lt;code>webSockets&lt;/code>&lt;strong>)&lt;/strong>:&lt;/h3>
+&lt;p>WebSockets is the most efficient and preferred transport for real-time, bi-directional communication in SignalR. It establishes a persistent, full-duplex connection over a single TCP channel, allowing simultaneous message exchange between the client and server. This makes it ideal for applications that require low-latency, high-throughput interactions, such as live chats, collaborative editing tools, online gaming, and financial tickers.&lt;/p>
+&lt;p>WebSockets transitions to its own lightweight protocol (&lt;code>ws://&lt;/code> or &lt;code>wss://&lt;/code>) after an initial HTTP handshake, reducing the overhead associated with traditional HTTP-based communication. However, scaling WebSockets requires specialized infrastructure, such as WebSocket-aware load balancers and sticky sessions, to maintain connection affinity. SignalR simplifies these complexities, managing connection persistence, automatic reconnections, and fallback to alternative protocols when WebSockets are unavailable.&lt;/p>
+&lt;h3 id="server-sent-events-serversentevents">&lt;strong>Server-Sent Events (&lt;/strong>&lt;code>serverSentEvents&lt;/code>&lt;strong>):&lt;/strong>&lt;/h3>
+&lt;p>SSE provides a lightweight, HTTP-based mechanism for one-way communication, where the server streams real-time updates to the client over a long-lived connection. It uses the standardized EventSource API and transmits data formatted as &lt;code>text/event-stream&lt;/code>. This makes SSE simple to implement and efficient for use cases like live dashboards, notifications, and news feeds, where only server-to-client communication is needed.&lt;/p>
+&lt;p>Because it operates over standard HTTP, SSE integrates easily with existing HTTP infrastructure and does not require specialized proxies or load balancers, making it easier to scale compared to WebSockets. However, it lacks support for Internet Explorer and does not natively allow client-to-server communication, which must be handled through separate HTTP requests. SignalR automatically leverages SSE when WebSockets is unavailable, providing a seamless fallback for environments with restricted capabilities.&lt;/p>
+&lt;h3 id="long-polling-longpolling">&lt;strong>Long Polling (&lt;/strong>&lt;code>longPolling&lt;/code>&lt;strong>):&lt;/strong>&lt;/h3>
+&lt;p>Long Polling emulates real-time communication by continuously opening and closing HTTP connections. The client sends a request to the server and keeps it open until the server has data to send. Once the data is delivered, the client immediately establishes a new request. This approach minimizes latency between updates and creates the appearance of a push-based connection.&lt;/p>
+&lt;p>While Long Polling works with all browsers and is easy to implement, it incurs more overhead due to frequent HTTP requests and responses. It is less efficient compared to persistent connections like WebSockets or SSE, especially for high-frequency updates. In SignalR, Long Polling serves as a fallback when neither WebSockets nor SSE is supported, ensuring compatibility across legacy systems and restricted environments.&lt;/p>
+&lt;h3 id="forever-frame-foreverframe">&lt;strong>Forever Frame (&lt;/strong>&lt;code>foreverFrame&lt;/code>&lt;strong>):&lt;/strong>&lt;/h3>
+&lt;p>Forever Frame is a legacy protocol specific to older versions of Internet Explorer, designed to enable real-time, one-way communication. It operates by embedding a hidden iframe in the client’s browser that maintains an open connection to the server. The server continuously streams executable scripts to the iframe, which are executed by the client to process incoming data.&lt;/p>
+&lt;p>While functional for its time, Forever Frame has significant limitations, including high overhead and lack of bi-directional communication. Any client-to-server interaction requires separate standard HTTP requests, making it less efficient and cumbersome to implement. SignalR includes Forever Frame for backward compatibility but uses it only as a last-resort fallback in environments restricted to legacy Internet Explorer browsers.&lt;/p>
+&lt;h3 id="websockets-vs-server-sent-events">Websockets vs Server-Sent Events&lt;/h3>
+&lt;p>WebSockets and Server-Sent Events (SSE) cater to different real-time communication needs. &lt;strong>WebSockets&lt;/strong> enable full-duplex, low-latency communication, ideal for chat, gaming, and collaborative tools. In contrast, &lt;strong>SSE&lt;/strong> provides lightweight, one-way updates, perfect for live dashboards or notifications.&lt;/p>
+&lt;p>WebSockets use a custom protocol (&lt;code>ws://&lt;/code> or &lt;code>wss://&lt;/code>) for efficient two-way messaging but require WebSocket-aware infrastructure for scaling. SSE operates over standard HTTP (&lt;code>text/event-stream&lt;/code>), making it easier to scale with traditional HTTP tools, though it only supports server-to-client communication and lacks Internet Explorer support.&lt;/p>
+&lt;p>SignalR abstracts these differences, automatically prioritizing WebSockets for performance and falling back to SSE or other methods to ensure seamless real-time functionality across varied environments.&lt;/p>
+&lt;h2 id="specifiying-the-protocol">Specifiying the protocol&lt;/h2>
+&lt;p>SignalR allows you to explicitly specify the transport protocol to be used for real-time communication. By default, SignalR automatically selects the best available transport with its internal algorithm, but you can customize this behavior based on your application&amp;rsquo;s needs.&lt;/p>
+&lt;p>You can choose WebSockets for its efficiency and fall back to Long Polling when WebSockets are unavailable with that code in Program.cs:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapHub&amp;lt;NotificationsHub&amp;gt;(&lt;span style="color:#e6db74">&amp;#34;/hubs/notification&amp;#34;&lt;/span>, opt =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> opt.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Or in the client side with JavaScript:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">let&lt;/span> &lt;span style="color:#a6e22e">connection&lt;/span> &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#66d9ef">new&lt;/span> &lt;span style="color:#a6e22e">signalR&lt;/span>.&lt;span style="color:#a6e22e">HubConnectionBuilder&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">withUrl&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/chathub&amp;#34;&lt;/span>, {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">transport&lt;/span>&lt;span style="color:#f92672">:&lt;/span> &lt;span style="color:#a6e22e">signalR&lt;/span>.&lt;span style="color:#a6e22e">HttpTransportType&lt;/span>.&lt;span style="color:#a6e22e">WebSockets&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">|&lt;/span> &lt;span style="color:#a6e22e">signalR&lt;/span>.&lt;span style="color:#a6e22e">HttpTransportType&lt;/span>.&lt;span style="color:#a6e22e">LongPolling&lt;/span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .&lt;span style="color:#a6e22e">build&lt;/span>();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>SignalR makes adding real-time features to .NET applications simple and efficient. It abstracts complex networking protocols, letting you focus on building live dashboards, chat apps, or notifications without worrying about the underlying transport. With support for WebSockets, Server-Sent Events (SSE), and Long Polling, SignalR automatically picks the best protocol for your environment.&lt;/p>
+&lt;p>If you want to access the source code, you can find the whole project on my GitHub account:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-signalr-deep-dive">GitHub - berkslv/lecture-signalr-deep-dive&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>Event-Driven Architecture: Do you need other service’s data in microservice architecture</title><link>https://berkselvi.dev/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</link><pubDate>Sat, 07 Sep 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/</guid><description>&lt;p>In applications developed with microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.&lt;/p>
 &lt;p>However, the &lt;code>createUnit()&lt;/code> request we will make to create a sales consultant in the organization service will need the data of the product service for validation reasons. Shouldn&amp;rsquo;t the unit be given the permission to create a product that doesn&amp;rsquo;t exist? In this case, the organization service will need the data of the product service, which is not in its domain and is not under its responsibility.&lt;/p></description><content>&lt;p>In applications developed with microservice architecture, domains are generally tried to be strictly separated from each other. In the example we will examine, all logic and data related to the product are located in the product service, while the organization service that manages the sales consultants who can create orders with this product also hosts its own logic and data.&lt;/p>
 &lt;p>However, the &lt;code>createUnit()&lt;/code> request we will make to create a sales consultant in the organization service will need the data of the product service for validation reasons. Shouldn&amp;rsquo;t the unit be given the permission to create a product that doesn&amp;rsquo;t exist? In this case, the organization service will need the data of the product service, which is not in its domain and is not under its responsibility.&lt;/p>
 &lt;p>We can access this data either synchronously or asynchronously. First, we’ll look at accessing it synchronously and the problems we may encounter, then we’ll address the potential issues with using the asynchronous method. Let’s begin.&lt;/p>
@@ -13,42 +203,42 @@
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th style="text-align: left">&lt;/th>
-&lt;th style="text-align: left">Product&lt;/th>
-&lt;th style="text-align: left">Organization&lt;/th>
-&lt;th style="text-align: left">Product &amp;amp; Organization&lt;/th>
+&lt;th>&lt;/th>
+&lt;th>Product&lt;/th>
+&lt;th>Organization&lt;/th>
+&lt;th>Product &amp;amp; Organization&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td style="text-align: left">Uptime percentage&lt;/td>
-&lt;td style="text-align: left">99.5&lt;/td>
-&lt;td style="text-align: left">99.5&lt;/td>
-&lt;td style="text-align: left">99.0&lt;/td>
+&lt;td>Uptime percentage&lt;/td>
+&lt;td>99.5&lt;/td>
+&lt;td>99.5&lt;/td>
+&lt;td>99.0&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Month&lt;/td>
-&lt;td style="text-align: left">716&lt;/td>
-&lt;td style="text-align: left">716&lt;/td>
-&lt;td style="text-align: left">712&lt;/td>
+&lt;td>Month&lt;/td>
+&lt;td>716&lt;/td>
+&lt;td>716&lt;/td>
+&lt;td>712&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Downtime in month&lt;/td>
-&lt;td style="text-align: left">4&lt;/td>
-&lt;td style="text-align: left">4&lt;/td>
-&lt;td style="text-align: left">7&lt;/td>
+&lt;td>Downtime in month&lt;/td>
+&lt;td>4&lt;/td>
+&lt;td>4&lt;/td>
+&lt;td>7&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Year&lt;/td>
-&lt;td style="text-align: left">8716&lt;/td>
-&lt;td style="text-align: left">8716&lt;/td>
-&lt;td style="text-align: left">8672&lt;/td>
+&lt;td>Year&lt;/td>
+&lt;td>8716&lt;/td>
+&lt;td>8716&lt;/td>
+&lt;td>8672&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Downtime in year&lt;/td>
-&lt;td style="text-align: left">43&lt;/td>
-&lt;td style="text-align: left">43&lt;/td>
-&lt;td style="text-align: left">87&lt;/td>
+&lt;td>Downtime in year&lt;/td>
+&lt;td>43&lt;/td>
+&lt;td>43&lt;/td>
+&lt;td>87&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
@@ -510,46 +700,46 @@
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th style="text-align: left">Feature&lt;/th>
-&lt;th style="text-align: left">YARP&lt;/th>
-&lt;th style="text-align: left">Ocelot&lt;/th>
+&lt;th>Feature&lt;/th>
+&lt;th>YARP&lt;/th>
+&lt;th>Ocelot&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td style="text-align: left">Routing &amp;amp; Request mapping&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td>Routing &amp;amp; Request mapping&lt;/td>
+&lt;td>Yes&lt;/td>
+&lt;td>Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Authn &amp;amp; Authz&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td>Authn &amp;amp; Authz&lt;/td>
+&lt;td>Yes&lt;/td>
+&lt;td>Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Rate limiting&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td>Rate limiting&lt;/td>
+&lt;td>Yes&lt;/td>
+&lt;td>Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Load balancing&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td>Load balancing&lt;/td>
+&lt;td>Yes&lt;/td>
+&lt;td>Yes&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">gRPC&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
-&lt;td style="text-align: left">No, old packages available&lt;/td>
+&lt;td>gRPC&lt;/td>
+&lt;td>Yes&lt;/td>
+&lt;td>No, old packages available&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Request aggregation&lt;/td>
-&lt;td style="text-align: left">No, custom development required&lt;/td>
-&lt;td style="text-align: left">Yes, can be done with configuration&lt;/td>
+&lt;td>Request aggregation&lt;/td>
+&lt;td>No, custom development required&lt;/td>
+&lt;td>Yes, can be done with configuration&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Distributed tracing&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
-&lt;td style="text-align: left">Yes&lt;/td>
+&lt;td>Distributed tracing&lt;/td>
+&lt;td>Yes&lt;/td>
+&lt;td>Yes&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
@@ -934,78 +1124,78 @@
 &lt;table>
 &lt;thead>
 &lt;tr>
-&lt;th style="text-align: left">Feature&lt;/th>
-&lt;th style="text-align: left">YARP&lt;/th>
-&lt;th style="text-align: left">Ocelot&lt;/th>
-&lt;th style="text-align: left">Kong&lt;/th>
-&lt;th style="text-align: left">APISIX&lt;/th>
-&lt;th style="text-align: left">KrakenD&lt;/th>
+&lt;th>Feature&lt;/th>
+&lt;th>YARP&lt;/th>
+&lt;th>Ocelot&lt;/th>
+&lt;th>Kong&lt;/th>
+&lt;th>APISIX&lt;/th>
+&lt;th>KrakenD&lt;/th>
 &lt;/tr>
 &lt;/thead>
 &lt;tbody>
 &lt;tr>
-&lt;td style="text-align: left">Request aggregation&lt;/td>
-&lt;td style="text-align: left">NO&lt;/td>
-&lt;td style="text-align: left">Simple, can be done with configuration&lt;/td>
-&lt;td style="text-align: left">NO&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">Powerful,, can be done with configuration&lt;/td>
+&lt;td>Request aggregation&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>Simple, can be done with configuration&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>Powerful,, can be done with configuration&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">OAuth &amp;amp; OpenID&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
+&lt;td>OAuth &amp;amp; OpenID&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Request validation&lt;/td>
-&lt;td style="text-align: left">Needs custom logic&lt;/td>
-&lt;td style="text-align: left">Needs custom logic&lt;/td>
-&lt;td style="text-align: left">Comes with enterprise&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
+&lt;td>Request validation&lt;/td>
+&lt;td>Needs custom logic&lt;/td>
+&lt;td>Needs custom logic&lt;/td>
+&lt;td>Comes with enterprise&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">HTTP to gRPC&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">NO&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
+&lt;td>HTTP to gRPC&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>NO&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Websocket&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">?&lt;/td>
-&lt;td style="text-align: left">YES&lt;/td>
-&lt;td style="text-align: left">Comes with enterprise&lt;/td>
+&lt;td>Websocket&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>?&lt;/td>
+&lt;td>YES&lt;/td>
+&lt;td>Comes with enterprise&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">State&lt;/td>
-&lt;td style="text-align: left">File&lt;/td>
-&lt;td style="text-align: left">File&lt;/td>
-&lt;td style="text-align: left">File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka&lt;/td>
-&lt;td style="text-align: left">File, etcd&lt;/td>
-&lt;td style="text-align: left">File&lt;/td>
+&lt;td>State&lt;/td>
+&lt;td>File&lt;/td>
+&lt;td>File&lt;/td>
+&lt;td>File, PostgreSQL, Cassandra, Redis, InfluxDB, Kafka&lt;/td>
+&lt;td>File, etcd&lt;/td>
+&lt;td>File&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Plugin&lt;/td>
-&lt;td style="text-align: left">C#&lt;/td>
-&lt;td style="text-align: left">C#&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
-&lt;td style="text-align: left">Go &amp;amp; Lua&lt;/td>
+&lt;td>Plugin&lt;/td>
+&lt;td>C#&lt;/td>
+&lt;td>C#&lt;/td>
+&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td>&lt;strong>Native&lt;/strong>: Lua &amp;amp; &lt;strong>IPC&lt;/strong>: Go, Javascript, Python &amp;amp; &lt;strong>WASM&lt;/strong>: Go, Rust vs.&lt;/td>
+&lt;td>Go &amp;amp; Lua&lt;/td>
 &lt;/tr>
 &lt;tr>
-&lt;td style="text-align: left">Performance&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1029ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1030ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1035ms, &lt;strong>Memory&lt;/strong>: 280MB, &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1025ms, &lt;strong>Memory&lt;/strong>: 100MB &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
-&lt;td style="text-align: left">&lt;strong>Mean response&lt;/strong>: 1024ms, &lt;strong>Memory&lt;/strong>: 30MB, &lt;strong>CPU&lt;/strong>: %4 - %6&lt;/td>
+&lt;td>Performance&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1029ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1030ms, &lt;strong>Memory&lt;/strong>: 100MB, &lt;strong>CPU&lt;/strong>: %10 - %20&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1035ms, &lt;strong>Memory&lt;/strong>: 280MB, &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1025ms, &lt;strong>Memory&lt;/strong>: 100MB &lt;strong>CPU&lt;/strong>: %5 - %10&lt;/td>
+&lt;td>&lt;strong>Mean response&lt;/strong>: 1024ms, &lt;strong>Memory&lt;/strong>: 30MB, &lt;strong>CPU&lt;/strong>: %4 - %6&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
