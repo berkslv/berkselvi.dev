@@ -1,4 +1,164 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br> This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a></copyright><lastBuildDate>Fri, 29 Nov 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Real-Time Communication with SignalR: A Deep Dive</title><link>https://berkselvi.dev/posts/realtime-communication-with-signalr-a-deep-dive/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/realtime-communication-with-signalr-a-deep-dive/</guid><description>&lt;p>In today&amp;rsquo;s world where data is moving very quickly, real-time communication is a must for modern applications to give users smooth experiences. SignalR is an essential library when you want to create .NET application that communicates in real-time with others. When using SignalR, all communication and network requirements are abstracted by the library and you only need to call the method like in the RPC. By leveraging SignalR, you can easily create live dashboards, chat applications, or simple notification features that many web applications need. Let’s get started.&lt;/p></description><content>&lt;p>In today&amp;rsquo;s world where data is moving very quickly, real-time communication is a must for modern applications to give users smooth experiences. SignalR is an essential library when you want to create .NET application that communicates in real-time with others. When using SignalR, all communication and network requirements are abstracted by the library and you only need to call the method like in the RPC. By leveraging SignalR, you can easily create live dashboards, chat applications, or simple notification features that many web applications need. Let’s get started.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br> This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a></copyright><lastBuildDate>Tue, 08 Jul 2025 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Feature Flagging in .NET with OpenFeature and flagd</title><link>https://berkselvi.dev/posts/feature-flagging-in-dotnet-with-openfeature-and-flagd/</link><pubDate>Tue, 08 Jul 2025 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/feature-flagging-in-dotnet-with-openfeature-and-flagd/</guid><description>&lt;p>Feature flagging has become a cornerstone of modern software delivery. If you’re deploying frequently, testing features with specific users, want safer releases, or need targeted rollouts, feature flags should be in your toolbox. In this post, I’ll introduce OpenFeature, a vendor-neutral feature flag standard, and show you how to integrate it in a .NET project with &lt;strong>flagd&lt;/strong> as your backend.&lt;/p>
+&lt;h2 id="what-is-feature-flagging">What is Feature Flagging?&lt;/h2>
+&lt;p>Feature flags (a.k.a. feature toggles) let you turn features on or off at runtime, without deploying new code. You can even segment by user, environment, or any attribute you want to serve a feature. This unlocks:&lt;/p></description><content>&lt;p>Feature flagging has become a cornerstone of modern software delivery. If you’re deploying frequently, testing features with specific users, want safer releases, or need targeted rollouts, feature flags should be in your toolbox. In this post, I’ll introduce OpenFeature, a vendor-neutral feature flag standard, and show you how to integrate it in a .NET project with &lt;strong>flagd&lt;/strong> as your backend.&lt;/p>
+&lt;h2 id="what-is-feature-flagging">What is Feature Flagging?&lt;/h2>
+&lt;p>Feature flags (a.k.a. feature toggles) let you turn features on or off at runtime, without deploying new code. You can even segment by user, environment, or any attribute you want to serve a feature. This unlocks:&lt;/p>
+&lt;ul>
+&lt;li>Progressive delivery (gradual rollouts)&lt;/li>
+&lt;li>A/B testing and experimentation&lt;/li>
+&lt;li>Instant kill switches for broken features&lt;/li>
+&lt;li>Reduced risk during deployments&lt;/li>
+&lt;/ul>
+&lt;p>But the core value? &lt;strong>Control&lt;/strong>. Suddenly, you can ship code that’s dark-launched, only visible to your team, or tested by a handful of beta users. If a problem occurs, you don’t scramble for a rollback; you just flip a flag.&lt;/p>
+&lt;h2 id="the-old-way-environment-variables">The Old Way: Environment Variables&lt;/h2>
+&lt;p>Before I dive into OpenFeature and flagd, I want to share a bit of real-world pain. Like many teams, I started with &lt;strong>environment variables&lt;/strong> (&lt;code>appsettings.json&lt;/code> configs) to manage features. Maybe you recognize this pattern:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;EnableNewDashboard&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then, inside your code:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> (Configuration[&lt;span style="color:#e6db74">&amp;#34;EnableNewDashboard&amp;#34;&lt;/span>] == &lt;span style="color:#e6db74">&amp;#34;true&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Show the shiny new dashboard&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It works—until it doesn’t. Here’s what usually goes wrong:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>No targeting:&lt;/strong> It’s all or nothing. Want to enable it just for internal users? Too bad.&lt;/li>
+&lt;li>&lt;strong>No runtime change:&lt;/strong> Changing an ENV variable often means redeploying or restarting.&lt;/li>
+&lt;li>&lt;strong>Growth of config sprawl:&lt;/strong> You end up with a dozen flags, all mixed in with unrelated config.&lt;/li>
+&lt;li>&lt;strong>No auditing or history:&lt;/strong> Who changed what, and when?&lt;/li>
+&lt;li>&lt;strong>No standardization:&lt;/strong> Every app/team does it differently.&lt;/li>
+&lt;/ul>
+&lt;p>As teams scale, this approach becomes brittle. Progressive delivery, canary releases, and A/B tests all need dynamic control. This is the gap where feature flag platforms—and standards like OpenFeature—shine.&lt;/p>
+&lt;h2 id="why-openfeature">Why OpenFeature?&lt;/h2>
+&lt;p>Most feature flag solutions (LaunchDarkly, Unleash, etc.) lock you into their SDKs and APIs. That’s where &lt;a href="https://openfeature.dev/">OpenFeature&lt;/a> comes in:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Vendor agnostic:&lt;/strong> Switch providers without rewriting your code.&lt;/li>
+&lt;li>&lt;strong>Standardized API:&lt;/strong> Use the same approach across languages and stacks.&lt;/li>
+&lt;li>&lt;strong>Extensible:&lt;/strong> Add hooks for logging, telemetry, and more.&lt;/li>
+&lt;li>&lt;strong>Cloud-native ready:&lt;/strong> Built for modern architectures.&lt;/li>
+&lt;/ul>
+&lt;p>With OpenFeature, your app code only depends on the OpenFeature SDK—not on a specific vendor or backend. If you ever outgrow your current provider or want to migrate to a managed service, it’s as simple as swapping the provider.&lt;/p>
+&lt;h2 id="why-flagd">Why flagd?&lt;/h2>
+&lt;p>&lt;a href="https://github.com/open-feature/flagd">flagd&lt;/a> is an open-source, lightweight feature flag backend. It’s designed to work out-of-the-box with OpenFeature and can serve flags from files, HTTP endpoints, or via gRPC to any application you need. But unfortunately there is no official UI to flagd right now, instead of the UI, flags managed with GitOps practices. flagd is ideal if you want a &lt;strong>self-hosted&lt;/strong>, cloud-native flag backend with zero vendor lock-in.&lt;/p>
+&lt;h2 id="real-life-example-from-env-to-feature-flags">Real-life Example: From ENV to Feature Flags&lt;/h2>
+&lt;p>Let’s say you’re running a .NET web API. You’re launching a new feature, but want to enable it only for internal users before rolling it out to everyone. Rather than creating an environment variable and binding that to some variable like &lt;strong>isInternalUser&lt;/strong>, which needs re-deploying your code for every change, you want to change features in runtime, for specific segments you like.&lt;/p>
+&lt;p>In a feature flag system that managed with the environment variable, if the Product Manager wants to A/B test a feature with 10% of the users, custom code and redeployment will be required.&lt;/p>
+&lt;p>&lt;strong>Feature flags&lt;/strong> flip this model:&lt;/p>
+&lt;ul>
+&lt;li>Toggle the feature for specific users/groups instantly.&lt;/li>
+&lt;li>Roll out to everyone when ready—no deployment needed.&lt;/li>
+&lt;li>If something breaks, instantly turn it off.&lt;/li>
+&lt;/ul>
+&lt;p>This is how modern product teams iterate quickly, reduce risk, and deliver value continuously.&lt;/p>
+&lt;h2 id="integrating-openfeature-and-flagd-in-net">Integrating OpenFeature and flagd in .NET&lt;/h2>
+&lt;p>Let’s see how to wire this up.&lt;/p>
+&lt;h3 id="1-add-nuget-packages">1. Add NuGet Packages&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package OpenFeature
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package OpenFeature.Contrib.Providers.Flagd
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="2-run-flagd-with-docker-compose">2. Run flagd with docker-compose&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">flagd&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">ghcr.io/open-feature/flagd:latest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">./flags:/etc/flagd&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">command&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;start&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;--uri&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;file:/etc/flagd/flags.json&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;--debug&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#39;8013:8013&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Sample &lt;code>flags.json&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$schema&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://flagd.dev/schema/v0/flags.json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;flags&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;new-greeting&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;state&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;ENABLED&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;variants&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;on&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;off&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;defaultVariant&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;off&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;targeting&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;if&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$ref&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;userAgentIsFirefox&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;on&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">null&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$evaluators&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;userAgentIsFirefox&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;in&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;firefox&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;var&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;userAgent&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="3-configure-openfeature-in-your-net-app">3. Configure OpenFeature in Your .NET App&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> OpenFeature.Contrib.Providers.Flagd;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> OpenFeature.Model;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> OpenFeature.Api.Instance.SetProviderAsync(&lt;span style="color:#66d9ef">new&lt;/span> FlagdProvider(&lt;span style="color:#66d9ef">new&lt;/span> Uri(&lt;span style="color:#e6db74">&amp;#34;http://localhost:8013&amp;#34;&lt;/span>)));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapGet(&lt;span style="color:#e6db74">&amp;#34;/greet&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">async&lt;/span> context =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> client = OpenFeature.Api.Instance.GetClient();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Get User-Agent header&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> userAgent = context.Request.Headers[&lt;span style="color:#e6db74">&amp;#34;User-Agent&amp;#34;&lt;/span>].FirstOrDefault() ?? &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> evalContext = EvaluationContext.Builder().Set(&lt;span style="color:#e6db74">&amp;#34;userAgent&amp;#34;&lt;/span>, userAgent).Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> useNewGreeting = &lt;span style="color:#66d9ef">await&lt;/span> client.GetBooleanValueAsync(&lt;span style="color:#e6db74">&amp;#34;new-greeting&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">false&lt;/span>, evalContext);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">string&lt;/span> greeting = useNewGreeting
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ? &lt;span style="color:#e6db74">&amp;#34;Hey there! Welcome to the new greeting experience! 🎉&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> : &lt;span style="color:#e6db74">&amp;#34;Hello, World!&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> context.Response.WriteAsync(greeting);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="4-test">4. Test&lt;/h3>
+&lt;p>Change the flag in your &lt;code>flags.json&lt;/code> file. Your .NET application will instantly detect the change. When we test the API endpoint, we’ll see results like the following:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl http://localhost:5050/greet
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Hello, World!
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl http://localhost:5050/greet -H &lt;span style="color:#e6db74">&amp;#39;User-Agent: firefox&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Hey there! Welcome to the new greeting experience! 🎉
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you want to send a direct request to the flagd backend and see the status of the flag, you can query it as shown below:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl -X POST &lt;span style="color:#e6db74">&amp;#34;http://localhost:8013/flagd.evaluation.v1.Service/ResolveBoolean&amp;#34;&lt;/span> -d &lt;span style="color:#e6db74">&amp;#39;{&amp;#34;flagKey&amp;#34;:&amp;#34;new-greeting&amp;#34;,&amp;#34;context&amp;#34;:{}}&amp;#39;&lt;/span> -H &lt;span style="color:#e6db74">&amp;#34;Content-Type: application/json&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">{&lt;/span>&lt;span style="color:#e6db74">&amp;#34;value&amp;#34;&lt;/span>:false, &lt;span style="color:#e6db74">&amp;#34;reason&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;DEFAULT&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;variant&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;off&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;metadata&amp;#34;&lt;/span>:&lt;span style="color:#f92672">{}}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl -X POST &lt;span style="color:#e6db74">&amp;#34;http://localhost:8013/flagd.evaluation.v1.Service/ResolveBoolean&amp;#34;&lt;/span> -d &lt;span style="color:#e6db74">&amp;#39;{&amp;#34;flagKey&amp;#34;:&amp;#34;new-greeting&amp;#34;,&amp;#34;context&amp;#34;:{&amp;#34;userAgent&amp;#34;: &amp;#34;firefox&amp;#34;}}&amp;#39;&lt;/span> -H &lt;span style="color:#e6db74">&amp;#34;Content-Type: application/json&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">{&lt;/span>&lt;span style="color:#e6db74">&amp;#34;value&amp;#34;&lt;/span>:true, &lt;span style="color:#e6db74">&amp;#34;reason&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;TARGETING_MATCH&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;variant&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;on&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;metadata&amp;#34;&lt;/span>:&lt;span style="color:#f92672">{}}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>Feature flags reduce risk, enable faster delivery, and improve user targeting. OpenFeature gives you a standardized, future-proof API for flag management in .NET. flagd is a solid, open-source backend, great for self-hosting and Kubernetes.&lt;/p>
+&lt;p>If you’re still managing features with environment variables or configuration files, give OpenFeature and flagd a shot. Your future self will thank you, especially the next time you need to shut off a feature on Friday at 5pm.&lt;/p>
+&lt;p>If you want to access the source code, you can find the whole project on my GitHub account:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-net-openfeature">https://github.com/berkslv/lecture-net-openfeature&lt;/a>&lt;/p>
+&lt;h2 id="conclusion">Conclusion&lt;/h2>
+&lt;p>Thank you for reading! 🎉 In order not to miss my research in the field of software development, you can follow me at &lt;a href="https://x.com/berkslv">@berkslv&lt;/a>.&lt;/p></content></item><item><title>Real-Time Communication with SignalR: A Deep Dive</title><link>https://berkselvi.dev/posts/realtime-communication-with-signalr-a-deep-dive/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/realtime-communication-with-signalr-a-deep-dive/</guid><description>&lt;p>In today&amp;rsquo;s world where data is moving very quickly, real-time communication is a must for modern applications to give users smooth experiences. SignalR is an essential library when you want to create .NET application that communicates in real-time with others. When using SignalR, all communication and network requirements are abstracted by the library and you only need to call the method like in the RPC. By leveraging SignalR, you can easily create live dashboards, chat applications, or simple notification features that many web applications need. Let’s get started.&lt;/p></description><content>&lt;p>In today&amp;rsquo;s world where data is moving very quickly, real-time communication is a must for modern applications to give users smooth experiences. SignalR is an essential library when you want to create .NET application that communicates in real-time with others. When using SignalR, all communication and network requirements are abstracted by the library and you only need to call the method like in the RPC. By leveraging SignalR, you can easily create live dashboards, chat applications, or simple notification features that many web applications need. Let’s get started.&lt;/p>
 &lt;h2 id="why-signalr">Why SignalR?&lt;/h2>
 &lt;p>Traditional models of client-server communication revolve around the request-response model, which is considered less efficient and limited for high interaction needs, and requires the client to making a request when data is needed. SignalR is designed to eliminate these challenges by keeping the same connection alive from the client to the server.&lt;/p>
 &lt;h3 id="key-advantages-of-signalr">Key Advantages of SignalR:&lt;/h3>
@@ -123,8 +283,7 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="5-scaling-signalr-with-redis-backplane">5. Scaling SignalR with Redis backplane&lt;/h3>
 &lt;p>Scaling SignalR across multiple servers ensures reliable real-time communication for high-demand applications that running in multiple instances. A &lt;strong>Redis backplane&lt;/strong> synchronizes messages between SignalR servers, ensuring clients connected to different servers receive messages seamlessly. Here is a quote from microsoft docs:&lt;/p>
 &lt;blockquote>
-&lt;p>The SignalR Redis backplane uses the pub/sub feature to forward messages to other servers. When a client makes a connection, the connection information is passed to the backplane. When a server wants to send a message to all clients, it sends to the backplane. The backplane knows all connected clients and which servers they&amp;rsquo;re on. It sends the message to all clients via their respective servers.&lt;/p>
-&lt;/blockquote>
+&lt;p>The SignalR Redis backplane uses the pub/sub feature to forward messages to other servers. When a client makes a connection, the connection information is passed to the backplane. When a server wants to send a message to all clients, it sends to the backplane. The backplane knows all connected clients and which servers they&amp;rsquo;re on. It sends the message to all clients via their respective servers.&lt;/p>&lt;/blockquote>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
@@ -197,7 +356,7 @@
 &lt;p>With the request we will send to our organization service via REST, we will trigger the &lt;code>createUnit()&lt;/code> method and create a unit. However, since this service will need product data for validation purposes, it will need to retrieve this data synchronously through an HTTP REST &lt;code>getProduct()&lt;/code> request.&lt;/p>
 &lt;p>During runtime, for the &lt;code>createUnit()&lt;/code> method to be processed, both the organization service and the product service need to be up and accessible, and there must be no issues with the network connection between them. If the product service is not operational, the organization service will also not function. Even when both services are up and accessible, if the product service is slow, the synchronous request flow will be blocked, causing the organization service to slow down as well. To overcome this issue, the organization service will need to scale during periods of high demand. However, since the product service has a runtime dependency, it will also need to be scaled in the same way to handle the large number of requests coming from the organization. If we apply this practice to all services, all services will need to scale together. As a result, the organization service will be highly dependent on the product service, and they will have to continue operating together rather than independently. If all the services in our microservice architecture become dependent on each other in this way, the inaccessibility of a single service could lead to all other services becoming inaccessible as well.&lt;/p>
 &lt;p>During design time, if a change is made to the &lt;code>getProduct()&lt;/code> API in the product service, the developers of the organization service would also need to update their HTTP client integrations accordingly. This change would likely require modifying the organization service&amp;rsquo;s codebase as well.&lt;/p>
-&lt;p>In conclusion, since coupling will occur both at runtime and design time, the two services will be tightly coupled, leading to what Jonathan Tower calls a &lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;t=1203s">distributed monolith&lt;/a>. Any change in one service will directly affect the other, making it difficult to quickly respond to constantly changing business requirements. Any improvements made to the &lt;code>getProduct()&lt;/code> method in the product service would also need to be implemented by the other services that consume it. After completing these updates, all services connected synchronously must be accessible for end-users to use the application.&lt;/p>
+&lt;p>In conclusion, since coupling will occur both at runtime and design time, the two services will be tightly coupled, leading to what Jonathan Tower calls a &lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;amp;t=1203s">distributed monolith&lt;/a>. Any change in one service will directly affect the other, making it difficult to quickly respond to constantly changing business requirements. Any improvements made to the &lt;code>getProduct()&lt;/code> method in the product service would also need to be implemented by the other services that consume it. After completing these updates, all services connected synchronously must be accessible for end-users to use the application.&lt;/p>
 &lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/synchronous-communication.png" alt="Synchronous communication" loading="lazy" />
 &lt;p class="image-sub-title">Synchronous communication&lt;/p>
 &lt;p>In a scenario where we want to guarantee an SLA to our customer, if we optimistically offer a 99.5% uptime guarantee for both the product and organization services, we are accepting that there could be up to 43 hours of downtime annually. In a scenario where the product and organization services are dependent on each other during runtime, using the calculation $0.995 * 0.995 = 0.990$, the dependency created by synchronous communication results in our services offering twice the downtime guarantee, potentially leading to 87 hours of downtime annually.&lt;/p>
@@ -275,10 +434,10 @@
 &lt;p>You can access the .NET project I developed to simulate situations that may occur while working with asynchronous and synchronous data communication from the github repo below. In the example, the infrastructure provided by MassTransit was used for the outbox structure, and no special development was made for this feature.&lt;/p>
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-fetch-other-service-data-with-event-driven-architecture">GitHub - berkslv/lecture-fetch-other-service-data-with-event-driven-architecture&lt;/a>&lt;/p>
 &lt;h2 id="resources">Resources&lt;/h2>
-&lt;p>&lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;t=1203s">Don’t Build a Distributed Monolith - Jonathan &amp;ldquo;J.&amp;rdquo; Tower - NDC London 2023&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;amp;t=1203s">Don’t Build a Distributed Monolith - Jonathan &amp;ldquo;J.&amp;rdquo; Tower - NDC London 2023&lt;/a>&lt;/p>
 &lt;p>&lt;a href="https://www.youtube.com/watch?v=STKCRSUsyP0">The Many Meanings of Event-Driven Architecture • Martin Fowler • GOTO 2017&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://www.youtube.com/watch?v=AEbJgpamZ4w&amp;t=898s">Solving distributed data problems in a microservice architecture | Microservices.io&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://www.youtube.com/watch?v=rZxIzrjvSGg&amp;t=716s">You Keep Using That Word • Sam Newman • GOTO 2023&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=AEbJgpamZ4w&amp;amp;t=898s">Solving distributed data problems in a microservice architecture | Microservices.io&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=rZxIzrjvSGg&amp;amp;t=716s">You Keep Using That Word • Sam Newman • GOTO 2023&lt;/a>&lt;/p>
 &lt;p>&lt;a href="https://microservices.io/patterns/communication-style/idempotent-consumer.html">Microservices Pattern: Pattern: Idempotent Consumer&lt;/a>&lt;/p>
 &lt;p>&lt;a href="https://www.reactivemanifesto.org/en">The Reactive Manifesto&lt;/a>&lt;/p>
 &lt;h2 id="conclusion">Conclusion&lt;/h2>
@@ -291,8 +450,7 @@
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-correlation-id-microservices">GitHub - berkslv/lecture-correlation-id-microservices&lt;/a>&lt;/p>
 &lt;p>We can use our Correlation class, which we could define as Scoped, to send the CorrelationId value we receive in incoming requests to our service in outgoing requests. However, in this way, our state value, which we move between classes with Dependency Injection methods, becomes inaccessible in a special case in our request that proceeds asynchronously: Since our &lt;code>CorrelationHeaderHandler&lt;/code> class, which will intervene in the requests we make with the HttpClient using the DelegatingHandler class, will work in a separate DI scope from our application, the value of our Correlation class, which we could define as Scoped, becomes inaccessible in a this special case. This issue is also explained in Microsoft&amp;rsquo;s own documentation as follows:&lt;/p>
 &lt;blockquote>
-&lt;p>When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&amp;rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.&lt;/p>
-&lt;/blockquote>
+&lt;p>When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&amp;rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.&lt;/p>&lt;/blockquote>
 &lt;p>As a solution to this problem, we will create a class called &lt;code>AsyncStorage&lt;/code> and use the &lt;code>AsyncLocal&lt;/code> class provided by Microsoft to create a structure that we can access at any time within the same thread in our async request to set the CorrelationId value:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;

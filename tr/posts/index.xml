@@ -1,4 +1,164 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br> Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a> olarak yayınlanmıştır.</copyright><lastBuildDate>Fri, 29 Nov 2024 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>SignalR ile Gerçek Zamanlı İletişim: Derinlemesine İnceleme</title><link>https://berkselvi.dev/tr/posts/realtime-communication-with-signalr-a-deep-dive/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/realtime-communication-with-signalr-a-deep-dive/</guid><description>&lt;p>Günümüz dünyasında verilerin hızla hareket ettiği bir ortamda, modern uygulamaların kullanıcılarına sorunsuz deneyimler sunabilmesi için gerçek zamanlı iletişim bir zorunluluk haline gelmiştir. SignalR, .NET uygulamaları için gerçek zamanlı iletişim özelliklerini kolayca hayata geçirmenize yardımcı olan temel bir kütüphanedir. SignalR kullanırken tüm iletişim ve network gereksinimleri kütüphane tarafından soyutlanır; sadece bir RPC çağrısı yapar gibi yöntem çağrısında bulunmanız yeterlidir. SignalR sayesinde canlı panolar, sohbet uygulamaları veya web uygulamalarında sıkça ihtiyaç duyulan basit bildirim özelliklerini kolayca oluşturabilirsiniz. Haydi başlayalım.&lt;/p></description><content>&lt;p>Günümüz dünyasında verilerin hızla hareket ettiği bir ortamda, modern uygulamaların kullanıcılarına sorunsuz deneyimler sunabilmesi için gerçek zamanlı iletişim bir zorunluluk haline gelmiştir. SignalR, .NET uygulamaları için gerçek zamanlı iletişim özelliklerini kolayca hayata geçirmenize yardımcı olan temel bir kütüphanedir. SignalR kullanırken tüm iletişim ve network gereksinimleri kütüphane tarafından soyutlanır; sadece bir RPC çağrısı yapar gibi yöntem çağrısında bulunmanız yeterlidir. SignalR sayesinde canlı panolar, sohbet uygulamaları veya web uygulamalarında sıkça ihtiyaç duyulan basit bildirim özelliklerini kolayca oluşturabilirsiniz. Haydi başlayalım.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br> Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'>open source&lt;/a> olarak yayınlanmıştır.</copyright><lastBuildDate>Tue, 08 Jul 2025 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Feature Flagging in .NET with OpenFeature and flagd</title><link>https://berkselvi.dev/tr/posts/feature-flagging-in-dotnet-with-openfeature-and-flagd/</link><pubDate>Tue, 08 Jul 2025 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/feature-flagging-in-dotnet-with-openfeature-and-flagd/</guid><description>&lt;p>Feature flagging (özellik bayrakları), modern yazılım geliştirme pratiklerinin vazgeçilmezlerinden biri haline geldi. Sık sık release alıyorsanız, belirli kullanıcılarla özellikleri test etmek istiyorsanız, daha güvenli sürümler arıyorsanız, feature flag’ler kesinlikle araç kutunuzda olmalı. Bu yazıda, vendor bağımsız bir feature flag standardı olan OpenFeature’ı anlatacağım ve .NET projelerinde &lt;strong>flagd&lt;/strong> ile nasıl entegre edilebileceğini göstereceğim.&lt;/p>
+&lt;h2 id="feature-flagging-nedir">Feature Flagging Nedir?&lt;/h2>
+&lt;p>Feature flag’ler (ya da diğer adıyla feature toggle’lar), yeni bir kod release almadan uygulamanızdaki özellikleri runtime sırasında anlık olarak açıp kapatmanızı sağlar. Hatta bir özelliği kullanıcı, ortam veya istediğiniz herhangi bir kritere göre segmente edebilirsiniz. Bu sayede:&lt;/p></description><content>&lt;p>Feature flagging (özellik bayrakları), modern yazılım geliştirme pratiklerinin vazgeçilmezlerinden biri haline geldi. Sık sık release alıyorsanız, belirli kullanıcılarla özellikleri test etmek istiyorsanız, daha güvenli sürümler arıyorsanız, feature flag’ler kesinlikle araç kutunuzda olmalı. Bu yazıda, vendor bağımsız bir feature flag standardı olan OpenFeature’ı anlatacağım ve .NET projelerinde &lt;strong>flagd&lt;/strong> ile nasıl entegre edilebileceğini göstereceğim.&lt;/p>
+&lt;h2 id="feature-flagging-nedir">Feature Flagging Nedir?&lt;/h2>
+&lt;p>Feature flag’ler (ya da diğer adıyla feature toggle’lar), yeni bir kod release almadan uygulamanızdaki özellikleri runtime sırasında anlık olarak açıp kapatmanızı sağlar. Hatta bir özelliği kullanıcı, ortam veya istediğiniz herhangi bir kritere göre segmente edebilirsiniz. Bu sayede:&lt;/p>
+&lt;ul>
+&lt;li>Kademeli yaygınlaştırma (progressive delivery)&lt;/li>
+&lt;li>A/B testleri ve denemeler&lt;/li>
+&lt;li>Problemli özellikler için anında kill switch&lt;/li>
+&lt;li>Dağıtım sırasında daha düşük risk&lt;/li>
+&lt;/ul>
+&lt;p>Peki ya en önemli faydası nedir? &lt;strong>Kontrol.&lt;/strong> Artık yayına aldığınız kod, sadece ekibinize ya da küçük bir beta grubuna görünür olabilir. Bir problem çıktığında ise, panikle rollback yapmak yerine, sadece flag’i kapatırsınız.&lt;/p>
+&lt;h2 id="eski-yöntem-environment-variables">Eski Yöntem: Environment Variables&lt;/h2>
+&lt;p>OpenFeature ve flagd’dan önce biraz gerçek dünyada yaşanan acılardan bahsetmek istiyorum. Pek çok ekip gibi, ben de başlangıçta feature flag yönetimini &lt;strong>environment variable&lt;/strong> (veya &lt;code>appsettings.json&lt;/code>) üzerinden yaptım. Şu yapı eminim size de tanıdık gelecektir:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;EnableNewDashboard&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Kodda da şöyle bir kontrol:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">if&lt;/span> (Configuration[&lt;span style="color:#e6db74">&amp;#34;EnableNewDashboard&amp;#34;&lt;/span>] == &lt;span style="color:#e6db74">&amp;#34;true&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Yeni dashboard’u göster&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Tabiki ilk başta işe yarıyor… ama bir süre sonra sorunlar başlıyor:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Hedefleme yok:&lt;/strong> Ya hep ya hiç. Sadece iç kullanıcılar için mi açmak istiyorsunuz? Mümkün değil.&lt;/li>
+&lt;li>&lt;strong>Anlık değişiklik yok:&lt;/strong> Değişiklik için çoğu zaman yeniden deploy veya restart gerekiyor.&lt;/li>
+&lt;li>&lt;strong>Config karmaşası:&lt;/strong> Zamanla onlarca flag, diğer konfigürasyonlarla karışıyor.&lt;/li>
+&lt;li>&lt;strong>Audit veya geçmiş yok:&lt;/strong> Kim ne zaman değiştirdi, iz yok.&lt;/li>
+&lt;li>&lt;strong>Standart yok:&lt;/strong> Her ekip, her uygulama kendince yapıyor.&lt;/li>
+&lt;/ul>
+&lt;p>Ekipler büyüdükçe bu yaklaşım kırılganlaşıyor. Progressive delivery, canary deployment veya A/B testleri için dinamik kontrol şart. İşte bu noktada feature flag platformları ve OpenFeature gibi standartlar devreye giriyor.&lt;/p>
+&lt;h2 id="neden-openfeature">Neden OpenFeature?&lt;/h2>
+&lt;p>OpenFeature dışındaki çoğu feature flag çözümü (LaunchDarkly, Unleash, vs.) sizi kendi SDK’sına ve API’sine bağımlı kılar. OpenFeature burada devreye giriyor:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Vendor bağımsız:&lt;/strong> Sağlayıcı değiştirmek için kodunuzu yeniden yazmanız gerekmez.&lt;/li>
+&lt;li>&lt;strong>Standart API:&lt;/strong> Farklı dil ve platformlarda aynı yaklaşımı kullanabilirsiniz.&lt;/li>
+&lt;li>&lt;strong>Genişletilebilir:&lt;/strong> Loglama, telemetry gibi hook’lar ekleyebilirsiniz.&lt;/li>
+&lt;li>&lt;strong>Cloud-native uyumlu:&lt;/strong> Modern mimariler için tasarlanmıştır.&lt;/li>
+&lt;/ul>
+&lt;p>OpenFeature ile uygulamanız sadece OpenFeature SDK’ya bağımlı olur; belli bir sağlayıcıya değil. Zamanla farklı bir sağlayıcıya geçmek isterseniz, provider’ı değiştirmeniz yeterli olacaktır.&lt;/p>
+&lt;h2 id="neden-flagd">Neden flagd?&lt;/h2>
+&lt;p>&lt;a href="https://github.com/open-feature/flagd">flagd&lt;/a>, açık kaynak ve hafif bir feature flag backend’idir. OpenFeature ile doğrudan çalışmak için tasarlanmıştır ve flag’leri JSON dosyalarından, HTTP endpoint veya gRPC üzerinden yönetilebilir. Fakat ne yazık ki şu anda flag’leri yönetmek için official bir kullanıcı arayüzü (UI) bulunmuyor, bunun yerine GitOps pratikleri ile yönetim sağlanıyor. flagd, hiçbir vendor-lockin yaşamadan, self host edebileceğiniz, bulut tabanlı bir feature flag backendi istiyorsanız idealdir.&lt;/p>
+&lt;h2 id="gerçek-hayattan-örnek-envden-feature-flage">Gerçek Hayattan Örnek: ENV’den Feature Flag’e&lt;/h2>
+&lt;p>Gerçek hayattan bir örnekle, bir .NET web API’niz var diyelim. Yeni bir özelliği yayına alıyorsunuz; ama önce sadece iç kullanıcılarınıza açmak istiyorsunuz. Bir environment variable tanımlayıp, bunu &lt;code>isInternalUser&lt;/code> gibi bir değişkene bağlayarak feature flag pratiklerini kısmen uygulayabilirsiniz. Ancak bu değişkende her değişiklikte kodu tekrar deploy etmeniz gerekiyor ve belirli bir kullanıcı grubu için değil, servisi kullanan tüm kullanıcılar için bu işlemi yapabiliyorsunuz.&lt;/p>
+&lt;p>Enviroment variable ile yönetilen bir feature flag ortamında Product Manager, bir özelliği kullanıcıların %10’u ile A/B test yapmak istiyorsa özel kod ve yeniden deploy gerekecektir.&lt;/p>
+&lt;p>&lt;strong>Feature flag’ler&lt;/strong> bu tabloyu değiştiriyor:&lt;/p>
+&lt;ul>
+&lt;li>Özelliği anında, spesifik kullanıcı/gruplar için açıp kapatın.&lt;/li>
+&lt;li>Herkese açmaya hazır olduğunuzda deploy gerekmeden canlıya çıkın.&lt;/li>
+&lt;li>Sorun çıkarsa, tek tuşla anında kapatın.&lt;/li>
+&lt;/ul>
+&lt;p>Modern ürün ekipleri bu sayede daha hızlı iterasyon yapabiliyor, riski azaltıyor ve sürekli değer sunabiliyor.&lt;/p>
+&lt;h2 id="nette-openfeature-ve-flagd-entegrasyonu">.NET’te OpenFeature ve flagd Entegrasyonu&lt;/h2>
+&lt;p>Şimdi kurulumun nasıl yapılacağına bakalım.&lt;/p>
+&lt;h3 id="1-nuget-paketlerini-ekleyin">1. NuGet Paketlerini Ekleyin&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package OpenFeature
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package OpenFeature.Contrib.Providers.Flagd
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="2-flagdi-docker-compose-ile-çalıştırın">2. flagd’i docker-compose ile çalıştırın&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">flagd&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">ghcr.io/open-feature/flagd:latest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">./flags:/etc/flagd&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">command&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;start&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;--uri&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;file:/etc/flagd/flags.json&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#39;--debug&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#39;8013:8013&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Örnek &lt;code>flags.json&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-json" data-lang="json">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$schema&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;https://flagd.dev/schema/v0/flags.json&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;flags&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;new-greeting&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;state&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;ENABLED&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;variants&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;on&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;off&amp;#34;&lt;/span>: &lt;span style="color:#66d9ef">false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;defaultVariant&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;off&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;targeting&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;if&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$ref&amp;#34;&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;userAgentIsFirefox&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;on&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">null&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;$evaluators&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;userAgentIsFirefox&amp;#34;&lt;/span>: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;in&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;firefox&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">&amp;#34;var&amp;#34;&lt;/span>: [
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#e6db74">&amp;#34;userAgent&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="3-net-uygulamanızda-openfeatureı-konfigüre-edin">3. .NET Uygulamanızda OpenFeature’ı Konfigüre Edin&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> OpenFeature.Contrib.Providers.Flagd;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">using&lt;/span> OpenFeature.Model;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> builder = WebApplication.CreateBuilder(args);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">await&lt;/span> OpenFeature.Api.Instance.SetProviderAsync(&lt;span style="color:#66d9ef">new&lt;/span> FlagdProvider(&lt;span style="color:#66d9ef">new&lt;/span> Uri(&lt;span style="color:#e6db74">&amp;#34;http://localhost:8013&amp;#34;&lt;/span>)));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">var&lt;/span> app = builder.Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.MapGet(&lt;span style="color:#e6db74">&amp;#34;/greet&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">async&lt;/span> context =&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> client = OpenFeature.Api.Instance.GetClient();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// Get User-Agent header&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> userAgent = context.Request.Headers[&lt;span style="color:#e6db74">&amp;#34;User-Agent&amp;#34;&lt;/span>].FirstOrDefault() ?? &lt;span style="color:#e6db74">&amp;#34;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> evalContext = EvaluationContext.Builder().Set(&lt;span style="color:#e6db74">&amp;#34;userAgent&amp;#34;&lt;/span>, userAgent).Build();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">var&lt;/span> useNewGreeting = &lt;span style="color:#66d9ef">await&lt;/span> client.GetBooleanValueAsync(&lt;span style="color:#e6db74">&amp;#34;new-greeting&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">false&lt;/span>, evalContext);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">string&lt;/span> greeting = useNewGreeting
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ? &lt;span style="color:#e6db74">&amp;#34;Hey there! Welcome to the new greeting experience! 🎉&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> : &lt;span style="color:#e6db74">&amp;#34;Hello, World!&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">await&lt;/span> context.Response.WriteAsync(greeting);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.Run();
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="4-test-edin">4. Test Edin&lt;/h3>
+&lt;p>&lt;code>flags.json&lt;/code> dosyanızdan flag’i değiştirin. .NET uygulamanız değişikliği anında yakalayacaktır. API ucunu test ettiğimizde aşağıdaki gibi bir sonuçla karşılaşırız.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl http://localhost:5050/greet
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Hello, World!
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl http://localhost:5050/greet -H &lt;span style="color:#e6db74">&amp;#39;User-Agent: firefox&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Hey there! Welcome to the new greeting experience! 🎉
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Eğer flagd backendine direk olarak istek atıp flagin durumunu görmek istersek ise aşağıdaki şekilde sorgulama yapabiliriz&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl -X POST &lt;span style="color:#e6db74">&amp;#34;http://localhost:8013/flagd.evaluation.v1.Service/ResolveBoolean&amp;#34;&lt;/span> -d &lt;span style="color:#e6db74">&amp;#39;{&amp;#34;flagKey&amp;#34;:&amp;#34;new-greeting&amp;#34;,&amp;#34;context&amp;#34;:{}}&amp;#39;&lt;/span> -H &lt;span style="color:#e6db74">&amp;#34;Content-Type: application/json&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">{&lt;/span>&lt;span style="color:#e6db74">&amp;#34;value&amp;#34;&lt;/span>:false, &lt;span style="color:#e6db74">&amp;#34;reason&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;DEFAULT&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;variant&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;off&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;metadata&amp;#34;&lt;/span>:&lt;span style="color:#f92672">{}}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$ curl -X POST &lt;span style="color:#e6db74">&amp;#34;http://localhost:8013/flagd.evaluation.v1.Service/ResolveBoolean&amp;#34;&lt;/span> -d &lt;span style="color:#e6db74">&amp;#39;{&amp;#34;flagKey&amp;#34;:&amp;#34;new-greeting&amp;#34;,&amp;#34;context&amp;#34;:{&amp;#34;userAgent&amp;#34;: &amp;#34;firefox&amp;#34;}}&amp;#39;&lt;/span> -H &lt;span style="color:#e6db74">&amp;#34;Content-Type: application/json&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">{&lt;/span>&lt;span style="color:#e6db74">&amp;#34;value&amp;#34;&lt;/span>:true, &lt;span style="color:#e6db74">&amp;#34;reason&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;TARGETING_MATCH&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;variant&amp;#34;&lt;/span>:&lt;span style="color:#e6db74">&amp;#34;on&amp;#34;&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;metadata&amp;#34;&lt;/span>:&lt;span style="color:#f92672">{}}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="özet">Özet&lt;/h2>
+&lt;p>Feature flag’ler riski azaltır, daha hızlı dağıtım sağlar ve kullanıcı hedeflemesini kolaylaştırır. OpenFeature, .NET’te feature flag yönetimi için size standart ve geleceğe dönük bir API sunar. flagd ise kendi kendinize barındırabileceğiniz, Kubernetes ile uyumlu açık kaynak bir backend’dir.&lt;/p>
+&lt;p>Hâlâ environment variable ya da config dosyaları ile özellik yönetimi yapıyorsanız, OpenFeature ve flagd’ye bir şans verin. Gelecekte kendinize teşekkür edeceksiniz, özellikle bir cuma akşamı bir özelliği acil kapatmanız gerekirse.&lt;/p>
+&lt;p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:&lt;/p>
+&lt;p>&lt;a href="https://github.com/berkslv/lecture-net-openfeature">https://github.com/berkslv/lecture-net-pre-commit&lt;/a>&lt;/p>
+&lt;h2 id="sonuç">Sonuç&lt;/h2>
+&lt;p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme alanındaki araştırmalarımı kaçırmamak için &lt;a href="https://x.com/berkslv">@berkslv&lt;/a> adresinden beni takip edebilirsiniz.&lt;/p></content></item><item><title>SignalR ile Gerçek Zamanlı İletişim: Derinlemesine İnceleme</title><link>https://berkselvi.dev/tr/posts/realtime-communication-with-signalr-a-deep-dive/</link><pubDate>Fri, 29 Nov 2024 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/realtime-communication-with-signalr-a-deep-dive/</guid><description>&lt;p>Günümüz dünyasında verilerin hızla hareket ettiği bir ortamda, modern uygulamaların kullanıcılarına sorunsuz deneyimler sunabilmesi için gerçek zamanlı iletişim bir zorunluluk haline gelmiştir. SignalR, .NET uygulamaları için gerçek zamanlı iletişim özelliklerini kolayca hayata geçirmenize yardımcı olan temel bir kütüphanedir. SignalR kullanırken tüm iletişim ve network gereksinimleri kütüphane tarafından soyutlanır; sadece bir RPC çağrısı yapar gibi yöntem çağrısında bulunmanız yeterlidir. SignalR sayesinde canlı panolar, sohbet uygulamaları veya web uygulamalarında sıkça ihtiyaç duyulan basit bildirim özelliklerini kolayca oluşturabilirsiniz. Haydi başlayalım.&lt;/p></description><content>&lt;p>Günümüz dünyasında verilerin hızla hareket ettiği bir ortamda, modern uygulamaların kullanıcılarına sorunsuz deneyimler sunabilmesi için gerçek zamanlı iletişim bir zorunluluk haline gelmiştir. SignalR, .NET uygulamaları için gerçek zamanlı iletişim özelliklerini kolayca hayata geçirmenize yardımcı olan temel bir kütüphanedir. SignalR kullanırken tüm iletişim ve network gereksinimleri kütüphane tarafından soyutlanır; sadece bir RPC çağrısı yapar gibi yöntem çağrısında bulunmanız yeterlidir. SignalR sayesinde canlı panolar, sohbet uygulamaları veya web uygulamalarında sıkça ihtiyaç duyulan basit bildirim özelliklerini kolayca oluşturabilirsiniz. Haydi başlayalım.&lt;/p>
 &lt;h2 id="neden-signalr">Neden SignalR?&lt;/h2>
 &lt;p>Geleneksel istemci-sunucu iletişim modelleri, yüksek etkileşim ihtiyaçları için daha az verimli ve sınırlı olan istek-cevap modeline dayanır ve veriye ihtiyaç duyulduğunda istemcinin bir istek göndermesini gerektirir. SignalR, istemci ile sunucu arasındaki aynı bağlantıyı sürekli açık tutarak bu zorlukları ortadan kaldırmak için tasarlanmıştır.&lt;/p>
 &lt;h3 id="signalrın-temel-avantajları">SignalR’ın Temel Avantajları:&lt;/h3>
@@ -127,8 +287,7 @@
 &lt;/ol>
 &lt;p>SignalR’ı birden fazla sunucuya ölçeklendirmek, birden çok instance üzerinde çalışan yüksek talep gören uygulamalar için güvenilir gerçek zamanlı iletişim sağlar. Redis backplane, SignalR sunucuları arasındaki mesajları senkronize ederek, farklı sunuculara bağlı istemcilerin sorunsuz bir şekilde mesaj almasını sağlar. İşte Microsoft belgelerinden bir alıntı:&lt;/p>
 &lt;blockquote>
-&lt;p>SignalR Redis backplane, mesajları diğer sunuculara iletmek için pub/sub özelliğini kullanır. Bir istemci bağlantı kurduğunda, bağlantı bilgileri backplane’e iletilir. Bir sunucu tüm istemcilere mesaj göndermek istediğinde, bunu backplane’e iletir. Backplane, tüm bağlı istemcileri ve hangi sunucularda olduklarını bilir. Mesajı ilgili sunucular aracılığıyla tüm istemcilere gönderir.&lt;/p>
-&lt;/blockquote>
+&lt;p>SignalR Redis backplane, mesajları diğer sunuculara iletmek için pub/sub özelliğini kullanır. Bir istemci bağlantı kurduğunda, bağlantı bilgileri backplane’e iletilir. Bir sunucu tüm istemcilere mesaj göndermek istediğinde, bunu backplane’e iletir. Backplane, tüm bağlı istemcileri ve hangi sunucularda olduklarını bilir. Mesajı ilgili sunucular aracılığıyla tüm istemcilere gönderir.&lt;/p>&lt;/blockquote>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
@@ -201,7 +360,7 @@
 &lt;p>Organization servisimize rest ile göndereceğimiz istek ile, createUnit() methodunu tetikletecek ve unit oluşturacağız, ancak bu servis product verisine validasyon sebebiyle için ihtiyaç duyacağı için bu veriyi senkron olarak, HTTP REST yardımıyla yapacağı &lt;code>getProduct()&lt;/code> isteği ile getirmesi gerekecektir.&lt;/p>
 &lt;p>runtime sırasında, createUnit methodunun işlenebilmesi için organization servisine ek olarak product servisininde ayakta ve erişilebilir olması, aradaki network bağlantısında bir sorun olmaması gerekiyor. Eğer product servisi çalışmıyorsa, organization serviside çalışmayacaktır. Her iki serviste ayakta ve erişilebilir olduğu durumlarda ise product servisi yavaş çalışıyorsa, senkron yapacağımız istek akışı bloklayacağı için, organization serviside yavaş çalışacaktır. Bu sorunu aşmak için organization servisinin yoğun istek aldığı durumlarda scale edilecektir. Ancak runtime bağımlılığı bulunan product servisininde organizationdan gelecek bol miktarda isteği karşılayabilmek için aynı şekilde scale etmemiz gerekecektir. Bu pratiği tüm servislere uyguladığımız senaryoda, tüm servislerin beraber scale edilmesi gerekecektir. Bu sebeple Organization servisi, Product servisine son derece bağımlı olup, yaşamlarına kendi başlarına değil, beraber devam etmek zorunda kalacaklardır. Eğer microservice mimarimizdeki tüm servislerimiz birbirlerine bu şekilde bağımlı olursa tek bir servisin erişilemez olması diğer tüm servislerin erişilemez olmasına yol açabilir.&lt;/p>
 &lt;p>design time sırasında ise product servisinin getProduct API’ında yapılacak olan bir geliştirme sonrası Organization servisinin geliştirici takımıda aynı değişikliği kendi Product HTTP Client entegrasyonlarında yapmaları gerekecektir. Bu değişiklik büyük olasılıkla organization servisinin iş akışlarındada kod değişikliğe yol açacaktır.&lt;/p>
-&lt;p>Sonuç olarak hem runtime’da hemde design time’da coupling ortaya çıkacağı için iki servis birbirine göbekten bağlı olacaktır, Jonathan Tower’ın tabiriyle &lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;t=1203s">distributed monolith&lt;/a> geliştirmiş olacağız. Bir servisimizde yapılacak olan değişiklik, diğer serviside direk olarak etkileyeceğinden ötürü, sürekli değişen iş gereksinimlerine hızlıca cevap veremeyeceğiz. Product servisinin getProduct() methodunda yapılan herhangi bir geliştirmeye istinaden, bu ucu kullanan diğer servislerinde aynı geliştirmeyi kendi servislerinde yapması gerekecektir. Geliştirmeyi bir şekilde tamamladıktan sonrada son kullanıcıların uygulamamızı kullanabilmesi için senkron olarak birbirlerine bağlı olan tüm servislerin erişilebilir olması gerekecektir.&lt;/p>
+&lt;p>Sonuç olarak hem runtime’da hemde design time’da coupling ortaya çıkacağı için iki servis birbirine göbekten bağlı olacaktır, Jonathan Tower’ın tabiriyle &lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;amp;t=1203s">distributed monolith&lt;/a> geliştirmiş olacağız. Bir servisimizde yapılacak olan değişiklik, diğer serviside direk olarak etkileyeceğinden ötürü, sürekli değişen iş gereksinimlerine hızlıca cevap veremeyeceğiz. Product servisinin getProduct() methodunda yapılan herhangi bir geliştirmeye istinaden, bu ucu kullanan diğer servislerinde aynı geliştirmeyi kendi servislerinde yapması gerekecektir. Geliştirmeyi bir şekilde tamamladıktan sonrada son kullanıcıların uygulamamızı kullanabilmesi için senkron olarak birbirlerine bağlı olan tüm servislerin erişilebilir olması gerekecektir.&lt;/p>
 &lt;img src="https://berkselvi.dev/img/do-you-need-other-services-data-in-microservice-architecture-event-driven-architecture/synchronous-communication.png" alt="Synchronous communication" loading="lazy" />
 &lt;p class="image-sub-title">Synchronous communication&lt;/p>
 &lt;p>Müşterimize bir SLA garantisi vermek istediğimiz senaryoda, iyimser olarak Product ve Organization servislerimiz için %99.5 uptime garantisi verecek olursak yıllık 43 saat downtime yaşanabileceğini kabul ediyoruz. product ve organization servislerinin runtime’da bağımlı olacağı senaryoda $0.995 * 0,995 = 0.990$ hesabıyla senkron iletişimle beraber çalışan servislerimiz ile yaşanan bağımlılık sonucunda, her bir servisimiz iki kat daha kötü uptime garanti ederek, yıllık 87 saat downtime yaşayabileceklerini görüyoruz.&lt;/p>
@@ -279,10 +438,10 @@
 &lt;p>Asenkron ve senkron veri iletişimiyle çalışırken yaşanbilecek durumları simule etmek için geliştirdiğim .NET projesine aşağıdaki github reposundan ulaşabilirsiniz. Örnekte outbox yapısı için MassTransit tarafından sağlanan altyapı kullanılarak bu özellik için özel bir geliştirme yapılmamıştır.&lt;/p>
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-fetch-other-service-data-with-event-driven-architecture">GitHub - berkslv/lecture-fetch-other-service-data-with-event-driven-architecture&lt;/a>&lt;/p>
 &lt;h2 id="resources">Resources&lt;/h2>
-&lt;p>&lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;t=1203s">Don’t Build a Distributed Monolith - Jonathan &amp;ldquo;J.&amp;rdquo; Tower - NDC London 2023&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=p2GlRToY5HI&amp;amp;t=1203s">Don’t Build a Distributed Monolith - Jonathan &amp;ldquo;J.&amp;rdquo; Tower - NDC London 2023&lt;/a>&lt;/p>
 &lt;p>&lt;a href="https://www.youtube.com/watch?v=STKCRSUsyP0">The Many Meanings of Event-Driven Architecture • Martin Fowler • GOTO 2017&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://www.youtube.com/watch?v=AEbJgpamZ4w&amp;t=898s">Solving distributed data problems in a microservice architecture | Microservices.io&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://www.youtube.com/watch?v=rZxIzrjvSGg&amp;t=716s">You Keep Using That Word • Sam Newman • GOTO 2023&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=AEbJgpamZ4w&amp;amp;t=898s">Solving distributed data problems in a microservice architecture | Microservices.io&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.youtube.com/watch?v=rZxIzrjvSGg&amp;amp;t=716s">You Keep Using That Word • Sam Newman • GOTO 2023&lt;/a>&lt;/p>
 &lt;p>&lt;a href="https://microservices.io/patterns/communication-style/idempotent-consumer.html">Microservices Pattern: Pattern: Idempotent Consumer&lt;/a>&lt;/p>
 &lt;p>&lt;a href="https://www.reactivemanifesto.org/en">The Reactive Manifesto&lt;/a>&lt;/p>
 &lt;hr>
@@ -296,8 +455,7 @@
 &lt;p>&lt;a href="https://github.com/berkslv/lecture-correlation-id-microservices">GitHub - berkslv/lecture-correlation-id-microservices&lt;/a>&lt;/p>
 &lt;p>Serivisimize gelen isteklerde aldığımız CorrelationId değerini, giden isteklerde göndermek için Scoped olarak tanımlayabileceğimiz Correlation sınıfımızdan yararlanabiliriz. Ancak bu şekilde Dependency Injection yöntemleri ile sınıflar arasında gezdirdiğimiz state değerimiz async olarak ilerleyen isteğimizde özel bir durumda erişilemez oluyor: DelegatingHandler sınıfı kullanarak HttpClient ile yapacağımız isteklerde araya girecek olan &lt;code>CorrelationHeaderHandler&lt;/code> sınıfımız uygulamamızdan ayrı bir DI scope içerisinde çalışacağı için Scoped olarak tanımlayabileceğimiz Correlation sınıfımızın değerine bu özel durumda erişemeyeceğiz. Bu konu microsoft&amp;rsquo;un kendi dökümantasyonundada şöyle aktarılıyor&lt;/p>
 &lt;blockquote>
-&lt;p>When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&amp;rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.&lt;/p>
-&lt;/blockquote>
+&lt;p>When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&amp;rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.&lt;/p>&lt;/blockquote>
 &lt;p>Bu soruna çözüm olarak &lt;code>AsyncStorage&lt;/code> isminde bir sınıf oluşturup Microsoft tarafından sağlanan &lt;code>AsyncLocal&lt;/code> sınıfını kullanarak CorrelationId değerini async olarak ilerleyen isteğimizde aynı thread içerisinde dilediğimiz zaman erişebileceğimiz bir yapı oluşturacağız:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-csharp" data-lang="csharp">&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">namespace&lt;/span> Order.API.Filters.Correlation;
