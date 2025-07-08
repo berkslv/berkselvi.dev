@@ -2,7 +2,7 @@ baseURL = 'https://berkselvi.dev'
 languageCode = 'en-us'
 defaultContentLanguage = 'en'
 theme = "terminal"
-paginate = 10
+pagination.pagerSize = 10
 googleAnalytics = 'G-W0L24EMSQ5'
 
 [markup.goldmark.renderer]
