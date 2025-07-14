@@ -1,6 +1,6 @@
 +++
 title = "Enforce Code Quality in .NET: .editorconfig & Analyzers & Pre-Commit Hooks"
-date = "2025-07-13T00:00:00+03:00"
+date = "2025-08-05T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["editorconfig","SonarAnalyzer","roslynator","pre-commit","TreatWarningsAsErrors"]
