@@ -1,5 +1,5 @@
 +++
-title = "Enforce Code Quality in .NET: .editorconfig & Analyzers & Pre-Commit Hooks"
+title = ".NET’te Kod Kalitesini Zorunlu kılın: .editorconfig & Analyzers & Pre-Commit Hooks"
 date = "2025-08-05T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
