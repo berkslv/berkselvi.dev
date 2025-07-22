@@ -16,7 +16,7 @@ To overcome such problems and to make code quality a requirement, rather than so
 
 First, we'll use the TreatWarningsAsErrors flag to prevent the project from being released to production with 1000+ warnings.
 
-Then, with .editorconfig files, rules that .NET provides by default, such as property naming conventions, will become not just a guideline, but an enforced rule across the team.
+Then, with .editorconfig files, the conventions that .NET provides by default (e.g., property naming conventions) will become not just a guideline, but a rule applied across the team.
 
 We'll further strengthen these rules using packages like SonarAnalyzer and Roslynator, allowing us to resolve issues before even running sonar scans, leading to more performant and secure code.
 
