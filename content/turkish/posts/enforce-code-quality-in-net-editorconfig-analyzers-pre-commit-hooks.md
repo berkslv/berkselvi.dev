@@ -1,6 +1,6 @@
 +++
 title = ".NET’te Kod Kalitesini Zorunlu kılın: .editorconfig & Analyzers & Pre-Commit Hooks"
-date = "2025-08-05T00:00:00+03:00"
+date = "2025-07-24T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv" #do not include @
 keywords = ["editorconfig","SonarAnalyzer","roslynator","pre-commit","TreatWarningsAsErrors"]
@@ -22,9 +22,9 @@ Bu kuralları SonarAnalyzer ve Roslynator gibi paketlerle geliştirip, sonar tar
 
 Son olarakta pre-commit hook ile, build olmayan projenin ve fail eden testlerin CI/CD pipelinelarında hataya sebep olmadan önce, daha commit atmadan bu testleri görüp, düzelteceğiz. Haydi başlayalım.
 
-## TreatWarningsAsErrors ile sorunsuz proje
+## TreatWarningsAsErrors ile warning içermeyen proje
 
-.NET ile proje geliştirirken en çok warning “Possible null reference” ile ortaya çıkar. Bu warningle sınırlı olmadan projemizde birçok farklı warning ortaya çıkabilir ve bunlara saygı duymazsak runtime’da her yerde NullReferenceException almamız kadar doğal birşey olamaz.
+.NET ile proje geliştirirken en çok warning “Possible null reference” ile ortaya çıkıyor. Bu warningle sınırlı olmadan projemizde birçok farklı warning ortaya çıkabilir ve bunlara saygı duymazsak runtime’da her yerde NullReferenceException almamız kadar doğal birşey olamaz.
 
 Bu tip hatalar daha ortaya çıkmadan çözmek için Warning’lere Error olarak muamele edip, projenin build olmasını engelleyebiliriz. Bunun içinde .csproj dosyasına aşağıdaki flag’i eklememiz yeterlidir.
 
@@ -39,7 +39,7 @@ Bu tip hatalar daha ortaya çıkmadan çözmek için Warning’lere Error olarak
 
 Ancak bu flag ile .NET platformu tarafından verilen tüm Warning’ler Error olarak görüleceği için örneğin Nuget paketleri tarafından verilen ve bizim tarafımızca çözülemeyecek warningler başımızı çokça ağrıtabilir. Bu tür sorunların üstesinden gelmek içinde WarningsNotAsErrors flag’ini kullanabiliyoruz. Ancak bunu sadece çözülemez hatalar için yapmak önemli.
 
-## .editorconfig ile projenizin kurallarını belirleyin
+## .editorconfig ile projenin kurallarını belirleyelim
 
 EditorConfig, aynı proje üzerinde çalışan birden fazla geliştiricinin farklı IDE'ler aracılığıyla tutarlı kodlama stilleri korumasına yardımcı olur. .NET projelerine özel bir pratik değildir, dil bağımsızdır ve ortak kuralları olduğu gibi dil özelinde kurallarıda mevcuttur. 
 
