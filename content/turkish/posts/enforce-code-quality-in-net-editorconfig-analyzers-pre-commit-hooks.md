@@ -158,7 +158,7 @@ if (isActive)
     DoSomething();
 ```
 
-Ayrıca GitHub bol yıldızlı repolarında [dotnet / roslyn](https://github.com/dotnet/roslyn/blob/main/.editorconfig) ve [christianhelle / refitter](https://github.com/christianhelle/refitter/blob/main/.editorconfig) gibi .editorconfig referansları bulabilirsiniz.
+Ayrıca GitHub'ın bol yıldızlı repolarında [dotnet / roslyn](https://github.com/dotnet/roslyn/blob/main/.editorconfig) ve [christianhelle / refitter](https://github.com/christianhelle/refitter/blob/main/.editorconfig) gibi .editorconfig referansları bulabilirsiniz.
 
 ## pre-commit hook ile sorunları lokalde yakalayalım
 
