@@ -158,6 +158,8 @@ if (isActive)
     DoSomething();
 ```
 
+Ayrıca GitHub bol yıldızlı repolarında [dotnet / roslyn](https://github.com/dotnet/roslyn/blob/main/.editorconfig) ve [christianhelle / refitter](https://github.com/christianhelle/refitter/blob/main/.editorconfig) gibi .editorconfig referansları bulabilirsiniz.
+
 ## pre-commit hook ile sorunları lokalde yakalayalım
 
 Pre-commit hook’lar, Git’in her commit’ten önce çalıştırdığı scriptlerdir. Kod formatlama, linting veya testlerin çalıştırılması gibi kontroller için oldukça uygundur, sorunlu kodların commitlenmesini engellerler. Testlerde hata alan bir kodu commitlemeyi engellemek kısa vadede sinir bozucu olsa da uzun vadede testleri canlı tutmak adına çok önemli. Eğer CI/CD pipeline’ınızda test adımı varsa o adıma gelmeden önce lokalde sorunları görmemizi sağlar.

@@ -158,6 +158,8 @@ if (isActive)
     DoSomething();
 ```
 
+You can also find references to .editorconfig in GitHub starred repos like [dotnet/roslyn](https://github.com/dotnet/roslyn/blob/main/.editorconfig) and [christianhelle/refitter](https://github.com/christianhelle/refitter/blob/main/.editorconfig).
+
 ## Catch Issues Locally with pre-commit Hooks
 
 Pre-commit hooks are scripts that Git runs before every commit. They’re great for checks like code formatting, linting, or running tests, and they prevent problematic code from being committed. Blocking commits that fail tests can be annoying in the short term, but it’s crucial for keeping your tests reliable in the long run. If you have a test step in your CI/CD pipeline, this lets you see and fix issues locally before they ever reach that step.
