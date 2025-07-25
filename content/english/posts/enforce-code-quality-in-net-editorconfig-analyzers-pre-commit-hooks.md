@@ -158,7 +158,7 @@ if (isActive)
     DoSomething();
 ```
 
-You can also find references to .editorconfig in GitHub starred repos like [dotnet/roslyn](https://github.com/dotnet/roslyn/blob/main/.editorconfig) and [christianhelle/refitter](https://github.com/christianhelle/refitter/blob/main/.editorconfig).
+You can also find references to .editorconfig in GitHub's well-starred repos, such as [dotnet/roslyn](https://github.com/dotnet/roslyn/blob/main/.editorconfig) and [christianhelle/refitter](https://github.com/christianhelle/refitter/blob/main/.editorconfig).
 
 ## Catch Issues Locally with pre-commit Hooks
 
