@@ -1,0 +1,530 @@
+<!doctype html><html lang=tr><head><title>.NET Mikroservislerinde gRPC: REST ile Karşılaştırma :: Berk Selvi | Software Developer</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content=".NET servislerinizde yüksek performanslı senkron iletişimi gRPC ile sağlayarak sağladığı Protocol Buffers ve HTTP/2 streaming gibi özellikleri kullanarak  REST'e kıyasla performans avantajı yakalayalım."><meta name=keywords content="grpc,REST,mikroservis,.NET"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/tr/posts/grpc-in-net-microservices-comparison-with-rest/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/tr/posts/grpc-in-net-microservices-comparison-with-rest/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="tr"><meta property="og:type" content="article"><meta property="og:title" content=".NET Mikroservislerinde gRPC: REST ile Karşılaştırma"><meta property="og:description" content=".NET servislerinizde yüksek performanslı senkron iletişimi gRPC ile sağlayarak sağladığı Protocol Buffers ve HTTP/2 streaming gibi özellikleri kullanarak  REST'e kıyasla performans avantajı yakalayalım."><meta property="og:url" content="https://berkselvi.dev/tr/posts/grpc-in-net-microservices-comparison-with-rest/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/img/grpc-in-net-mikroservislerinde-comparison-with-rest/cover.jpg"><meta property="twitter:image" content="https://berkselvi.dev/img/grpc-in-net-mikroservislerinde-comparison-with-rest/cover.jpg"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2025-10-08 00:00:00 +0300 +0300"><script async src="https://www.googletagmanager.com/gtag/js?id=G-W0L24EMSQ5"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-W0L24EMSQ5")</script><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><div class=header__inner><div class=menu-trigger><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></div></div><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/tr>ana sayfa</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>türkçe ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/tr>ana sayfa</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h4>Translations;</h4><a href=/posts/grpc-in-net-microservices-comparison-with-rest/>gRPC in .NET Microservices: Comparison with REST</a><h1 class=post-title><a href=https://berkselvi.dev/tr/posts/grpc-in-net-microservices-comparison-with-rest/>.NET Mikroservislerinde gRPC: REST ile Karşılaştırma</a></h1><div class=post-meta><span class=post-date>8 Ekim 2025
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 14 min read (2836 words)</span></div><div class=post-content><div><p>.NET mikroservislerinin birbirleriyle senkron iletişim kurması gerektiğinde, genellikle iki ana seçenek önümüze çıkar: REST API ve gRPC API.</p><p>REST, HTTP/1.1 protokolü üzerinde JSON ile çalışır; kolay okunur, tüm tarayıcılarda desteklenir ve debug işlemi basittir. Ancak REST API’lerde veri paketleri gRPC’ye kıyasla daha büyüktür ve her istek kendi TCP bağlantısını açar. gRPC ise veri iletimini Protocol Buffers ile sıkıştırır ve tüm trafiği tek bir HTTP/2 bağlantısı üzerinden aktararak gecikmeyi minimuma indirir. Bu yazımda hem REST hem gRPC teknolojilerinin çalışma mantığını, .NET 9 üzerinde örneklerle karşılaştırmasını ve hangi senaryolarda hangi çözümün daha avantajlı olduğunu inceleyeceğiz. Haydi başlayalım.</p><h2 id=nedir-bu-rpc>Nedir bu RPC?<a href=#nedir-bu-rpc class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Uzun süredir .NET ekosisteminde uygulama geliştiriyorsanız RPC kavramıyla büyük ihtimal ilk kez karşılaşmıyorsunuz. SOAP tabanlı, IIS üzerinden WCF servisleri kullanarak servisler arası iletişim .NET Framework zamanlarındada yapılıyordu, ancak bu framework ile XML tipinkedi mesajlarla boğuşup, .NET ekosisteminde sıkışıp kalabiliyorduk.</p><p>Bunun yerine HTTP/2 üzerinden çok daha performanslı, cross-platform ve cross-language çalışabilen gRPC, yeni projelerde seçebileceğimiz en mantıklı RPC framework’ü haline geliyor.</p><h2 id=rest-ile-grpc-arasındaki-farklar>REST ile gRPC arasındaki farklar<a href=#rest-ile-grpc-arasındaki-farklar class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Mikroservis mimarisinde, servisler arası iletişim için kullanabileceğimiz tek seçenek RPC değildir. REST API yaklaşımı da, servislerin birbirleriyle kolayca ve yaygın şekilde iletişim kurmasını sağlar. Ancak, REST ve gRPC arasında hem mimari tasarım hem de teknik uygulama açısından önemli farklar bulunmaktadır. Bu farklılıkları tasarım felsefesi ve teknik farklar altında inceleyelim.</p><h3 id=1-tasarım-felsefesi>1. Tasarım Felsefesi<a href=#1-tasarım-felsefesi class=hanchor arialabel=Anchor>&#8983;</a></h3><p><strong>REST</strong> ve <strong>gRPC</strong>, API tasarımında farklı bakış açılarına sahiptir. REST’te temel yaklaşım, her şeyi bir “kaynak” (resource) olarak görmek ve bu kaynaklar üzerinde işlem yapmaktır. HTTP metodları (GET, POST, PUT, DELETE) yapılan işlemi temsil eder, URL ise üzerinde çalışılan kaynağı belirtir. Örneğin <code>/api/books</code> adresi bir kitaplar kaynağıdır, bu şekilde bir endpointe sahipseniz onun üzerinde yapabileceğiniz işlemleri az çok tahmin edebilirsiniz;</p><ul><li><code>GET /api/books</code> isteği kitap listesini döndürür,</li><li><code>POST /api/books</code> ile yeni bir kitap eklersiniz,</li></ul><p>gRPC’de ise bakış açısı daha çok “eylem” (action) veya “metot” (method) odaklıdır. Yani her bir işlem, bir fonksiyon çağrısı gibi tanımlanır. gRPC’de doğrudan hangi işlemi yapmak istediğinizi belirtirsiniz ve URL tasarımına veya HTTP metodlarına bağlı kalmazsınız.</p><p>Örneğin,</p><ul><li><code>BookService.GetBooks()</code> ile kitapları listelersiniz,</li><li><code>BookService.CreateBook()</code> ile yeni bir kitap eklersiniz.</li></ul><p>REST’te de işlemsel endpoint’ler tanımlamak teknik olarak mümkün olsa da, bu genellikle best practice’lere ve standart REST felsefesine uygun değildir.</p><h3 id=2-teknik-farklılıklar>2. Teknik Farklılıklar<a href=#2-teknik-farklılıklar class=hanchor arialabel=Anchor>&#8983;</a></h3><p>REST ve gRPC arasında, iletişimden veri formatına, bağlantı yönetiminden hata kontrolüne kadar birçok teknik fark bulunur. Aşağıda en önemli başlıklar ve farklar özetlenmiştir:</p><h3 id=transport-layer><strong>Transport Layer</strong><a href=#transport-layer class=hanchor arialabel=Anchor>&#8983;</a></h3><p><strong>REST</strong> HTTP/1.1 kullanır. Her bir REST API isteği için ayrı bir TCP/TLS bağlantısı kurulur. Bu, özellikle yüksek istek hacminde <strong>head-of-line blocking</strong> (bir isteğin yavaşlaması diğerlerini de etkiler) gibi performans darboğazlarına neden olabilir. Ayrıca, REST’te çift yönlü sürekli iletişim (örneğin canlı veri akışı veya anlık bildirimler) gerektiren durumlarda WebSocket veya Server-Sent Events gibi ek protokoller kullanmak gerekir. Yani REST, temelinde request-response modeline dayanır ve streaming (akış) desteği doğal değildir.</p><p><strong>gRPC</strong> ise modern iletişim protokolü olan HTTP/2 ile çalışır. HTTP/2’nin <strong>multiplexing</strong> özelliği sayesinde tek bir TCP bağlantısı üzerinden eşzamanlı birçok istek ve yanıt taşınabilir. Bu, yüksek performans ve düşük gecikme (latency) sağlar. gRPC, HTTP/2’nin sunduğu native stream ve header compression gibi özelliklerle, gerçek zamanlı ve çift yönlü iletişimi çok daha kolay ve verimli şekilde gerçekleştirir.</p><p>gRPC, hizmetlerin arayüzlerini ve mesaj yapısını genellikle <strong>Protocol Buffers</strong> (Protobuf) ile tanımlar. Servis tanımı, uzaktan çağrılabilecek metodları ve mesaj şemalarını açıkça belirtir.</p><p>Aşağıda bir örnek görebilirsin</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>service</span> HelloService {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>rpc</span> SayHello (HelloRequest) <span style=color:#66d9ef>returns</span> (HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>HelloRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> greeting <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>HelloResponse</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> reply <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p>gRPC ile 4 farklı iletişim (RPC) yöntemi mümkündür:</p><p><strong>Unary</strong></p><p>En klasik yöntemdir: istemci bir istek gönderir, sunucu bir yanıt döner. REST’teki request-response modeline benzer. Aşağıdaki şekilde tanımlanabilir.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> SayHello(HelloRequest) <span style=color:#66d9ef>returns</span> (HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p><strong>Server Streaming</strong></p><p>İstemci tek bir istek gönderir, sunucu ise birden fazla yanıt mesajı akışı (stream) dönebilir. İstemci, sunucudan gelen veri akışını tek tek okur.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> LotsOfReplies(HelloRequest) <span style=color:#66d9ef>returns</span> (stream HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p><strong>Client Streaming</strong></p><p>İstemci, sunucuya birden fazla mesaj gönderir (stream). Tüm mesajları gönderdikten sonra sunucudan tek bir yanıt alır. Büyük veri yükleme işlemleri, toplu güncellemeler gibi alanlarda kullanılabilir.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> LotsOfGreetings(stream HelloRequest) <span style=color:#66d9ef>returns</span> (HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p><strong>Bidirectional Streaming RPC</strong></p><p>Hem istemci hem sunucu, aynı anda birbirlerine bağımsız şekilde veri akışı gönderebilirler. Akışlar birbirinden bağımsız çalışır; sıralama her bir akış için korunur. Gerçek zamanlı sohbet uygulamaları, canlı veri transferlerinde tercih edilebilir.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> BidiHello(stream HelloRequest) <span style=color:#66d9ef>returns</span> (stream HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><h3 id=veri><strong>Veri</strong><a href=#veri class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>REST:</strong> Mesajlar genellikle insan tarafından okunabilir <strong>JSON</strong> formatında taşınır. JSON, okunabilir ve esnek ama büyük veri boyutuna ve yüksek ayrıştırma maliyetine sahiptir. Ayrıca kesin bir şema zorunlu değildir. Genellikle OpenAPI/Swagger ile dokümantasyon eklenir, ancak uygulama sırasında tip uyuşmazlıkları yaşanabilir.</li><li><strong>gRPC:</strong> <strong>Protocol Buffers (Protobuf)</strong> adı verilen ikili (binary) ve sıkıştırılmış bir format kullanır. Protobuf mesajları küçük ve hızlıdır, ağ ve CPU maliyeti düşüktür. Tüm veri tipleri ve metodlar <code>.proto</code> dosyasında tanımlanır. Sunucu ve istemci kodları otomatik olarak üretilir, tip güvenliği yüksektir.</li></ul><h3 id=performans-ve-verimlilik><strong>Performans ve Verimlilik</strong><a href=#performans-ve-verimlilik class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>REST:</strong> JSON’un büyük boyutu ve HTTP/1.1’in sınırlamaları nedeniyle yüksek trafik altında gecikme ve kaynak tüketimi artar.</li><li><strong>gRPC:</strong> Küçük paket boyutu ve HTTP/2 ile tek bağlantı üzerinden çoklu istek sayesinde daha düşük gecikme, daha fazla RPS (istek/saniye) ve daha verimli ağ kullanımı sağlar.</li></ul><h3 id=tarayıcı-ve-platform-uyumluluğu><strong>Tarayıcı ve Platform Uyumluluğu</strong><a href=#tarayıcı-ve-platform-uyumluluğu class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>REST:</strong> Doğrudan tarayıcıdan çağrılabilir, fetch/AJAX ile kolayca entegre edilir.</li><li><strong>gRPC:</strong> Tarayıcıdan doğrudan kullanılamaz; gRPC-Web veya JSON Transcoding gibi ek katmanlara ihtiyaç duyacağı için tarayıcı içeren senaryolarda tercih edilmezler.</li></ul><h2 id=hangi-senaryolarda-rest-veya-grpc-seçilmeli>Hangi Senaryolarda REST veya gRPC Seçilmeli?<a href=#hangi-senaryolarda-rest-veya-grpc-seçilmeli class=hanchor arialabel=Anchor>&#8983;</a></h2><p>REST ve gRPC arasında seçim yaparken sadece teknik detaylara bakmak yeterli olmayabilir; iş ihtiyaçları, hedef kullanıcı kitlesi ve entegrasyon gereksinimleri de en az performans kadar önemlidir. İşte bazı tipik senaryolar ve öneriler:</p><h3 id=ne-zaman-rest-kullanılmalı>Ne Zaman REST Kullanılmalı?<a href=#ne-zaman-rest-kullanılmalı class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>Tarayıcı veya üçüncü parti entegrasyonu</strong>: Eğer API’nız doğrudan web tarayıcıları veya harici uygulamalar tarafından tüketilecekse REST her zaman daha yaygın ve erişilebilir bir çözüm sunar.</li><li><strong>public API’ler</strong>: JSON’un okunabilirliği ve HTTP/1.1’in yaygın desteği sayesinde REST tabanlı API’ler, geliştiriciler tarafından kolayca test edilebilir ve dökümante edilebilir.</li><li><strong>Basit CRUD işlemleri</strong>: Kaynak odaklı (ör. ürünler, siparişler) ve klasik GET/POST/PUT/DELETE işlemleri için REST yalın ve anlaşılırdır.</li><li><strong>Cache/Proxy ihtiyaçları</strong>: CDN veya reverse proxy üzerinden önbellekleme ve yönlendirme yapmak gerekiyorsa, HTTP standardı ile tam uyumlu olduğu için REST daha avantajlıdır.</li></ul><h3 id=ne-zaman-grpc-kullanılmalı>Ne Zaman gRPC Kullanılmalı?<a href=#ne-zaman-grpc-kullanılmalı class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>Mikroservisler arası iletişim</strong>: Aynı altyapı içinde, yüksek hacimli ve düşük gecikmeli servis-servis trafiği için gRPC ciddi avantaj sağlar.</li><li><strong>Mobil ve IoT cihazları</strong>: Küçük paket boyutu ve ikili format sayesinde veri tüketimi azalır.</li><li><strong>Gerçek zamanlı akış gereksinimi</strong>: Sunucudan istemciye ya da çift yönlü veri akışının gerektiği chat, canlı skor, bildirim gibi uygulamalarda gRPC doğal akış desteği sunar.</li><li><strong>Dil bağımsızlığı</strong>: Birden çok farklı programlama dili arasında tip güvenli bir iletişim kurmak istiyorsanız, Protobuf sayesinde uyumluluk kolayca sağlanır.</li><li><strong>Daha güçlü tip güvenliği</strong>: Derlenmiş sözleşmeler ve otomatik kod üretimi sayesinde API tüketiminde hata oranı düşer.</li></ul><h2 id=net-ile-kapsamlı-uygulama-örneği-books-servisi>.NET ile Kapsamlı Uygulama Örneği: Books Servisi<a href=#net-ile-kapsamlı-uygulama-örneği-books-servisi class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Hem REST hem de gRPC ile kitap yönetim servisi oluşturalım. Bu örnekte, gRPC&rsquo;nin sunduğu farklı streaming modlarını da göreceğiz.</p><h3 id=proje-kurulumu>Proje Kurulumu<a href=#proje-kurulumu class=hanchor arialabel=Anchor>&#8983;</a></h3><p>İlk olarak gerekli paketleri ekleyelim:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>dotnet new web -n BookService
+</span></span><span style=display:flex><span>cd BookService
+</span></span><span style=display:flex><span>dotnet add package Grpc.AspNetCore
+</span></span><span style=display:flex><span>dotnet add package Grpc.AspNetCore.Server.Reflection
+</span></span><span style=display:flex><span>dotnet add package Grpc.Tools
+</span></span></code></pre></div><h3 id=rest-api-implementasyonu>REST API İmplementasyonu<a href=#rest-api-implementasyonu class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Models/Book.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Models;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Book</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>int</span> Id { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Title { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; } = <span style=color:#66d9ef>string</span>.Empty;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Author { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; } = <span style=color:#66d9ef>string</span>.Empty;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>int</span> Year { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>decimal</span> Price { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Controllers/BooksController.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.AspNetCore.Mvc;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Models;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Controllers;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;api/books&#34;)]</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>BooksController</span> : ControllerBase
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>readonly</span> List&lt;Book&gt; Books = Book.GenerateBooks();
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult GetBooks()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(Books);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;{id}&#34;)]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult GetBook(<span style=color:#66d9ef>int</span> id)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> book = Books.FirstOrDefault(b =&gt; b.Id == id);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (book == <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> NotFound();
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(book);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpPost]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult CreateBook([FromBody] Book book)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        book.Id = Books.Max(b =&gt; b.Id) + <span style=color:#ae81ff>1</span>;
+</span></span><span style=display:flex><span>        Books.Add(book);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> CreatedAtAction(nameof(GetBook), <span style=color:#66d9ef>new</span> { id = book.Id }, book);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=grpc-servisi---protobuf-tanımları>gRPC Servisi - Protobuf Tanımları<a href=#grpc-servisi---protobuf-tanımları class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#75715e>// Protos/books.proto
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>syntax <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;proto3&#34;</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>option</span> csharp_namespace <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;BookService.Grpc&#34;</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#f92672>package</span> books;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e>// Ana servis tanımı
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>service</span> BookService {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Unary RPC - Tüm kitapları getir
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> GetBooks (GetBooksRequest) <span style=color:#66d9ef>returns</span> (BookList);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Server Streaming - Kitapları tek tek stream et
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> StreamBooks (StreamBooksRequest) <span style=color:#66d9ef>returns</span> (stream Book);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Client Streaming - Toplu kitap ekleme
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> AddBooksStream (stream Book) <span style=color:#66d9ef>returns</span> (AddBooksResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Bidirectional Streaming - Gerçek zamanlı kitap arama
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> SearchBooksStream (stream SearchRequest) <span style=color:#66d9ef>returns</span> (stream Book);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>Book</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> title <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> author <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> year <span style=color:#f92672>=</span> <span style=color:#ae81ff>4</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>double</span> price <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>GetBooksRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Boş istek mesajı
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>BookList</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>repeated</span> Book books <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>StreamBooksRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> delay_ms <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>; <span style=color:#75715e>// Her kitap arasında gecikme (ms)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>AddBooksResponse</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> count <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> <span style=color:#66d9ef>message</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>SearchRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> query <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><h3 id=grpc-servisi---implementasyon>gRPC Servisi - İmplementasyon<a href=#grpc-servisi---implementasyon class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Services/GrpcBookService.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Grpc.Core;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Grpc;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Services;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>GrpcBookService</span> : Grpc.BookService.BookServiceBase
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>readonly</span> List&lt;BookService.Grpc.Book&gt; Books = BookService.Models.Book.GenerateBooks()
+</span></span><span style=display:flex><span>        .Select(b =&gt; <span style=color:#66d9ef>new</span> BookService.Grpc.Book { Id = b.Id, Title = b.Title, Author = b.Author, Year = b.Year, Price = (<span style=color:#66d9ef>double</span>)b.Price })
+</span></span><span style=display:flex><span>        .ToList();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Unary RPC - Klasik request-response</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> Task&lt;BookList&gt; GetBooks(GetBooksRequest request, ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>new</span> BookList();
+</span></span><span style=display:flex><span>        response.Books.AddRange(Books);
+</span></span><span style=display:flex><span>        
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Task.FromResult(response);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Server Streaming - Sunucu kitapları tek tek stream eder</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task StreamBooks(StreamBooksRequest request, 
+</span></span><span style=display:flex><span>        IServerStreamWriter&lt;BookService.Grpc.Book&gt; responseStream, 
+</span></span><span style=display:flex><span>        ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> Books)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// İptal kontrolü</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (context.CancellationToken.IsCancellationRequested)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> responseStream.WriteAsync(book);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// Belirtilen süre kadar bekle (streaming&#39;i göstermek için)</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (request.DelayMs &gt; <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>await</span> Task.Delay(request.DelayMs);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Client Streaming - İstemci birden fazla kitap gönderir</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task&lt;AddBooksResponse&gt; AddBooksStream(
+</span></span><span style=display:flex><span>        IAsyncStreamReader&lt;BookService.Grpc.Book&gt; requestStream, 
+</span></span><span style=display:flex><span>        ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> count = <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> maxId = Books.Any() ? Books.Max(b =&gt; b.Id) : <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> requestStream.ReadAllAsync())
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            book.Id = ++maxId;
+</span></span><span style=display:flex><span>            Books.Add(book);
+</span></span><span style=display:flex><span>            count++;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> AddBooksResponse
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Count = count,
+</span></span><span style=display:flex><span>            Message = <span style=color:#e6db74>$&#34;Successfully added {count} books&#34;</span>
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Bidirectional Streaming - İki yönlü gerçek zamanlı arama</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task SearchBooksStream(
+</span></span><span style=display:flex><span>        IAsyncStreamReader&lt;SearchRequest&gt; requestStream,
+</span></span><span style=display:flex><span>        IServerStreamWriter&lt;BookService.Grpc.Book&gt; responseStream,
+</span></span><span style=display:flex><span>        ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> searchRequest <span style=color:#66d9ef>in</span> requestStream.ReadAllAsync())
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> results = Books.Where(b =&gt; 
+</span></span><span style=display:flex><span>                b.Title.Contains(searchRequest.Query, StringComparison.OrdinalIgnoreCase) ||
+</span></span><span style=display:flex><span>                b.Author.Contains(searchRequest.Query, StringComparison.OrdinalIgnoreCase)
+</span></span><span style=display:flex><span>            ).ToList();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> results)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>await</span> responseStream.WriteAsync(book);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=programcs-konfigürasyonu>Program.cs Konfigürasyonu<a href=#programcs-konfigürasyonu class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Program.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Services;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// REST API servisleri</span>
+</span></span><span style=display:flex><span>builder.Services.AddControllers();
+</span></span><span style=display:flex><span>builder.Services.AddEndpointsApiExplorer();
+</span></span><span style=display:flex><span>builder.Services.AddSwaggerGen();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// gRPC servisleri</span>
+</span></span><span style=display:flex><span>builder.Services.AddGrpc();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Swagger (REST için)</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (app.Environment.IsDevelopment())
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    app.UseSwagger();
+</span></span><span style=display:flex><span>    app.UseSwaggerUI();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// gRPC reflection (development için)</span>
+</span></span><span style=display:flex><span>    app.MapGrpcReflectionService();
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// REST endpoints</span>
+</span></span><span style=display:flex><span>app.MapControllers();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// gRPC endpoints</span>
+</span></span><span style=display:flex><span>app.MapGrpcService&lt;GrpcBookService&gt;();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><h3 id=csproj-dosyası>.csproj Dosyası<a href=#csproj-dosyası class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#f92672>&lt;Project</span> <span style=color:#a6e22e>Sdk=</span><span style=color:#e6db74>&#34;Microsoft.NET.Sdk.Web&#34;</span><span style=color:#f92672>&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;PropertyGroup&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;TargetFramework&gt;</span>net9.0<span style=color:#f92672>&lt;/TargetFramework&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;Nullable&gt;</span>enable<span style=color:#f92672>&lt;/Nullable&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;ImplicitUsings&gt;</span>enable<span style=color:#f92672>&lt;/ImplicitUsings&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/PropertyGroup&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Grpc.AspNetCore&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;2.60.0&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Grpc.AspNetCore.Server.Reflection&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;2.60.0&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Grpc.Tools&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;2.60.0&#34;</span><span style=color:#f92672>&gt;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&lt;PrivateAssets&gt;</span>all<span style=color:#f92672>&lt;/PrivateAssets&gt;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&lt;IncludeAssets&gt;</span>runtime; build; native; contentfiles; analyzers; buildtransitive<span style=color:#f92672>&lt;/IncludeAssets&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/PackageReference&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Swashbuckle.AspNetCore&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;6.5.0&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;Protobuf</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Protos\\books.proto&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/Project&gt;</span>
+</span></span></code></pre></div><p>Ayrıca lokalden çalışan uygulamanız https ile çalışmayacaksa HTTP/1 protundan ayrı HTTP/2 için ayrı bir port açmamız gerekiyor. Bunun için appsettings.json dosyasında aşağıdaki tanım eklenerek ilgili portlar açılır.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>  <span style=color:#e6db74>&#34;Kestrel&#34;</span><span style=color:#960050;background-color:#1e0010>:</span> {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Endpoints&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;Http&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Protocols&#34;</span>: <span style=color:#e6db74>&#34;Http1&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Url&#34;</span>: <span style=color:#e6db74>&#34;http://*:5000&#34;</span>
+</span></span><span style=display:flex><span>      },
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;gRPC&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Protocols&#34;</span>: <span style=color:#e6db74>&#34;Http2&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Url&#34;</span>: <span style=color:#e6db74>&#34;http://*:5001&#34;</span>
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }<span style=color:#960050;background-color:#1e0010>,</span>
+</span></span></code></pre></div><h2 id=grpc-client-örnekleri>gRPC Client Örnekleri<a href=#grpc-client-örnekleri class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Şimdi farklı streaming modlarını kullanan client örnekleri görelim:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Client/GrpcClientExamples.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Grpc.Net.Client;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Grpc;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Client;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>GrpcClientExamples</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> GrpcChannel _channel;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> Grpc.BookService.BookServiceClient _client;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> GrpcClientExamples(<span style=color:#66d9ef>string</span> serverAddress = <span style=color:#e6db74>&#34;http://localhost:5001&#34;</span>)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _channel = GrpcChannel .ForAddress(serverAddress, <span style=color:#66d9ef>new</span> GrpcChannelOptions
+</span></span><span style=display:flex><span>				 {
+</span></span><span style=display:flex><span>						 <span style=color:#75715e>// HTTPS tanımı disable ediliyor. Production ortamda dikkatlı kullanınız</span>
+</span></span><span style=display:flex><span>				     HttpHandler = <span style=color:#66d9ef>new</span> HttpClientHandler
+</span></span><span style=display:flex><span>				     {
+</span></span><span style=display:flex><span>				         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+</span></span><span style=display:flex><span>				     }
+</span></span><span style=display:flex><span>				 });
+</span></span><span style=display:flex><span>        _client = <span style=color:#66d9ef>new</span> Grpc.BookService.BookServiceClient(_channel);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Unary RPC Örneği</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task UnaryCallExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;=== Unary Call Example ===&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> request = <span style=color:#66d9ef>new</span> GetBooksRequest();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> _client.GetBooksAsync(request);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>$&#34;Received {response.Books.Count} books:&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> response.Books)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;- {book.Title} by {book.Author} ({book.Year})&#34;</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Server Streaming Örneği</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task ServerStreamingExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;\\n=== Server Streaming Example ===&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> request = <span style=color:#66d9ef>new</span> StreamBooksRequest { DelayMs = <span style=color:#ae81ff>500</span> };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>using</span> var call = _client.StreamBooks(request);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> call.ResponseStream.ReadAllAsync())
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;Received: {book.Title} - ${book.Price}&#34;</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;Streaming completed&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Client Streaming Örneği</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task ClientStreamingExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;\\n=== Client Streaming Example ===&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>using</span> var call = _client.AddBooksStream();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> booksToAdd = <span style=color:#66d9ef>new</span>[]
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> Book { Title = <span style=color:#e6db74>&#34;Design Patterns&#34;</span>, Author = <span style=color:#e6db74>&#34;Gang of Four&#34;</span>, Year = <span style=color:#ae81ff>1994</span>, Price = <span style=color:#ae81ff>59.99</span> },
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> Book { Title = <span style=color:#e6db74>&#34;Head First Design Patterns&#34;</span>, Author = <span style=color:#e6db74>&#34;Eric Freeman&#34;</span>, Year = <span style=color:#ae81ff>2004</span>, Price = <span style=color:#ae81ff>44.99</span> },
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> Book { Title = <span style=color:#e6db74>&#34;Microservices Patterns&#34;</span>, Author = <span style=color:#e6db74>&#34;Chris Richardson&#34;</span>, Year = <span style=color:#ae81ff>2018</span>, Price = <span style=color:#ae81ff>49.99</span> }
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> booksToAdd)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> call.RequestStream.WriteAsync(book);
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;Sent: {book.Title}&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> Task.Delay(<span style=color:#ae81ff>300</span>); <span style=color:#75715e>// Simüle edilmiş gecikme</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> call.RequestStream.CompleteAsync();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> call;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>$&#34;Result: {response.Message}&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Bidirectional Streaming Örneği</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task BidirectionalStreamingExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;\\n=== Bidirectional Streaming Example ===&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>using</span> var call = _client.SearchBooksStream();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Background&#39;da sonuçları oku</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> readTask = Task.Run(<span style=color:#66d9ef>async</span> () =&gt;
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> call.ResponseStream.ReadAllAsync())
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                Console.WriteLine(<span style=color:#e6db74>$&#34;Found: {book.Title} by {book.Author}&#34;</span>);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Arama sorgularını gönder</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> queries = <span style=color:#66d9ef>new</span>[] { <span style=color:#e6db74>&#34;Clean&#34;</span>, <span style=color:#e6db74>&#34;Design&#34;</span>, <span style=color:#e6db74>&#34;Refactoring&#34;</span>, <span style=color:#e6db74>&#34;Domain&#34;</span> };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> query <span style=color:#66d9ef>in</span> queries)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;Searching for: {query}&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> call.RequestStream.WriteAsync(<span style=color:#66d9ef>new</span> SearchRequest { Query = query });
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> Task.Delay(<span style=color:#ae81ff>1000</span>); <span style=color:#75715e>// Her aramadan sonra bekle</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> call.RequestStream.CompleteAsync();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> readTask;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;Bidirectional streaming completed&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> ValueTask DisposeAsync()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> _channel.ShutdownAsync();
+</span></span><span style=display:flex><span>        _channel.Dispose();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Kullanım örneği</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Program</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>async</span> Task Main(<span style=color:#66d9ef>string</span>[] args)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>using</span> var client = <span style=color:#66d9ef>new</span> GrpcClientExamples();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.UnaryCallExample();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.ServerStreamingExample();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.ClientStreamingExample();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.BidirectionalStreamingExample();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=grpcurl-ile-test-etme>grpcurl ile Test Etme<a href=#grpcurl-ile-test-etme class=hanchor arialabel=Anchor>&#8983;</a></h2><p>grpcurl, gRPC servisleri için curl benzeri bir komut satırı aracıdır. Servisimizi test edelim:</p><h3 id=grpcurl-kurulumu>grpcurl Kurulumu<a href=#grpcurl-kurulumu class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># macOS (Homebrew)</span>
+</span></span><span style=display:flex><span>brew install grpcurl
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Linux</span>
+</span></span><span style=display:flex><span>go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Windows (Chocolatey)</span>
+</span></span><span style=display:flex><span>choco install grpcurl
+</span></span></code></pre></div><h3 id=grpcurl-kullanım-örnekleri>grpcurl Kullanım Örnekleri<a href=#grpcurl-kullanım-örnekleri class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># 1. Serviste hangi servisler var? (Reflection gerektirir)</span>
+</span></span><span style=display:flex><span>grpcurl -plaintext localhost:5001 list
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Çıktı:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># grpc.reflection.v1alpha.ServerReflection</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 2. BookService&#39;in metodlarını listele</span>
+</span></span><span style=display:flex><span>grpcurl -plaintext localhost:5001 list books.BookService
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Çıktı:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.AddBooksStream</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.GetBooks</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.SearchBooksStream</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.StreamBooks</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 3. Unary RPC çağrısı - Tüm kitapları getir</span>
+</span></span><span style=display:flex><span>grpcurl -plaintext localhost:5001 books.BookService/GetBooks
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Çıktı:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># {</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#   &#34;books&#34;: [</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#     {</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;id&#34;: 1,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;title&#34;: &#34;Dune&#34;,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;author&#34;: &#34;Frank Herbert&#34;,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;year&#34;: 1965,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;price&#34;: 29.99</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#     },</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#     ...</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#   ]</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># }</span>
+</span></span></code></pre></div><h2 id=performans-karşılaştırması-rest-vs-grpc-benchmark><strong>Performans Karşılaştırması: REST vs gRPC Benchmark</strong><a href=#performans-karşılaştırması-rest-vs-grpc-benchmark class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Teorik avantajları görmek güzel, ancak gerçek performans farkını ölçmek için kapsamlı bir benchmark yapalım. BenchmarkDotNet kullanarak REST ve gRPC&rsquo;nin farklı senaryolardaki performansını karşılaştıracağız.</p><h3 id=benchmark-kurulumu>Benchmark Kurulumu<a href=#benchmark-kurulumu class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// BookService.Benchmark/BookServiceBenchmark.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BenchmarkDotNet.Attributes;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Grpc.Net.Client;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Grpc;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> System.Net.Http.Json;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Benchmark;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[MemoryDiagnoser]</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[SimpleJob(warmupCount: 3, iterationCount: 10)]</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>BookServiceBenchmark</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> HttpClient? _httpClient;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> GrpcChannel? _grpcChannel;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> Grpc.BookService.BookServiceClient? _grpcClient;
+</span></span><span style=display:flex><span>    
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>string</span> RestUrl = <span style=color:#e6db74>&#34;http://localhost:5000&#34;</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>string</span> GrpcUrl = <span style=color:#e6db74>&#34;http://localhost:5001&#34;</span>;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [GlobalSetup]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> Setup()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// REST client kurulumu</span>
+</span></span><span style=display:flex><span>        _httpClient = <span style=color:#66d9ef>new</span> HttpClient { BaseAddress = <span style=color:#66d9ef>new</span> Uri(RestUrl) };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// gRPC client kurulumu - HTTP/2 optimizasyonları ile</span>
+</span></span><span style=display:flex><span>        _grpcChannel = GrpcChannel.ForAddress(GrpcUrl, <span style=color:#66d9ef>new</span> GrpcChannelOptions
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            MaxReceiveMessageSize = <span style=color:#ae81ff>4</span> * <span style=color:#ae81ff>1024</span> * <span style=color:#ae81ff>1024</span>, <span style=color:#75715e>// 4MB</span>
+</span></span><span style=display:flex><span>            MaxSendMessageSize = <span style=color:#ae81ff>4</span> * <span style=color:#ae81ff>1024</span> * <span style=color:#ae81ff>1024</span>,    <span style=color:#75715e>// 4MB</span>
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>        _grpcClient = <span style=color:#66d9ef>new</span> Grpc.BookService.BookServiceClient(_grpcChannel);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark(Baseline = true)]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; REST_GetAllBooks()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> books = <span style=color:#66d9ef>await</span> _httpClient!.GetFromJsonAsync&lt;List&lt;BookDto&gt;&gt;(<span style=color:#e6db74>&#34;/api/books&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> books?.Count ?? <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; gRPC_GetAllBooks()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> _grpcClient!.GetBooksAsync(<span style=color:#66d9ef>new</span> GetBooksRequest());
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> response.Books.Count;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; REST_GetAllBooks_10Times()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> totalCount = <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> i = <span style=color:#ae81ff>0</span>; i &lt; <span style=color:#ae81ff>10</span>; i++)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> books = <span style=color:#66d9ef>await</span> _httpClient!.GetFromJsonAsync&lt;List&lt;BookDto&gt;&gt;(<span style=color:#e6db74>&#34;/api/books&#34;</span>);
+</span></span><span style=display:flex><span>            totalCount += books?.Count ?? <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> totalCount;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; gRPC_GetAllBooks_10Times()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> totalCount = <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> i = <span style=color:#ae81ff>0</span>; i &lt; <span style=color:#ae81ff>10</span>; i++)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> _grpcClient!.GetBooksAsync(<span style=color:#66d9ef>new</span> GetBooksRequest());
+</span></span><span style=display:flex><span>            totalCount += response.Books.Count;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> totalCount;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [GlobalCleanup]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task Cleanup()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _httpClient?.Dispose();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (_grpcChannel != <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> _grpcChannel.ShutdownAsync();
+</span></span><span style=display:flex><span>            _grpcChannel.Dispose();
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=benchmark-sonuçları>Benchmark Sonuçları<a href=#benchmark-sonuçları class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Optimizasyonlar sonrasında elde edilen gerçek performans sonuçları:</p><table><thead><tr><th>Method</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Allocated</th><th>Alloc Ratio</th></tr></thead><tbody><tr><td><strong>REST_GetAllBooks</strong></td><td>332.3 μs</td><td>42.42 μs</td><td>28.06 μs</td><td>1.00</td><td>0.00</td><td>22.91 KB</td><td>1.00</td></tr><tr><td><strong>gRPC_GetAllBooks</strong></td><td>296.9 μs</td><td>18.10 μs</td><td>10.77 μs</td><td><strong>0.90</strong></td><td>0.06</td><td>25.66 KB</td><td>1.12</td></tr><tr><td><strong>REST_GetAllBooks_10Times</strong></td><td>3,257.1 μs</td><td>364.16 μs</td><td>240.87 μs</td><td>9.85</td><td>0.99</td><td>227.61 KB</td><td>9.94</td></tr><tr><td><strong>gRPC_GetAllBooks_10Times</strong></td><td>2,883.9 μs</td><td>338.63 μs</td><td>223.99 μs</td><td><strong>8.74</strong></td><td>1.05</td><td>255.17 KB</td><td>11.14</td></tr></tbody></table><h3 id=sonuçların-analizi>Sonuçların Analizi<a href=#sonuçların-analizi class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Tek istek performansı incelendiğinde, gRPC&rsquo;nin REST&rsquo;e kıyasla %10 daha hızlı çalıştığı görülüyor (296.9 μs vs 332.3 μs). Bu fark, Protocol Buffers&rsquo;ın binary serializasyon formatının JSON&rsquo;a gösterdiği avantajdan kaynaklanmaktadır. Çoklu istek senaryolarında ise gRPC&rsquo;nin performans üstünlüğü daha da belirginleşiyor ve %11.5&rsquo;e çıkıyor (2,883.9 μs vs 3,257.1 μs). Bu artış, HTTP/2 protokolünün connection reuse özelliğinin devreye girmesiyle açıklanabilir.</p><p>Bellek kullanımı açısından bakıldığında, gRPC&rsquo;nin REST&rsquo;e göre %12 daha fazla bellek tükettiği görülmektedir (25.66 KB vs 22.91 KB). Bu ek bellek kullanımı, HTTP/2 bağlantı yönetimi için gerekli olan overhead&rsquo;dan kaynaklanmaktadır. Ancak elde edilen performans iyileştirmeleri göz önüne alındığında, bu bellek artışı kabul edilebilir bir trade-off olarak değerlendirilebilir.</p><h2 id=özet>Özet<a href=#özet class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Bu yazı, .NET 9 ekosisteminde mikroservisler arası <strong>senkron</strong> iletişimde REST ve gRPC’yi mimari yaklaşım, teknik altyapı ve performans boyutlarıyla karşılaştırıyor. REST, HTTP/1.1 üzerinde JSON’la kolay erişilebilirlik, tarayıcı uyumluluğu ve cache/proxy avantajı sunarken; gRPC, HTTP/2’nin multiplexing ve doğal <strong>streaming</strong> yetenekleri ile Protobuf sayesinde daha düşük gecikme ve daha güçlü tip güvenliği sağlıyor. Yazıda, aynı “Books” alanında hem REST Controller hem de gRPC servis (unary, server/client/bidirectional streaming) örnekleri ve <strong>grpcurl</strong> ile test adımları bulunuyor. BenchmarkDotNet sonuçları, tekil çağrıda gRPC’nin REST’e kıyasla yaklaşık <strong>%10</strong>, art arda çağrılarda <strong>%11</strong> civarı daha hızlı olduğunu; buna karşılık az miktarda ek bellek kullandığını gösteriyor.</p><p>Kaynak koduna erişmek isterseniz projenin tamamını GitHub hesabımda bulabilirsiniz:</p><p><a href=https://github.com/berkslv/lecture-grpc>https://github.com/berkslv/lecture-grpc</a></p><h2 id=sonuç>Sonuç<a href=#sonuç class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme alanındaki araştırmalarımı kaçırmamak için <a href=https://x.com/berkslv>@berkslv</a> adresinden takipte kalabilirsiniz.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h></span><hr></div><div class=pagination__buttons><span class="button next"><a href=https://berkselvi.dev/tr/posts/enforce-code-quality-in-net-editorconfig-analyzers-pre-commit-hooks/><span class=button__text>.NET’te Kod Kalitesini Zorunlu kılın: .editorconfig & Analyzers & Pre-Commit Hooks</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi.<br>Bu websitesi <a href=https://github.com/berkslv/berkselvi.dev target=_blank>open source</a> olarak yayınlanmıştır.</span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>

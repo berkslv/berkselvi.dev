@@ -1,0 +1,530 @@
+<!doctype html><html lang=en><head><title>gRPC in .NET Microservices: Comparison with REST :: Berk Selvi | Software Developer</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Achieve high-performance synchronous communication in your .NET services with gRPC, leveraging features like Protocol Buffers and HTTP/2 streaming to capture performance advantage compared to REST."><meta name=keywords content="grpc,REST,microservices,.NET"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="og:title" content="gRPC in .NET Microservices: Comparison with REST"><meta property="og:description" content="Achieve high-performance synchronous communication in your .NET services with gRPC, leveraging features like Protocol Buffers and HTTP/2 streaming to capture performance advantage compared to REST."><meta property="og:url" content="https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/img/grpc-in-net-microservices-comparison-with-rest/cover.jpg"><meta property="twitter:image" content="https://berkselvi.dev/img/grpc-in-net-microservices-comparison-with-rest/cover.jpg"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2025-10-08 00:00:00 +0300 +0300"><script async src="https://www.googletagmanager.com/gtag/js?id=G-W0L24EMSQ5"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-W0L24EMSQ5")</script><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><div class=header__inner><div class=menu-trigger><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></div></div><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/>home</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>english ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/>home</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h4>Translations;</h4><a href=/tr/posts/grpc-in-net-microservices-comparison-with-rest/>.NET Mikroservislerinde gRPC: REST ile Karşılaştırma</a><h1 class=post-title><a href=https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/>gRPC in .NET Microservices: Comparison with REST</a></h1><div class=post-meta><span class=post-date>October 8, 2025
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 15 min read (3003 words)</span></div><div class=post-content><div><p>When .NET microservices need to communcate synchronously with each other, two main options usually come up: REST API and gRPC API.</p><p>REST works with JSON over the HTTP/1.1 protocol; it’s easy to read, supported by all browsers, and simple to debug. However, compared to gRPC, REST API payloads are larger, and each request opens its own TCP connection. gRPC, on the other hand, compresses data transmission with Protocol Buffers and carries all traffic over a single HTTP/2 connection, minimizing latency. In this post, we’ll look at how both REST and gRPC work, compare them with examples on .NET 9, and examine which solution is more advantageous in which scenarios. Let’s get started.</p><h2 id=what-is-this-rpc>What is this RPC?<a href=#what-is-this-rpc class=hanchor arialabel=Anchor>&#8983;</a></h2><p>If you’ve been developing in the .NET ecosystem for a long time, this is probably not your first encounter with the concept of RPC. In the .NET Framework days, service-to-service communication was also done using SOAP-based WCF services running on IIS. However, with that framework you could end up wrestling with XML-based messages and staying locked into the .NET ecosystem.</p><p>Instead, gRPC—which runs over HTTP/2 and can operate much more efficiently, cross-platform, and cross-language—has become the most sensible RPC framework to choose for new projects.</p><h2 id=differences-between-rest-and-grpc>Differences between REST and gRPC<a href=#differences-between-rest-and-grpc class=hanchor arialabel=Anchor>&#8983;</a></h2><p>In a microservices architecture, RPC is not the only option for service-to-service communication. The REST API approach also enables services to communicate easily and widely with each other. However, there are notable differences between REST and gRPC in both architectural design and technical implementation. Let’s examine these differences under design philosophy and technical differences.</p><h3 id=1-design-philosophy>1. Design Philosophy<a href=#1-design-philosophy class=hanchor arialabel=Anchor>&#8983;</a></h3><p><strong>REST</strong> and <strong>gRPC</strong> take different perspectives in API design. In REST, the main approach is to see everything as a <strong>resource</strong> and operate on those resources. HTTP methods (GET, POST, PUT, DELETE) represent the operation being performed, while the URL indicates the resource being acted upon. For example, <code>/api/books</code> is a books resource. If you have an endpoint like this, you can more or less guess the operations you can do on it:</p><ul><li><code>GET /api/books</code> returns the list of books,</li><li><code>POST /api/books</code> adds a new book.</li></ul><p>In <strong>gRPC</strong>, the perspective is more <strong>action/method</strong> oriented. Each operation is defined like a function call. In gRPC, you directly specify which operation you want to perform and you don’t stick to URL design or HTTP methods.</p><p>For example,</p><ul><li><code>BookService.GetBooks()</code> lists the books,</li><li><code>BookService.CreateBook()</code> adds a new book.</li></ul><p>While it’s technically possible to define action-style endpoints in REST, this generally doesn’t align with best practices or the standard REST philosophy.</p><h3 id=2-technical-differences>2. Technical Differences<a href=#2-technical-differences class=hanchor arialabel=Anchor>&#8983;</a></h3><p>REST and gRPC differ across many technical areas—from transport to data format, connection management to error handling. Below are the key topics and differences summarized:</p><h3 id=transport-layer><strong>Transport Layer</strong><a href=#transport-layer class=hanchor arialabel=Anchor>&#8983;</a></h3><p><strong>REST</strong> uses HTTP/1.1. A separate TCP/TLS connection is established for each REST API request. Especially at high request volumes, this can lead to performance bottlenecks such as <strong>head-of-line blocking</strong> (one slow request affects the others). Also, in cases requiring continuous bidirectional communication (e.g., live data streams or real-time notifications), you need additional protocols such as WebSocket or Server-Sent Events. In other words, REST is fundamentally based on the request-response model and does not have native streaming support.</p><p><strong>gRPC</strong> works with the modern HTTP/2 protocol. Thanks to HTTP/2’s <strong>multiplexing</strong> feature, many concurrent requests and responses can be carried over a single TCP connection. This provides high performance and low latency. With HTTP/2’s native streaming and header compression, gRPC makes real-time and bidirectional communication much easier and more efficient.</p><p>gRPC typically defines service interfaces and message structures with <strong>Protocol Buffers</strong> (Protobuf). The service definition explicitly specifies the remotely callable methods and message schemas.</p><p>Here’s an example:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>service</span> HelloService {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>rpc</span> SayHello (HelloRequest) <span style=color:#66d9ef>returns</span> (HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>HelloRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> greeting <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>HelloResponse</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> reply <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p>gRPC supports four different communication (RPC) patterns:</p><p><strong>Unary</strong></p><p>The classic pattern: the client sends one request, the server returns one response. Similar to REST’s request-response model. It can be defined as follows.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> SayHello(HelloRequest) <span style=color:#66d9ef>returns</span> (HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p><strong>Server Streaming</strong></p><p>The client sends a single request, and the server can return a stream of multiple response messages. The client reads the server’s data stream one by one.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> LotsOfReplies(HelloRequest) <span style=color:#66d9ef>returns</span> (stream HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p><strong>Client Streaming</strong></p><p>The client sends multiple messages (a stream) to the server. After sending all messages, it receives a single response from the server. Useful for large uploads or batch updates.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> LotsOfGreetings(stream HelloRequest) <span style=color:#66d9ef>returns</span> (HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p><strong>Bidirectional Streaming RPC</strong></p><p>Both client and server can independently send data streams to each other at the same time. The streams operate independently; ordering is preserved within each stream. Suitable for real-time chat applications or live data transfer.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#66d9ef>rpc</span> BidiHello(stream HelloRequest) <span style=color:#66d9ef>returns</span> (stream HelloResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><h3 id=data><strong>Data</strong><a href=#data class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>REST:</strong> Messages are typically carried in human-readable <strong>JSON</strong> format. JSON is readable and flexible, but results in larger payload sizes and higher parsing cost. A strict schema is not required. Documentation is often added via OpenAPI/Swagger, but you can run into type mismatches at runtime.</li><li><strong>gRPC:</strong> Uses a binary and compressed format called <strong>Protocol Buffers (Protobuf)</strong>. Protobuf messages are small and fast, reducing network and CPU cost. All data types and methods are defined in a <code>.proto</code> file. Server and client code is generated automatically, providing strong type safety.</li></ul><h3 id=performance-and-efficiency><strong>Performance and Efficiency</strong><a href=#performance-and-efficiency class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>REST:</strong> Due to JSON’s larger size and the limitations of HTTP/1.1, latency and resource consumption increase under high traffic.</li><li><strong>gRPC:</strong> Thanks to small packet sizes and multiple requests over a single connection via HTTP/2, it provides lower latency, higher RPS (requests per second), and more efficient network usage.</li></ul><h3 id=browser-and-platform-compatibility><strong>Browser and Platform Compatibility</strong><a href=#browser-and-platform-compatibility class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>REST:</strong> Can be called directly from the browser and easily integrated with fetch/AJAX.</li><li><strong>gRPC:</strong> Cannot be used directly from the browser; it requires extra layers such as gRPC-Web or JSON Transcoding, so it’s not preferred in scenarios that include the browser.</li></ul><h2 id=which-scenarios-call-for-rest-or-grpc>Which scenarios call for REST or gRPC?<a href=#which-scenarios-call-for-rest-or-grpc class=hanchor arialabel=Anchor>&#8983;</a></h2><p>When choosing between REST and gRPC, looking only at technical details may not be sufficient; business needs, target users, and integration requirements are at least as important as performance. Here are some typical scenarios and suggestions:</p><h3 id=when-should-you-use-rest>When should you use REST?<a href=#when-should-you-use-rest class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>Browser or third-party integration:</strong> If your API will be consumed directly by web browsers or external applications, REST provides a more common and accessible solution.</li><li><strong>Public APIs:</strong> Thanks to JSON’s readability and the widespread support for HTTP/1.1, REST-based APIs are easy for developers to test and document.</li><li><strong>Simple CRUD operations:</strong> For resource-oriented operations (e.g., products, orders) and classic GET/POST/PUT/DELETE flows, REST is simple and clear.</li><li><strong>Caching/Proxy needs:</strong> If you need to do caching or routing via CDN or reverse proxy, REST is more advantageous because it aligns fully with the HTTP standard.</li></ul><h3 id=when-should-you-use-grpc>When should you use gRPC?<a href=#when-should-you-use-grpc class=hanchor arialabel=Anchor>&#8983;</a></h3><ul><li><strong>Microservice-to-microservice communication:</strong> For high-volume, low-latency service-to-service traffic within the same infrastructure, gRPC provides serious advantages.</li><li><strong>Mobile and IoT devices:</strong> The binary format and small message sizes reduce data consumption.</li><li><strong>Real-time streaming requirements:</strong> For applications like chat, live scores, or notifications where server-to-client or bidirectional streaming is needed, gRPC offers native streaming support.</li><li><strong>Language independence:</strong> If you want strongly typed communication across multiple programming languages, Protobuf makes compatibility easy.</li><li><strong>Stronger type safety:</strong> With compiled contracts and code generation, the error rate in API consumption drops.</li></ul><h2 id=comprehensive-net-example-books-service>Comprehensive .NET example: Books service<a href=#comprehensive-net-example-books-service class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Let’s build a book management service using both REST and gRPC. In this example, we’ll also see the different streaming modes gRPC offers.</p><h3 id=project-setup>Project setup<a href=#project-setup class=hanchor arialabel=Anchor>&#8983;</a></h3><p>First, add the required packages:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>dotnet new web -n BookService
+</span></span><span style=display:flex><span>cd BookService
+</span></span><span style=display:flex><span>dotnet add package Grpc.AspNetCore
+</span></span><span style=display:flex><span>dotnet add package Grpc.AspNetCore.Server.Reflection
+</span></span><span style=display:flex><span>dotnet add package Grpc.Tools
+</span></span></code></pre></div><h3 id=rest-api-implementation>REST API implementation<a href=#rest-api-implementation class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Models/Book.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Models;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Book</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>int</span> Id { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Title { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; } = <span style=color:#66d9ef>string</span>.Empty;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Author { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; } = <span style=color:#66d9ef>string</span>.Empty;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>int</span> Year { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>decimal</span> Price { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Controllers/BooksController.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.AspNetCore.Mvc;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Models;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Controllers;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;api/books&#34;)]</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>BooksController</span> : ControllerBase
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>readonly</span> List&lt;Book&gt; Books = Book.GenerateBooks();
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult GetBooks()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(Books);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpGet(&#34;{id}&#34;)]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult GetBook(<span style=color:#66d9ef>int</span> id)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> book = Books.FirstOrDefault(b =&gt; b.Id == id);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (book == <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> NotFound();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Ok(book);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [HttpPost]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> IActionResult CreateBook([FromBody] Book book)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        book.Id = Books.Max(b =&gt; b.Id) + <span style=color:#ae81ff>1</span>;
+</span></span><span style=display:flex><span>        Books.Add(book);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> CreatedAtAction(nameof(GetBook), <span style=color:#66d9ef>new</span> { id = book.Id }, book);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=grpc-service--protobuf-definitions>gRPC service — Protobuf definitions<a href=#grpc-service--protobuf-definitions class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-protobuf data-lang=protobuf><span style=display:flex><span><span style=color:#75715e>// Protos/books.proto
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>syntax <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;proto3&#34;</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>option</span> csharp_namespace <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;BookService.Grpc&#34;</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#f92672>package</span> books;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#75715e>// Main service definition
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>service</span> BookService {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Unary RPC - Get all books
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> GetBooks (GetBooksRequest) <span style=color:#66d9ef>returns</span> (BookList);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Server Streaming - Stream books one by one
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> StreamBooks (StreamBooksRequest) <span style=color:#66d9ef>returns</span> (stream Book);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Client Streaming - Bulk add books
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> AddBooksStream (stream Book) <span style=color:#66d9ef>returns</span> (AddBooksResponse);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Bidirectional Streaming - Real-time book search
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>rpc</span> SearchBooksStream (stream SearchRequest) <span style=color:#66d9ef>returns</span> (stream Book);<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>Book</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> id <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> title <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> author <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> year <span style=color:#f92672>=</span> <span style=color:#ae81ff>4</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>double</span> price <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>GetBooksRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#75715e>// Empty request message
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>BookList</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>repeated</span> Book books <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>StreamBooksRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> delay_ms <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>; <span style=color:#75715e>// Delay between each book (ms)
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>AddBooksResponse</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>int32</span> count <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> <span style=color:#66d9ef>message</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>message</span> <span style=color:#a6e22e>SearchRequest</span> {<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>  <span style=color:#66d9ef>string</span> query <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span>}<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><h3 id=grpc-service--implementation>gRPC service — Implementation<a href=#grpc-service--implementation class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Services/GrpcBookService.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Grpc.Core;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Grpc;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Services;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>GrpcBookService</span> : Grpc.BookService.BookServiceBase
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>readonly</span> List&lt;BookService.Grpc.Book&gt; Books = BookService.Models.Book.GenerateBooks()
+</span></span><span style=display:flex><span>        .Select(b =&gt; <span style=color:#66d9ef>new</span> BookService.Grpc.Book { Id = b.Id, Title = b.Title, Author = b.Author, Year = b.Year, Price = (<span style=color:#66d9ef>double</span>)b.Price })
+</span></span><span style=display:flex><span>        .ToList();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Unary RPC - Classic request-response</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> Task&lt;BookList&gt; GetBooks(GetBooksRequest request, ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>new</span> BookList();
+</span></span><span style=display:flex><span>        response.Books.AddRange(Books);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Task.FromResult(response);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Server Streaming - Server streams books one by one</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task StreamBooks(StreamBooksRequest request,
+</span></span><span style=display:flex><span>        IServerStreamWriter&lt;BookService.Grpc.Book&gt; responseStream,
+</span></span><span style=display:flex><span>        ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> Books)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// Cancellation check</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (context.CancellationToken.IsCancellationRequested)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>break</span>;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> responseStream.WriteAsync(book);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// Wait for the specified duration (to demonstrate streaming)</span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (request.DelayMs &gt; <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>await</span> Task.Delay(request.DelayMs);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Client Streaming - Client sends multiple books</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task&lt;AddBooksResponse&gt; AddBooksStream(
+</span></span><span style=display:flex><span>        IAsyncStreamReader&lt;BookService.Grpc.Book&gt; requestStream,
+</span></span><span style=display:flex><span>        ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> count = <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> maxId = Books.Any() ? Books.Max(b =&gt; b.Id) : <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> requestStream.ReadAllAsync())
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            book.Id = ++maxId;
+</span></span><span style=display:flex><span>            Books.Add(book);
+</span></span><span style=display:flex><span>            count++;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> AddBooksResponse
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Count = count,
+</span></span><span style=display:flex><span>            Message = <span style=color:#e6db74>$&#34;Successfully added {count} books&#34;</span>
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Bidirectional Streaming - Real-time two-way search</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> <span style=color:#66d9ef>async</span> Task SearchBooksStream(
+</span></span><span style=display:flex><span>        IAsyncStreamReader&lt;SearchRequest&gt; requestStream,
+</span></span><span style=display:flex><span>        IServerStreamWriter&lt;BookService.Grpc.Book&gt; responseStream,
+</span></span><span style=display:flex><span>        ServerCallContext context)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> searchRequest <span style=color:#66d9ef>in</span> requestStream.ReadAllAsync())
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> results = Books.Where(b =&gt;
+</span></span><span style=display:flex><span>                b.Title.Contains(searchRequest.Query, StringComparison.OrdinalIgnoreCase) ||
+</span></span><span style=display:flex><span>                b.Author.Contains(searchRequest.Query, StringComparison.OrdinalIgnoreCase)
+</span></span><span style=display:flex><span>            ).ToList();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> results)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>await</span> responseStream.WriteAsync(book);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=programcs-configuration>Program.cs configuration<a href=#programcs-configuration class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Program.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Services;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// REST API services</span>
+</span></span><span style=display:flex><span>builder.Services.AddControllers();
+</span></span><span style=display:flex><span>builder.Services.AddEndpointsApiExplorer();
+</span></span><span style=display:flex><span>builder.Services.AddSwaggerGen();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// gRPC services</span>
+</span></span><span style=display:flex><span>builder.Services.AddGrpc();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Swagger (for REST)</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>if</span> (app.Environment.IsDevelopment())
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    app.UseSwagger();
+</span></span><span style=display:flex><span>    app.UseSwaggerUI();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// gRPC reflection (for development)</span>
+</span></span><span style=display:flex><span>    app.MapGrpcReflectionService();
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// REST endpoints</span>
+</span></span><span style=display:flex><span>app.MapControllers();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// gRPC endpoints</span>
+</span></span><span style=display:flex><span>app.MapGrpcService&lt;GrpcBookService&gt;();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><h3 id=csproj-file>.csproj file<a href=#csproj-file class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#f92672>&lt;Project</span> <span style=color:#a6e22e>Sdk=</span><span style=color:#e6db74>&#34;Microsoft.NET.Sdk.Web&#34;</span><span style=color:#f92672>&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;PropertyGroup&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;TargetFramework&gt;</span>net9.0<span style=color:#f92672>&lt;/TargetFramework&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;Nullable&gt;</span>enable<span style=color:#f92672>&lt;/Nullable&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;ImplicitUsings&gt;</span>enable<span style=color:#f92672>&lt;/ImplicitUsings&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/PropertyGroup&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Grpc.AspNetCore&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;2.60.0&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Grpc.AspNetCore.Server.Reflection&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;2.60.0&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Grpc.Tools&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;2.60.0&#34;</span><span style=color:#f92672>&gt;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&lt;PrivateAssets&gt;</span>all<span style=color:#f92672>&lt;/PrivateAssets&gt;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&lt;IncludeAssets&gt;</span>runtime; build; native; contentfiles; analyzers; buildtransitive<span style=color:#f92672>&lt;/IncludeAssets&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/PackageReference&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;PackageReference</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Swashbuckle.AspNetCore&#34;</span> <span style=color:#a6e22e>Version=</span><span style=color:#e6db74>&#34;6.5.0&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;Protobuf</span> <span style=color:#a6e22e>Include=</span><span style=color:#e6db74>&#34;Protos\\books.proto&#34;</span> <span style=color:#f92672>/&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/ItemGroup&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/Project&gt;</span>
+</span></span></code></pre></div><p>Also, if your locally running app won’t run over HTTPS, you need to open a separate port for HTTP/2 apart from the HTTP/1 port. To do this, add the following definition in <code>appsettings.json</code> to open the relevant ports:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span>  <span style=color:#e6db74>&#34;Kestrel&#34;</span><span style=color:#960050;background-color:#1e0010>:</span> {
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;Endpoints&#34;</span>: {
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;Http&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Protocols&#34;</span>: <span style=color:#e6db74>&#34;Http1&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Url&#34;</span>: <span style=color:#e6db74>&#34;http://*:5000&#34;</span>
+</span></span><span style=display:flex><span>      },
+</span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;gRPC&#34;</span>: {
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Protocols&#34;</span>: <span style=color:#e6db74>&#34;Http2&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&#34;Url&#34;</span>: <span style=color:#e6db74>&#34;http://*:5001&#34;</span>
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>  }<span style=color:#960050;background-color:#1e0010>,</span>
+</span></span></code></pre></div><h2 id=grpc-client-examples>gRPC client examples<a href=#grpc-client-examples class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Now let’s look at client examples using different streaming modes:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Client/GrpcClientExamples.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Grpc.Net.Client;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Grpc;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Client;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>GrpcClientExamples</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> GrpcChannel _channel;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> Grpc.BookService.BookServiceClient _client;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> GrpcClientExamples(<span style=color:#66d9ef>string</span> serverAddress = <span style=color:#e6db74>&#34;http://localhost:5001&#34;</span>)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _channel = GrpcChannel .ForAddress(serverAddress, <span style=color:#66d9ef>new</span> GrpcChannelOptions
+</span></span><span style=display:flex><span>				 {
+</span></span><span style=display:flex><span>						 <span style=color:#75715e>// Disable HTTPS validation. Use carefully in production.</span>
+</span></span><span style=display:flex><span>				     HttpHandler = <span style=color:#66d9ef>new</span> HttpClientHandler
+</span></span><span style=display:flex><span>				     {
+</span></span><span style=display:flex><span>				         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+</span></span><span style=display:flex><span>				     }
+</span></span><span style=display:flex><span>				 });
+</span></span><span style=display:flex><span>        _client = <span style=color:#66d9ef>new</span> Grpc.BookService.BookServiceClient(_channel);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Unary RPC example</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task UnaryCallExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;=== Unary Call Example ===&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> request = <span style=color:#66d9ef>new</span> GetBooksRequest();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> _client.GetBooksAsync(request);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>$&#34;Received {response.Books.Count} books:&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> response.Books)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;- {book.Title} by {book.Author} ({book.Year})&#34;</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Server streaming example</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task ServerStreamingExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;\\n=== Server Streaming Example ===&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> request = <span style=color:#66d9ef>new</span> StreamBooksRequest { DelayMs = <span style=color:#ae81ff>500</span> };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>using</span> var call = _client.StreamBooks(request);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> call.ResponseStream.ReadAllAsync())
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;Received: {book.Title} - ${book.Price}&#34;</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;Streaming completed&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Client streaming example</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task ClientStreamingExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;\\n=== Client Streaming Example ===&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>using</span> var call = _client.AddBooksStream();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> booksToAdd = <span style=color:#66d9ef>new</span>[]
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> Book { Title = <span style=color:#e6db74>&#34;Design Patterns&#34;</span>, Author = <span style=color:#e6db74>&#34;Gang of Four&#34;</span>, Year = <span style=color:#ae81ff>1994</span>, Price = <span style=color:#ae81ff>59.99</span> },
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> Book { Title = <span style=color:#e6db74>&#34;Head First Design Patterns&#34;</span>, Author = <span style=color:#e6db74>&#34;Eric Freeman&#34;</span>, Year = <span style=color:#ae81ff>2004</span>, Price = <span style=color:#ae81ff>44.99</span> },
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> Book { Title = <span style=color:#e6db74>&#34;Microservices Patterns&#34;</span>, Author = <span style=color:#e6db74>&#34;Chris Richardson&#34;</span>, Year = <span style=color:#ae81ff>2018</span>, Price = <span style=color:#ae81ff>49.99</span> }
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> booksToAdd)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> call.RequestStream.WriteAsync(book);
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;Sent: {book.Title}&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> Task.Delay(<span style=color:#ae81ff>300</span>); <span style=color:#75715e>// Simulated delay</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> call.RequestStream.CompleteAsync();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> call;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>$&#34;Result: {response.Message}&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Bidirectional streaming example</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task BidirectionalStreamingExample()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;\\n=== Bidirectional Streaming Example ===&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>using</span> var call = _client.SearchBooksStream();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Read results in the background</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> readTask = Task.Run(<span style=color:#66d9ef>async</span> () =&gt;
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> book <span style=color:#66d9ef>in</span> call.ResponseStream.ReadAllAsync())
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                Console.WriteLine(<span style=color:#e6db74>$&#34;Found: {book.Title} by {book.Author}&#34;</span>);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Send search queries</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> queries = <span style=color:#66d9ef>new</span>[] { <span style=color:#e6db74>&#34;Clean&#34;</span>, <span style=color:#e6db74>&#34;Design&#34;</span>, <span style=color:#e6db74>&#34;Refactoring&#34;</span>, <span style=color:#e6db74>&#34;Domain&#34;</span> };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> query <span style=color:#66d9ef>in</span> queries)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Console.WriteLine(<span style=color:#e6db74>$&#34;Searching for: {query}&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> call.RequestStream.WriteAsync(<span style=color:#66d9ef>new</span> SearchRequest { Query = query });
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> Task.Delay(<span style=color:#ae81ff>1000</span>); <span style=color:#75715e>// Wait after each search</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> call.RequestStream.CompleteAsync();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> readTask;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        Console.WriteLine(<span style=color:#e6db74>&#34;Bidirectional streaming completed&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> ValueTask DisposeAsync()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> _channel.ShutdownAsync();
+</span></span><span style=display:flex><span>        _channel.Dispose();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Usage example</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Program</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>async</span> Task Main(<span style=color:#66d9ef>string</span>[] args)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> <span style=color:#66d9ef>using</span> var client = <span style=color:#66d9ef>new</span> GrpcClientExamples();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.UnaryCallExample();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.ServerStreamingExample();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.ClientStreamingExample();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>await</span> client.BidirectionalStreamingExample();
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=testing-with-grpcurl>Testing with grpcurl<a href=#testing-with-grpcurl class=hanchor arialabel=Anchor>&#8983;</a></h2><p><code>grpcurl</code> is a curl-like command-line tool for gRPC services. Let’s test our service:</p><h3 id=installing-grpcurl>Installing grpcurl<a href=#installing-grpcurl class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># macOS (Homebrew)</span>
+</span></span><span style=display:flex><span>brew install grpcurl
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Linux</span>
+</span></span><span style=display:flex><span>go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Windows (Chocolatey)</span>
+</span></span><span style=display:flex><span>choco install grpcurl
+</span></span></code></pre></div><h3 id=grpcurl-usage-examples>grpcurl usage examples<a href=#grpcurl-usage-examples class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># 1. What services exist on the server? (Requires reflection)</span>
+</span></span><span style=display:flex><span>grpcurl -plaintext localhost:5001 list
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Output:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># grpc.reflection.v1alpha.ServerReflection</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 2. List the methods of BookService</span>
+</span></span><span style=display:flex><span>grpcurl -plaintext localhost:5001 list books.BookService
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Output:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.AddBooksStream</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.GetBooks</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.SearchBooksStream</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># books.BookService.StreamBooks</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 3. Unary RPC call - Get all books</span>
+</span></span><span style=display:flex><span>grpcurl -plaintext localhost:5001 books.BookService/GetBooks
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Output:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># {</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#   &#34;books&#34;: [</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#     {</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;id&#34;: 1,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;title&#34;: &#34;Dune&#34;,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;author&#34;: &#34;Frank Herbert&#34;,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;year&#34;: 1965,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#       &#34;price&#34;: 29.99</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#     },</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#     ...</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#   ]</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># }</span>
+</span></span></code></pre></div><h2 id=performance-comparison-rest-vs-grpc-benchmark><strong>Performance comparison: REST vs gRPC benchmark</strong><a href=#performance-comparison-rest-vs-grpc-benchmark class=hanchor arialabel=Anchor>&#8983;</a></h2><p>It’s nice to see the theoretical advantages, but let’s run a comprehensive benchmark to measure the real performance difference. Using BenchmarkDotNet, we’ll compare REST and gRPC across different scenarios.</p><h3 id=benchmark-setup>Benchmark setup<a href=#benchmark-setup class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// BookService.Benchmark/BookServiceBenchmark.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BenchmarkDotNet.Attributes;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Grpc.Net.Client;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> BookService.Grpc;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> System.Net.Http.Json;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> BookService.Benchmark;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[MemoryDiagnoser]</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>[SimpleJob(warmupCount: 3, iterationCount: 10)]</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>BookServiceBenchmark</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> HttpClient? _httpClient;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> GrpcChannel? _grpcChannel;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> Grpc.BookService.BookServiceClient? _grpcClient;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>string</span> RestUrl = <span style=color:#e6db74>&#34;http://localhost:5000&#34;</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>string</span> GrpcUrl = <span style=color:#e6db74>&#34;http://localhost:5001&#34;</span>;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [GlobalSetup]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> Setup()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// REST client setup</span>
+</span></span><span style=display:flex><span>        _httpClient = <span style=color:#66d9ef>new</span> HttpClient { BaseAddress = <span style=color:#66d9ef>new</span> Uri(RestUrl) };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// gRPC client setup - with HTTP/2 optimizations</span>
+</span></span><span style=display:flex><span>        _grpcChannel = GrpcChannel.ForAddress(GrpcUrl, <span style=color:#66d9ef>new</span> GrpcChannelOptions
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            MaxReceiveMessageSize = <span style=color:#ae81ff>4</span> * <span style=color:#ae81ff>1024</span> * <span style=color:#ae81ff>1024</span>, <span style=color:#75715e>// 4MB</span>
+</span></span><span style=display:flex><span>            MaxSendMessageSize = <span style=color:#ae81ff>4</span> * <span style=color:#ae81ff>1024</span> * <span style=color:#ae81ff>1024</span>,    <span style=color:#75715e>// 4MB</span>
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>        _grpcClient = <span style=color:#66d9ef>new</span> Grpc.BookService.BookServiceClient(_grpcChannel);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark(Baseline = true)]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; REST_GetAllBooks()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> books = <span style=color:#66d9ef>await</span> _httpClient!.GetFromJsonAsync&lt;List&lt;BookDto&gt;&gt;(<span style=color:#e6db74>&#34;/api/books&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> books?.Count ?? <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; gRPC_GetAllBooks()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> _grpcClient!.GetBooksAsync(<span style=color:#66d9ef>new</span> GetBooksRequest());
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> response.Books.Count;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; REST_GetAllBooks_10Times()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> totalCount = <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> i = <span style=color:#ae81ff>0</span>; i &lt; <span style=color:#ae81ff>10</span>; i++)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> books = <span style=color:#66d9ef>await</span> _httpClient!.GetFromJsonAsync&lt;List&lt;BookDto&gt;&gt;(<span style=color:#e6db74>&#34;/api/books&#34;</span>);
+</span></span><span style=display:flex><span>            totalCount += books?.Count ?? <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> totalCount;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [Benchmark]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;<span style=color:#66d9ef>int</span>&gt; gRPC_GetAllBooks_10Times()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> totalCount = <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> i = <span style=color:#ae81ff>0</span>; i &lt; <span style=color:#ae81ff>10</span>; i++)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> response = <span style=color:#66d9ef>await</span> _grpcClient!.GetBooksAsync(<span style=color:#66d9ef>new</span> GetBooksRequest());
+</span></span><span style=display:flex><span>            totalCount += response.Books.Count;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> totalCount;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>    [GlobalCleanup]</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task Cleanup()
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _httpClient?.Dispose();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (_grpcChannel != <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>await</span> _grpcChannel.ShutdownAsync();
+</span></span><span style=display:flex><span>            _grpcChannel.Dispose();
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=benchmark-results>Benchmark results<a href=#benchmark-results class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Actual performance results obtained after optimizations:</p><table><thead><tr><th>Method</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Allocated</th><th>Alloc Ratio</th></tr></thead><tbody><tr><td><strong>REST_GetAllBooks</strong></td><td>332.3 μs</td><td>42.42 μs</td><td>28.06 μs</td><td>1.00</td><td>0.00</td><td>22.91 KB</td><td>1.00</td></tr><tr><td><strong>gRPC_GetAllBooks</strong></td><td>296.9 μs</td><td>18.10 μs</td><td>10.77 μs</td><td><strong>0.90</strong></td><td>0.06</td><td>25.66 KB</td><td>1.12</td></tr><tr><td><strong>REST_GetAllBooks_10Times</strong></td><td>3,257.1 μs</td><td>364.16 μs</td><td>240.87 μs</td><td>9.85</td><td>0.99</td><td>227.61 KB</td><td>9.94</td></tr><tr><td><strong>gRPC_GetAllBooks_10Times</strong></td><td>2,883.9 μs</td><td>338.63 μs</td><td>223.99 μs</td><td><strong>8.74</strong></td><td>1.05</td><td>255.17 KB</td><td>11.14</td></tr></tbody></table><h3 id=analysis-of-the-results>Analysis of the results<a href=#analysis-of-the-results class=hanchor arialabel=Anchor>&#8983;</a></h3><p>For single-request performance, gRPC runs about 10% faster than REST (296.9 μs vs 332.3 μs). This advantage stems from Protocol Buffers’ binary serialization format compared to JSON. In multiple-request scenarios, gRPC’s performance advantage becomes more pronounced, rising to about 11.5% (2,883.9 μs vs 3,257.1 μs). This increase can be explained by HTTP/2’s connection reuse.</p><p>In terms of memory usage, gRPC consumes about 12% more memory compared to REST (25.66 KB vs 22.91 KB). This extra memory usage is due to the overhead required for HTTP/2 connection management. However, given the performance improvements, this memory increase can be considered an acceptable trade-off.</p><h2 id=summary>Summary<a href=#summary class=hanchor arialabel=Anchor>&#8983;</a></h2><p>This article compares <strong>REST and gRPC</strong> for <strong>synchronous</strong> inter-service communication in the .NET 9 ecosystem across architectural approach, technical underpinnings, and performance. REST, with JSON over HTTP/1.1, offers easy accessibility, browser compatibility, and caching/proxy advantages; gRPC provides lower latency and stronger type safety thanks to HTTP/2’s multiplexing and native <strong>streaming</strong> capabilities plus Protobuf. The post includes both a REST controller and a gRPC service (unary, server/client/bidirectional streaming) in the same “Books” domain, along with <strong>grpcurl</strong> test steps. BenchmarkDotNet results show that gRPC is roughly <strong>10%</strong> faster on single calls and around <strong>11%</strong> faster on consecutive calls than REST, at the cost of a small increase in memory usage.</p><p>If you’d like access to the source code, you can find the entire project on my GitHub:</p><p><a href=https://github.com/berkslv/lecture-grpc>GitHub - berkslv/lecture-grpc</a></p><h2 id=conclusion>Conclusion<a href=#conclusion class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Thanks for reading! 🎉 To keep up with my research in software development, follow <a href=https://x.com/berkslv>@berkslv</a>.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h></span><hr></div><div class=pagination__buttons><span class="button next"><a href=https://berkselvi.dev/posts/enforce-code-quality-in-net-editorconfig-analyzers-pre-commit-hooks/><span class=button__text>Enforce Code Quality in .NET: .editorconfig & Analyzers & Pre-Commit Hooks</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi.<br>This site is <a href=https://github.com/berkslv/berkselvi.dev target=_blank>open source</a></span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>
