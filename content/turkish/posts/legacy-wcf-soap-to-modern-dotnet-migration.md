@@ -1,5 +1,5 @@
 +++
-title = "Lgacy WCF/SOAP'tan Modern .NET'e: Taviz Vermeden Migration"
+title = "Legacy WCF/SOAP'tan Modern .NET'e: Taviz Vermeden Migration"
 date = "2025-12-12T00:00:00+03:00"
 author = "Berk Selvi"
 authorTwitter = "berkslv"
@@ -10,7 +10,7 @@ readingTime = true
 cover = "img/legacy-wcf-soap-to-modern-dotnet-migration/cover.webp"
 +++
 
-# Lgacy WCF/SOAP'tan Modern .NET'e: Taviz Vermeden Migration
+# Legacy WCF/SOAP'tan Modern .NET'e: Taviz Vermeden Migration
 
 Mükemmel migration planını hazırladınız. Yol haritası harika görünüyor: O yaşlanmış, bitik monolitik .NET Framework 4.8 WCF uygulamasını alıp dönüştüreceksiniz. Arayüzü .NET 10 üzerinde şık, state tutmayan bir REST API olarak yeniden yazacak ve sonunda o eski IIS sunucusunu kapatacaksınız.
 
