@@ -1,4 +1,446 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br&gt; This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt;</copyright><lastBuildDate>Wed, 08 Oct 2025 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>gRPC in .NET Microservices: Comparison with REST</title><link>https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/</link><pubDate>Wed, 08 Oct 2025 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/</guid><description>&lt;p&gt;When .NET microservices need to communcate synchronously with each other, two main options usually come up: REST API and gRPC API.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br&gt; This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt;</copyright><lastBuildDate>Fri, 12 Dec 2025 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Legacy WCF/SOAP to Modern .NET: Migration Without Compromise</title><link>https://berkselvi.dev/posts/legacy-wcf-soap-to-modern-dotnet-migration/</link><pubDate>Fri, 12 Dec 2025 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/legacy-wcf-soap-to-modern-dotnet-migration/</guid><description>&lt;h1 id="legacy-wcfsoap-to-modern-net-migration-without-compromise"&gt;Legacy WCF/SOAP to Modern .NET: Migration Without Compromise&lt;/h1&gt;
+&lt;p&gt;You’ve just scoped out the perfect migration plan. The roadmap looks beautiful: you are going to take that aging, monolith .NET Framework 4.8 WCF application and strangle it. You’ll extract the business logic, rewrite the interface as a sleek, stateless REST API on .NET 10, and finally shut down the old IIS server.&lt;/p&gt;
+&lt;p&gt;You present the plan to the stakeholders. The internal teams are cheering. The DevOps guys are already writing the Dockerfiles. Everyone is very excited.&lt;/p&gt;</description><content>&lt;h1 id="legacy-wcfsoap-to-modern-net-migration-without-compromise"&gt;Legacy WCF/SOAP to Modern .NET: Migration Without Compromise&lt;/h1&gt;
+&lt;p&gt;You’ve just scoped out the perfect migration plan. The roadmap looks beautiful: you are going to take that aging, monolith .NET Framework 4.8 WCF application and strangle it. You’ll extract the business logic, rewrite the interface as a sleek, stateless REST API on .NET 10, and finally shut down the old IIS server.&lt;/p&gt;
+&lt;p&gt;You present the plan to the stakeholders. The internal teams are cheering. The DevOps guys are already writing the Dockerfiles. Everyone is very excited.&lt;/p&gt;
+&lt;p&gt;And then, the email arrives.&lt;/p&gt;
+&lt;p&gt;It’s from the &amp;ldquo;Legacy Integrations&amp;rdquo; team at a major partner, or perhaps a vendor managing a hardware device that hasn&amp;rsquo;t had a firmware update since 2014. Their message is polite but firm:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;&amp;ldquo;We cannot consume a REST API. Our systems require a SOAP envelope. We need the WSDL to remain exactly as it is. If you change the contract, we break.&amp;rdquo;&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Suddenly, your migration plan hits a brick wall. You are faced with two bad choices:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Abort the migration:&lt;/strong&gt; Keep the entire project on .NET Framework just to satisfy one interface.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;The &amp;ldquo;Sidecar&amp;rdquo; Nightmare:&lt;/strong&gt; Build the new system in .NET Core, but keep a zombie .NET Framework server running just to proxy SOAP requests to the new API.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;But there is a third option. A bridge.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;CoreWCF.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;CoreWCF allows us to keep the external contract (SOAP) identical to the legacy system, while completely rewriting the hosting model, dependency injection, and performance characteristics using modern .NET.&lt;/p&gt;
+&lt;p&gt;In this post, we are going to migrate a &lt;code&gt;InvoiceService&lt;/code&gt; step-by-step. We will start with a raw endpoint, secure it with modern authorization, and finally implement sophisticated error handling that bridges the gap between RESTful &lt;code&gt;ProblemDetails&lt;/code&gt; and SOAP Faults.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="step-1-the-hello-world-of-migration"&gt;Step 1: The &amp;ldquo;Hello World&amp;rdquo; of Migration&lt;/h2&gt;
+&lt;p&gt;Our first goal is simply to get the lights on. We want to prove that we can serve the &lt;code&gt;IInvoiceService&lt;/code&gt; contract using the Kestrel web server instead of IIS.&lt;/p&gt;
+&lt;p&gt;We aren&amp;rsquo;t worrying about security or error handling yet. We just want to see XML flowing.&lt;/p&gt;
+&lt;h3 id="the-contract-and-service"&gt;The Contract and Service&lt;/h3&gt;
+&lt;p&gt;We keep our Service Contract almost exactly as it was in the old system. The only difference is that we are embracing &lt;code&gt;Task&amp;lt;T&amp;gt;&lt;/code&gt; for true asynchronous processing—a massive performance win over the old WCF implementation. Additionally, we have slightly renamed the existing request and response models to better adhere to the Mediator pattern.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Sample.API.WCF/IInvoiceService.cs&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.Business.Features.Invoices.CreateInvoice;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; Sample.API.WCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[ServiceContract]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;interface&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;IInvoiceService&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt; [OperationContract]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Task&amp;lt;CreateInvoiceCommandResponse&amp;gt; CreateInvoice(CreateInvoiceCommand command);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Notice: No attributes here yet, just pure logic.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;InvoiceService&lt;/span&gt;(ISender mediator) : IInvoiceService
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;CreateInvoiceCommandResponse&amp;gt; CreateInvoice(CreateInvoiceCommand command)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; mediator.Send(command);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="the-configuration-step-1"&gt;The Configuration (Step 1)&lt;/h3&gt;
+&lt;p&gt;Here is the &lt;code&gt;Program.cs&lt;/code&gt; for the most basic setup. We strip away everything unnecessary.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Program.cs - Step 1: Basic WCF Hosting&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Configuration;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Description;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.API.WCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Description;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; builder = WebApplication.CreateBuilder(args);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 1. Add CoreWCF basics to the DI container&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddTransient&amp;lt;InvoiceService&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddServiceModelServices();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddServiceModelMetadata();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;services.AddSingleton&amp;lt;IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 2. Register our MediatR and Service&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddMediatR(cfg =&amp;gt; cfg.RegisterServicesFromAssembly(&lt;span style="color:#66d9ef"&gt;typeof&lt;/span&gt;(Program).Assembly));
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; app = builder.Build();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 3. Configure the CoreWCF Middleware&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.UseServiceModel(serviceBuilder =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; serviceBuilder.AddService&amp;lt;InvoiceService&amp;gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AddServiceEndpoint&amp;lt;InvoiceService, IInvoiceService&amp;gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; BasicHttpBinding(), &lt;span style="color:#e6db74"&gt;&amp;#34;/Services/InvoiceService.svc&amp;#34;&lt;/span&gt; &lt;span style="color:#75715e"&gt;// The endpoint URL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; );
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Enable WSDL generation so the stubborn client can update their reference if needed&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; serviceMetadataBehavior = app.Services.GetRequiredService&amp;lt;ServiceMetadataBehavior&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; serviceMetadataBehavior.HttpGetEnabled = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.Run();
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;At this point, we have achieved victory on the transport layer. The integrator can hit &lt;code&gt;/Services/InvoiceService.svc&lt;/code&gt;, send an XML envelope, and our modern MediatR handlers process the logic.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="step-2-adding-authorization"&gt;Step 2: Adding Authorization&lt;/h2&gt;
+&lt;p&gt;The &amp;ldquo;Plain&amp;rdquo; service works, but it&amp;rsquo;s dangerous. In the old WCF days, many times developers did not add any authorization support to endpoints and configuring security meant dealing with security certificates.&lt;/p&gt;
+&lt;p&gt;In CoreWCF, &lt;strong&gt;security is just ASP.NET Core security&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;If your REST API uses JWT Bearer tokens or Cookie Auth, your CoreWCF endpoints can use them too. We don&amp;rsquo;t need to reinvent the wheel. We simply decorate our service with &lt;code&gt;[Authorize]&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id="the-updated-service"&gt;The Updated Service&lt;/h3&gt;
+&lt;p&gt;We add &lt;code&gt;[Authorize]&lt;/code&gt; and inject &lt;code&gt;IHttpContextAccessor&lt;/code&gt; to prove we can access the user context.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Microsoft.AspNetCore.Authorization;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.Shared.Services.Interfaces;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; Sample.API.WCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[Authorize]&lt;/span&gt; &lt;span style="color:#75715e"&gt;// &amp;lt;--- The magic keyword. This is standard ASP.NET Core auth.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;InvoiceService&lt;/span&gt;(ISender mediator, IHttpContextAccessor httpContextAccessor) : IInvoiceService
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;Response&amp;gt; CreateInvoice(CreateInvoiceCommand command)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; context = httpContextAccessor.HttpContext;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Console.WriteLine(context?.User.Identity?.Name);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; mediator.Send(command);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="the-configuration-step-2"&gt;The Configuration (Step 2)&lt;/h3&gt;
+&lt;p&gt;We need to layer the ASP.NET Core Auth middleware &lt;em&gt;before&lt;/em&gt; the CoreWCF middleware.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Program.cs - Step 2: Adding Authorization&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Configuration;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Description;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.API.WCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Microsoft.AspNetCore.Authentication.JwtBearer; &lt;span style="color:#75715e"&gt;// Assuming JWT&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; builder = WebApplication.CreateBuilder(args);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 1. Standard ASP.NET Core Authentication Setup&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; options.MapInboundClaims = &lt;span style="color:#66d9ef"&gt;false&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; options.TokenValidationParameters = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; TokenValidationParameters
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateIssuer = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateAudience = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateLifetime = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateIssuerSigningKey = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidIssuer = configuration[&lt;span style="color:#e6db74"&gt;&amp;#34;Jwt:Issuer&amp;#34;&lt;/span&gt;],
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidAudience = configuration[&lt;span style="color:#e6db74"&gt;&amp;#34;Jwt:Audience&amp;#34;&lt;/span&gt;],
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; IssuerSigningKey = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[&lt;span style="color:#e6db74"&gt;&amp;#34;Jwt:SecretKey&amp;#34;&lt;/span&gt;]!))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddAuthorization(options =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; options.DefaultPolicy = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .RequireAuthenticatedUser()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .Build();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddTransient&amp;lt;InvoiceService&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddServiceModelServices();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddServiceModelMetadata();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;services.AddSingleton&amp;lt;IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddMediatR(cfg =&amp;gt; cfg.RegisterServicesFromAssembly(&lt;span style="color:#66d9ef"&gt;typeof&lt;/span&gt;(Program).Assembly));
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; app = builder.Build();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// 2. IMPORTANT: Auth middleware must run before WCF middleware&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.UseAuthentication();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.UseAuthorization();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.UseServiceModel(serviceBuilder =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; serviceBuilder.AddService&amp;lt;InvoiceService&amp;gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AddServiceEndpoint&amp;lt;InvoiceService, IInvoiceService&amp;gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; BasicHttpBinding(), &lt;span style="color:#e6db74"&gt;&amp;#34;/Services/InvoiceService.svc&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; );
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; serviceMetadataBehavior = app.Services.GetRequiredService&amp;lt;ServiceMetadataBehavior&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; serviceMetadataBehavior.HttpGetEnabled = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.Run();
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now, if the integrator sends a request without a valid standard HTTP &lt;code&gt;Authorization: Bearer&lt;/code&gt; header, CoreWCF will reject it with a 401 before it even reaches our code. Of course our customer needs to implement additional step before making a request but without authn &amp;amp; authz any app will be prone to attacks.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="step-3-the-universal-translator-unified-error-handling"&gt;Step 3: The Universal Translator (Unified Error Handling)&lt;/h2&gt;
+&lt;p&gt;This is the hardest part of the story.&lt;/p&gt;
+&lt;p&gt;In a modern REST API, when something goes wrong (e.g., &amp;ldquo;Invoice not found&amp;rdquo;), we throw a custom &lt;code&gt;BadRequestException&lt;/code&gt; and return a JSON &lt;code&gt;ProblemDetails&lt;/code&gt; (RFC 7807) response.&lt;/p&gt;
+&lt;p&gt;In WCF, we are expected to return a &lt;code&gt;FaultException&lt;/code&gt; wrapped in XML.&lt;/p&gt;
+&lt;p&gt;If we don&amp;rsquo;t handle this, our nice &lt;code&gt;ValidationException&lt;/code&gt; will crash the service and return a generic, ugly &amp;ldquo;Internal Server Error&amp;rdquo; to the client. We need a translator that catches our modern Exceptions and translates them into SOAP Faults that still contain all the rich data (like validation error fields).&lt;/p&gt;
+&lt;h3 id="the-code-exceptionhandlererrorhandler"&gt;The Code: ExceptionHandlerErrorHandler&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; System.Diagnostics;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; System.Xml.Linq;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Channels;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Dispatcher;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.Domain.Constants;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.Domain.Exceptions;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Microsoft.AspNetCore.Mvc;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Microsoft.Extensions.Localization;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; Sample.API.Filters;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;/// &amp;lt;summary&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;/// CoreWCF Error Handler that catches exceptions and returns ProblemDetails as SOAP Fault.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;/// This acts as a bridge between modern Exception definitions and legacy SOAP faults.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;/// &amp;lt;/summary&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;ExceptionHandlerErrorHandler&lt;/span&gt; : IErrorHandler
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; HttpRfcBadRequest = &lt;span style="color:#e6db74"&gt;&amp;#34;https://tools.ietf.org/html/rfc7231#section-6.5.1&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; ProblemDetailsNamespace = &lt;span style="color:#e6db74"&gt;&amp;#34;urn:ietf:rfc:7807&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; ILogger&amp;lt;ExceptionHandlerErrorHandler&amp;gt; _logger;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IHttpContextAccessor _httpContextAccessor;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IStringLocalizer&amp;lt;ExceptionHandleMiddleware&amp;gt; _localizer;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; Dictionary&amp;lt;Type, Func&amp;lt;Exception, ProblemDetails&amp;gt;&amp;gt; _exceptionHandlers;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; ExceptionHandlerErrorHandler(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ILogger&amp;lt;ExceptionHandlerErrorHandler&amp;gt; logger,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; IHttpContextAccessor httpContextAccessor,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; IStringLocalizer&amp;lt;ExceptionHandleMiddleware&amp;gt; localizer)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _logger = logger;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _httpContextAccessor = httpContextAccessor;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _localizer = localizer;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Map domain exceptions to specific ProblemDetails handlers&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _exceptionHandlers = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; { &lt;span style="color:#66d9ef"&gt;typeof&lt;/span&gt;(BadRequestException), HandleBadRequestException },
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Add as many as you like&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt; HandleError(Exception error)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Return true to indicate we handled the error and the session is not faulted&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;void&lt;/span&gt; ProvideFault(Exception error, MessageVersion version, &lt;span style="color:#66d9ef"&gt;ref&lt;/span&gt; Message fault)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 1. Convert Exception to ProblemDetails&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; problemDetails = CreateProblemDetails(error);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 2. Transform ProblemDetails to XML Element for the SOAP Body&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; problemDetailsElement = TransformToXml(problemDetails);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 3. Create a FaultException with the problem details as detail&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; faultException = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; FaultException&amp;lt;XElement&amp;gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; problemDetailsElement,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; FaultReason(problemDetails.Title ?? &lt;span style="color:#e6db74"&gt;&amp;#34;An error occurred&amp;#34;&lt;/span&gt;),
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; FaultCode(GetFaultCodeFromStatus(problemDetails.Status ?? &lt;span style="color:#ae81ff"&gt;500&lt;/span&gt;)),
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;ProblemDetails&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; messageFault = faultException.CreateMessageFault();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; fault = Message.CreateMessage(version, messageFault, faultException.Action);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 4. Set the underlying HTTP status code (important for monitoring/observability)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; SetHttpStatusCode(problemDetails.Status ?? StatusCodes.Status500InternalServerError);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; ProblemDetails CreateProblemDetails(Exception exception)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; exceptionType = exception.GetType();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (_exceptionHandlers.TryGetValue(exceptionType, &lt;span style="color:#66d9ef"&gt;out&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; handler))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _logger.LogWarning(&lt;span style="color:#e6db74"&gt;&amp;#34;Handled Exception {ExceptionMessage}: Time {Time}&amp;#34;&lt;/span&gt;, exception.Message, DateTime.UtcNow);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; pd = handler(exception);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EnrichProblemDetails(pd);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; pd;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _logger.LogError(exception, &lt;span style="color:#e6db74"&gt;&amp;#34;Unhandled Exception: Time {Time}&amp;#34;&lt;/span&gt;, DateTime.UtcNow);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; unknownPd = HandleUnknownException(exception);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; EnrichProblemDetails(unknownPd);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; unknownPd;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// --- Specific Exception Handlers ---&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; ProblemDetails HandleBadRequestException(Exception ex)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; exception = (BadRequestException)ex;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ProblemDetails
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Status = StatusCodes.Status400BadRequest,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Type = HttpRfcBadRequest,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Title = _localizer[Localized.BadRequestExceptionTitle],
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Detail = _localizer[exception.LocalizedMessage, exception.Arguments]
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; ProblemDetails HandleValidationException(Exception ex)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; exception = (ValidationException)ex;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ValidationProblemDetails(exception.Errors)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Status = StatusCodes.Status400BadRequest,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Type = HttpRfcBadRequest,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Title = _localizer[Localized.ValidationExceptionTitle]
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; ProblemDetails HandleUnknownException(Exception ex)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ProblemDetails
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Status = StatusCodes.Status500InternalServerError,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Type = HttpRfcInternalError,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Title = &lt;span style="color:#e6db74"&gt;&amp;#34;An unexpected error occurred&amp;#34;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Detail = ex.Message
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// --- Helpers ---&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;void&lt;/span&gt; EnrichProblemDetails(ProblemDetails result)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Add distributed tracing IDs to the error so clients can report them back to us&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; correlation = AsyncStorage&amp;lt;Correlation&amp;gt;.Retrieve();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (correlation &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; not &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; result.Extensions.Add(&lt;span style="color:#e6db74"&gt;&amp;#34;correlationId&amp;#34;&lt;/span&gt;, correlation.Id);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; traceId = Activity.Current?.Id;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (traceId &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; not &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; result.Extensions.Add(nameof(traceId), traceId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; XElement TransformToXml(ProblemDetails problemDetails)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; ns = XNamespace.Get(ProblemDetailsNamespace);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; element = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;problem&amp;#34;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;type&amp;#34;&lt;/span&gt;, problemDetails.Type),
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;title&amp;#34;&lt;/span&gt;, problemDetails.Title),
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;status&amp;#34;&lt;/span&gt;, problemDetails.Status),
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;detail&amp;#34;&lt;/span&gt;, problemDetails.Detail ?? &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;.Empty));
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; extension &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; problemDetails.Extensions)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; element.Add(&lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + extension.Key, extension.Value?.ToString() ?? &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;.Empty));
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (problemDetails &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; ValidationProblemDetails validationProblemDetails &amp;amp;&amp;amp;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; validationProblemDetails.Errors.Count &amp;gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; errorsElement = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;errors&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; error &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; validationProblemDetails.Errors)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; errorElement = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;error&amp;#34;&lt;/span&gt;, &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XAttribute(&lt;span style="color:#e6db74"&gt;&amp;#34;field&amp;#34;&lt;/span&gt;, error.Key));
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; message &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; error.Value)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; errorElement.Add(&lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; XElement(ns + &lt;span style="color:#e6db74"&gt;&amp;#34;message&amp;#34;&lt;/span&gt;, message));
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; errorsElement.Add(errorElement);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; element.Add(errorsElement);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; element;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; GetFaultCodeFromStatus(&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; status)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; status &lt;span style="color:#66d9ef"&gt;switch&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#ae81ff"&gt;400&lt;/span&gt; =&amp;gt; &lt;span style="color:#e6db74"&gt;&amp;#34;BadRequest&amp;#34;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#ae81ff"&gt;401&lt;/span&gt; =&amp;gt; &lt;span style="color:#e6db74"&gt;&amp;#34;Unauthorized&amp;#34;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#ae81ff"&gt;403&lt;/span&gt; =&amp;gt; &lt;span style="color:#e6db74"&gt;&amp;#34;Forbidden&amp;#34;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#ae81ff"&gt;404&lt;/span&gt; =&amp;gt; &lt;span style="color:#e6db74"&gt;&amp;#34;NotFound&amp;#34;&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _ =&amp;gt; &lt;span style="color:#e6db74"&gt;&amp;#34;InternalServerError&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;void&lt;/span&gt; SetHttpStatusCode(&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; statusCode)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; httpContext = _httpContextAccessor.HttpContext;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (httpContext &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; not &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; httpContext.Response.StatusCode = statusCode;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="the-configuration-step-3"&gt;The Configuration (Step 3)&lt;/h3&gt;
+&lt;p&gt;We have to wire up this error handler as an &lt;code&gt;IServiceBehavior&lt;/code&gt;. This ensures it applies to every single call made to the service.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// Program.cs - Step 3: Production Ready with Error Handling&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Channels;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Configuration;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Description;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF.Dispatcher;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.API.Filters; &lt;span style="color:#75715e"&gt;// Where our ErrorHandler lives&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Sample.API.WCF;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; Microsoft.Extensions.DependencyInjection.Extensions;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; builder = WebApplication.CreateBuilder(args);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; options.MapInboundClaims = &lt;span style="color:#66d9ef"&gt;false&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; options.TokenValidationParameters = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; TokenValidationParameters
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateIssuer = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateAudience = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateLifetime = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidateIssuerSigningKey = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidIssuer = configuration[&lt;span style="color:#e6db74"&gt;&amp;#34;Jwt:Issuer&amp;#34;&lt;/span&gt;],
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ValidAudience = configuration[&lt;span style="color:#e6db74"&gt;&amp;#34;Jwt:Audience&amp;#34;&lt;/span&gt;],
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; IssuerSigningKey = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[&lt;span style="color:#e6db74"&gt;&amp;#34;Jwt:SecretKey&amp;#34;&lt;/span&gt;]!))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddAuthorization(options =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; options.DefaultPolicy = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .RequireAuthenticatedUser()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .Build();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddTransient&amp;lt;InvoiceService&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddServiceModelServices();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddServiceModelMetadata();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddSingleton&amp;lt;IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddSingleton&amp;lt;IErrorHandler, ExceptionHandlerErrorHandler&amp;gt;(); &lt;span style="color:#75715e"&gt;// these lines&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;builder.Services.AddSingleton&amp;lt;IServiceBehavior, ExceptionHandlerServiceBehaviour&amp;gt;(); &lt;span style="color:#75715e"&gt;// should be added.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; app = builder.Build();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.UseAuthentication();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.UseAuthorization();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.UseServiceModel(serviceBuilder =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; serviceBuilder.AddService&amp;lt;InvoiceService&amp;gt;()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AddServiceEndpoint&amp;lt;InvoiceService, IInvoiceService&amp;gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; BasicHttpBinding(), &lt;span style="color:#e6db74"&gt;&amp;#34;/Services/InvoiceService.svc&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; );
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; serviceMetadataBehavior = app.Services.GetRequiredService&amp;lt;ServiceMetadataBehavior&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; serviceMetadataBehavior.HttpGetEnabled = &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.Run();
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="the-happy-ending"&gt;The Happy Ending&lt;/h3&gt;
+&lt;p&gt;By Step 3, we have achieved something remarkable:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;The Integrator&lt;/strong&gt; is happy because they are still sending SOAP requests to &lt;code&gt;/Services/InvoiceService.svc&lt;/code&gt;. They didn&amp;rsquo;t have to change their integration pattern.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;The Developer&lt;/strong&gt; is happy because the &lt;code&gt;InvoiceService&lt;/code&gt; is clean. It uses &lt;code&gt;MediatR&lt;/code&gt;. It doesn&amp;rsquo;t have &lt;code&gt;try/catch&lt;/code&gt; blocks cluttering the business logic. It relies on &lt;code&gt;[Authorize]&lt;/code&gt; for security.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;The Operations Team&lt;/strong&gt; is happy because the logs show consistent &lt;code&gt;ProblemDetails&lt;/code&gt; structures regardless of whether the request came from a REST client or a SOAP client.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;We didn&amp;rsquo;t just &amp;ldquo;port&amp;rdquo; the code; we modernized the ecosystem around it, leaving the WCF interface as a compatibility layer rather than a shackle.&lt;/p&gt;</content></item><item><title>gRPC in .NET Microservices: Comparison with REST</title><link>https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/</link><pubDate>Wed, 08 Oct 2025 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/</guid><description>&lt;p&gt;When .NET microservices need to communcate synchronously with each other, two main options usually come up: REST API and gRPC API.&lt;/p&gt;
 &lt;p&gt;REST works with JSON over the HTTP/1.1 protocol; it’s easy to read, supported by all browsers, and simple to debug. However, compared to gRPC, REST API payloads are larger, and each request opens its own TCP connection. gRPC, on the other hand, compresses data transmission with Protocol Buffers and carries all traffic over a single HTTP/2 connection, minimizing latency. In this post, we’ll look at how both REST and gRPC work, compare them with examples on .NET 9, and examine which solution is more advantageous in which scenarios. Let’s get started.&lt;/p&gt;</description><content>&lt;p&gt;When .NET microservices need to communcate synchronously with each other, two main options usually come up: REST API and gRPC API.&lt;/p&gt;
 &lt;p&gt;REST works with JSON over the HTTP/1.1 protocol; it’s easy to read, supported by all browsers, and simple to debug. However, compared to gRPC, REST API payloads are larger, and each request opens its own TCP connection. gRPC, on the other hand, compresses data transmission with Protocol Buffers and carries all traffic over a single HTTP/2 connection, minimizing latency. In this post, we’ll look at how both REST and gRPC work, compare them with examples on .NET 9, and examine which solution is more advantageous in which scenarios. Let’s get started.&lt;/p&gt;
 &lt;h2 id="what-is-this-rpc"&gt;What is this RPC?&lt;/h2&gt;
@@ -1150,7 +1592,8 @@ dotnet test
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="5-scaling-signalr-with-redis-backplane"&gt;5. Scaling SignalR with Redis backplane&lt;/h3&gt;
 &lt;p&gt;Scaling SignalR across multiple servers ensures reliable real-time communication for high-demand applications that running in multiple instances. A &lt;strong&gt;Redis backplane&lt;/strong&gt; synchronizes messages between SignalR servers, ensuring clients connected to different servers receive messages seamlessly. Here is a quote from microsoft docs:&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;The SignalR Redis backplane uses the pub/sub feature to forward messages to other servers. When a client makes a connection, the connection information is passed to the backplane. When a server wants to send a message to all clients, it sends to the backplane. The backplane knows all connected clients and which servers they&amp;rsquo;re on. It sends the message to all clients via their respective servers.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;The SignalR Redis backplane uses the pub/sub feature to forward messages to other servers. When a client makes a connection, the connection information is passed to the backplane. When a server wants to send a message to all clients, it sends to the backplane. The backplane knows all connected clients and which servers they&amp;rsquo;re on. It sends the message to all clients via their respective servers.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
@@ -1317,7 +1760,8 @@ dotnet test
 &lt;p&gt;&lt;a href="https://github.com/berkslv/lecture-correlation-id-microservices"&gt;GitHub - berkslv/lecture-correlation-id-microservices&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;We can use our Correlation class, which we could define as Scoped, to send the CorrelationId value we receive in incoming requests to our service in outgoing requests. However, in this way, our state value, which we move between classes with Dependency Injection methods, becomes inaccessible in a special case in our request that proceeds asynchronously: Since our &lt;code&gt;CorrelationHeaderHandler&lt;/code&gt; class, which will intervene in the requests we make with the HttpClient using the DelegatingHandler class, will work in a separate DI scope from our application, the value of our Correlation class, which we could define as Scoped, becomes inaccessible in a this special case. This issue is also explained in Microsoft&amp;rsquo;s own documentation as follows:&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&amp;rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;When IHttpClientFactory creates a new delegating handler, it uses DI to fulfill the handler&amp;rsquo;s constructor parameters. IHttpClientFactory creates a separate DI scope for each handler, which can lead to surprising behavior when a handler consumes a scoped service.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;As a solution to this problem, we will create a class called &lt;code&gt;AsyncStorage&lt;/code&gt; and use the &lt;code&gt;AsyncLocal&lt;/code&gt; class provided by Microsoft to create a structure that we can access at any time within the same thread in our async request to set the CorrelationId value:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; Order.API.Filters.Correlation;

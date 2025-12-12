@@ -1,0 +1,392 @@
+<!doctype html><html lang=en><head><title>Legacy WCF/SOAP to Modern .NET: Migration Without Compromise :: Berk Selvi | Software Developer</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Discover how to migrate legacy .NET Framework WCF/SOAP applications to modern .NET without breaking existing SOAP integrations. This guide demonstrates practical patterns for using CoreWCF to preserve your SOAP contracts, embrace modern development practices, and deliver a seamless transition for all stakeholders."><meta name=keywords content=".NET,CoreWCF,SOAP,WCF,migration,legacy systems,modernization"><meta name=robots content="noodp"><link rel=canonical href=https://berkselvi.dev/posts/legacy-wcf-soap-to-modern-dotnet-migration/><link rel=stylesheet href=https://berkselvi.dev/assets/style.css><link rel=stylesheet href=https://berkselvi.dev/assets/green.css><link rel=canonical href=https://berkselvi.dev/posts/legacy-wcf-soap-to-modern-dotnet-migration/><link rel=apple-touch-icon sizes=57x57 href=/icon/apple-icon-57x57.png><link rel=apple-touch-icon sizes=60x60 href=/icon/apple-icon-60x60.png><link rel=apple-touch-icon sizes=72x72 href=/icon/apple-icon-72x72.png><link rel=apple-touch-icon sizes=76x76 href=/icon/apple-icon-76x76.png><link rel=apple-touch-icon sizes=114x114 href=/icon/apple-icon-114x114.png><link rel=apple-touch-icon sizes=120x120 href=/icon/apple-icon-120x120.png><link rel=apple-touch-icon sizes=144x144 href=/icon/apple-icon-144x144.png><link rel=apple-touch-icon sizes=152x152 href=/icon/apple-icon-152x152.png><link rel=apple-touch-icon sizes=180x180 href=/icon/apple-icon-180x180.png><link rel=icon type=image/png sizes=192x192 href=/icon/android-icon-192x192.png><link rel=icon type=image/png sizes=32x32 href=/icon/favicon-32x32.png><link rel=icon type=image/png sizes=96x96 href=/icon/favicon-96x96.png><link rel=icon type=image/png sizes=16x16 href=/icon/favicon-16x16.png><link rel=manifest href=/icon/manifest.json><meta name=msapplication-TileColor content="#1D1E28"><meta name=msapplication-TileImage content="/icon/ms-icon-144x144.png"><meta name=theme-color content="#1D1E28"><meta name=twitter:card content="summary"><meta name=twitter:site content><meta name=twitter:creator content="berkslv"><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="og:title" content="Legacy WCF/SOAP to Modern .NET: Migration Without Compromise"><meta property="og:description" content="Discover how to migrate legacy .NET Framework WCF/SOAP applications to modern .NET without breaking existing SOAP integrations. This guide demonstrates practical patterns for using CoreWCF to preserve your SOAP contracts, embrace modern development practices, and deliver a seamless transition for all stakeholders."><meta property="og:url" content="https://berkselvi.dev/posts/legacy-wcf-soap-to-modern-dotnet-migration/"><meta property="og:site_name" content="Berk Selvi | Software Developer"><meta property="og:image" content="https://berkselvi.dev/img/legacy-wcf-soap-to-modern-dotnet-migration/cover.webp"><meta property="twitter:image" content="https://berkselvi.dev/img/legacy-wcf-soap-to-modern-dotnet-migration/cover.webp"><meta property="og:image:width" content="2048"><meta property="og:image:height" content="1024"><meta property="article:published_time" content="2025-12-12 00:00:00 +0300 +0300"><script async src="https://www.googletagmanager.com/gtag/js?id=G-W0L24EMSQ5"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-W0L24EMSQ5")</script><link href=https://berkselvi.dev/css/custom.css rel=stylesheet></head><body class=green><div class="container center headings--one-size"><header class=header><div class=header__inner><div class=menu-trigger><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></div></div><nav class=menu><ul class="menu__inner menu__inner--desktop"><li><a href=/>home</a></li><div class=spacer></div><ul class=language-selector><ul class=language-selector-current><li>english ▾</li></ul><ul class="language-selector__more hidden"><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></ul></ul><ul class="menu__inner menu__inner--mobile"><li><a href=/>home</a></li><hr><li><a href=https://berkselvi.dev/>english</a></li><li><a href=https://berkselvi.dev/tr/>türkçe</a></li></ul></nav></header><div class=content><div class=post><h4>Translations;</h4><a href=/tr/posts/legacy-wcf-soap-to-modern-dotnet-migration/>Lgacy WCF/SOAP'tan Modern .NET'e: Taviz Vermeden Migration</a><h1 class=post-title><a href=https://berkselvi.dev/posts/legacy-wcf-soap-to-modern-dotnet-migration/>Legacy WCF/SOAP to Modern .NET: Migration Without Compromise</a></h1><div class=post-meta><span class=post-date>December 12, 2025
+</span><span class=post-author>:: Berk Selvi</span>
+<span class=post-reading-time>:: 9 min read (1845 words)</span></div><div class=post-content><div><h1 id=legacy-wcfsoap-to-modern-net-migration-without-compromise>Legacy WCF/SOAP to Modern .NET: Migration Without Compromise<a href=#legacy-wcfsoap-to-modern-net-migration-without-compromise class=hanchor arialabel=Anchor>&#8983;</a></h1><p>You’ve just scoped out the perfect migration plan. The roadmap looks beautiful: you are going to take that aging, monolith .NET Framework 4.8 WCF application and strangle it. You’ll extract the business logic, rewrite the interface as a sleek, stateless REST API on .NET 10, and finally shut down the old IIS server.</p><p>You present the plan to the stakeholders. The internal teams are cheering. The DevOps guys are already writing the Dockerfiles. Everyone is very excited.</p><p>And then, the email arrives.</p><p>It’s from the &ldquo;Legacy Integrations&rdquo; team at a major partner, or perhaps a vendor managing a hardware device that hasn&rsquo;t had a firmware update since 2014. Their message is polite but firm:</p><blockquote><p><em>&ldquo;We cannot consume a REST API. Our systems require a SOAP envelope. We need the WSDL to remain exactly as it is. If you change the contract, we break.&rdquo;</em></p></blockquote><p>Suddenly, your migration plan hits a brick wall. You are faced with two bad choices:</p><ol><li><strong>Abort the migration:</strong> Keep the entire project on .NET Framework just to satisfy one interface.</li><li><strong>The &ldquo;Sidecar&rdquo; Nightmare:</strong> Build the new system in .NET Core, but keep a zombie .NET Framework server running just to proxy SOAP requests to the new API.</li></ol><p>But there is a third option. A bridge.</p><p><strong>CoreWCF.</strong></p><p>CoreWCF allows us to keep the external contract (SOAP) identical to the legacy system, while completely rewriting the hosting model, dependency injection, and performance characteristics using modern .NET.</p><p>In this post, we are going to migrate a <code>InvoiceService</code> step-by-step. We will start with a raw endpoint, secure it with modern authorization, and finally implement sophisticated error handling that bridges the gap between RESTful <code>ProblemDetails</code> and SOAP Faults.</p><hr><h2 id=step-1-the-hello-world-of-migration>Step 1: The &ldquo;Hello World&rdquo; of Migration<a href=#step-1-the-hello-world-of-migration class=hanchor arialabel=Anchor>&#8983;</a></h2><p>Our first goal is simply to get the lights on. We want to prove that we can serve the <code>IInvoiceService</code> contract using the Kestrel web server instead of IIS.</p><p>We aren&rsquo;t worrying about security or error handling yet. We just want to see XML flowing.</p><h3 id=the-contract-and-service>The Contract and Service<a href=#the-contract-and-service class=hanchor arialabel=Anchor>&#8983;</a></h3><p>We keep our Service Contract almost exactly as it was in the old system. The only difference is that we are embracing <code>Task&lt;T></code> for true asynchronous processing—a massive performance win over the old WCF implementation. Additionally, we have slightly renamed the existing request and response models to better adhere to the Mediator pattern.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Sample.API.WCF/IInvoiceService.cs</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.Business.Features.Invoices.CreateInvoice;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Sample.API.WCF;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[ServiceContract]</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>interface</span> <span style=color:#a6e22e>IInvoiceService</span>
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span><span style=color:#a6e22e>    [OperationContract]</span>
+</span></span><span style=display:flex><span>    Task&lt;CreateInvoiceCommandResponse&gt; CreateInvoice(CreateInvoiceCommand command);
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Notice: No attributes here yet, just pure logic.</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>InvoiceService</span>(ISender mediator) : IInvoiceService
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;CreateInvoiceCommandResponse&gt; CreateInvoice(CreateInvoiceCommand command)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>await</span> mediator.Send(command);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=the-configuration-step-1>The Configuration (Step 1)<a href=#the-configuration-step-1 class=hanchor arialabel=Anchor>&#8983;</a></h3><p>Here is the <code>Program.cs</code> for the most basic setup. We strip away everything unnecessary.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Program.cs - Step 1: Basic WCF Hosting</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Configuration;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Description;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.API.WCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Description;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 1. Add CoreWCF basics to the DI container</span>
+</span></span><span style=display:flex><span>builder.Services.AddTransient&lt;InvoiceService&gt;();
+</span></span><span style=display:flex><span>builder.Services.AddServiceModelServices();
+</span></span><span style=display:flex><span>builder.Services.AddServiceModelMetadata();
+</span></span><span style=display:flex><span>services.AddSingleton&lt;IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior&gt;();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 2. Register our MediatR and Service</span>
+</span></span><span style=display:flex><span>builder.Services.AddMediatR(cfg =&gt; cfg.RegisterServicesFromAssembly(<span style=color:#66d9ef>typeof</span>(Program).Assembly));
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 3. Configure the CoreWCF Middleware</span>
+</span></span><span style=display:flex><span>app.UseServiceModel(serviceBuilder =&gt;
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    serviceBuilder.AddService&lt;InvoiceService&gt;()
+</span></span><span style=display:flex><span>    .AddServiceEndpoint&lt;InvoiceService, IInvoiceService&gt;(
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>new</span> BasicHttpBinding(), <span style=color:#e6db74>&#34;/Services/InvoiceService.svc&#34;</span> <span style=color:#75715e>// The endpoint URL</span>
+</span></span><span style=display:flex><span>    );
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// Enable WSDL generation so the stubborn client can update their reference if needed</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> serviceMetadataBehavior = app.Services.GetRequiredService&lt;ServiceMetadataBehavior&gt;();
+</span></span><span style=display:flex><span>    serviceMetadataBehavior.HttpGetEnabled = <span style=color:#66d9ef>true</span>;
+</span></span><span style=display:flex><span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><p>At this point, we have achieved victory on the transport layer. The integrator can hit <code>/Services/InvoiceService.svc</code>, send an XML envelope, and our modern MediatR handlers process the logic.</p><hr><h2 id=step-2-adding-authorization>Step 2: Adding Authorization<a href=#step-2-adding-authorization class=hanchor arialabel=Anchor>&#8983;</a></h2><p>The &ldquo;Plain&rdquo; service works, but it&rsquo;s dangerous. In the old WCF days, many times developers did not add any authorization support to endpoints and configuring security meant dealing with security certificates.</p><p>In CoreWCF, <strong>security is just ASP.NET Core security</strong>.</p><p>If your REST API uses JWT Bearer tokens or Cookie Auth, your CoreWCF endpoints can use them too. We don&rsquo;t need to reinvent the wheel. We simply decorate our service with <code>[Authorize]</code>.</p><h3 id=the-updated-service>The Updated Service<a href=#the-updated-service class=hanchor arialabel=Anchor>&#8983;</a></h3><p>We add <code>[Authorize]</code> and inject <code>IHttpContextAccessor</code> to prove we can access the user context.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> MediatR;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.AspNetCore.Authorization;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.Shared.Services.Interfaces;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Sample.API.WCF;
+</span></span><span style=display:flex><span><span style=color:#a6e22e>
+</span></span></span><span style=display:flex><span><span style=color:#a6e22e>[Authorize]</span> <span style=color:#75715e>// &lt;--- The magic keyword. This is standard ASP.NET Core auth.</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>InvoiceService</span>(ISender mediator, IHttpContextAccessor httpContextAccessor) : IInvoiceService
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task&lt;Response&gt; CreateInvoice(CreateInvoiceCommand command)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> context = httpContextAccessor.HttpContext;
+</span></span><span style=display:flex><span>        Console.WriteLine(context?.User.Identity?.Name);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>await</span> mediator.Send(command);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=the-configuration-step-2>The Configuration (Step 2)<a href=#the-configuration-step-2 class=hanchor arialabel=Anchor>&#8983;</a></h3><p>We need to layer the ASP.NET Core Auth middleware <em>before</em> the CoreWCF middleware.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#75715e>// Program.cs - Step 2: Adding Authorization</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Configuration;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Description;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.API.WCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.AspNetCore.Authentication.JwtBearer; <span style=color:#75715e>// Assuming JWT</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 1. Standard ASP.NET Core Authentication Setup</span>
+</span></span><span style=display:flex><span>builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+</span></span><span style=display:flex><span>    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =&gt;
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        options.MapInboundClaims = <span style=color:#66d9ef>false</span>;
+</span></span><span style=display:flex><span>        options.TokenValidationParameters = <span style=color:#66d9ef>new</span> TokenValidationParameters
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            ValidateIssuer = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidateAudience = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidateLifetime = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidateIssuerSigningKey = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidIssuer = configuration[<span style=color:#e6db74>&#34;Jwt:Issuer&#34;</span>],
+</span></span><span style=display:flex><span>            ValidAudience = configuration[<span style=color:#e6db74>&#34;Jwt:Audience&#34;</span>],
+</span></span><span style=display:flex><span>            IssuerSigningKey = <span style=color:#66d9ef>new</span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[<span style=color:#e6db74>&#34;Jwt:SecretKey&#34;</span>]!))
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddAuthorization(options =&gt;
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    options.DefaultPolicy = <span style=color:#66d9ef>new</span> AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+</span></span><span style=display:flex><span>        .RequireAuthenticatedUser()
+</span></span><span style=display:flex><span>        .Build();
+</span></span><span style=display:flex><span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddTransient&lt;InvoiceService&gt;();
+</span></span><span style=display:flex><span>builder.Services.AddServiceModelServices();
+</span></span><span style=display:flex><span>builder.Services.AddServiceModelMetadata();
+</span></span><span style=display:flex><span>services.AddSingleton&lt;IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior&gt;();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddMediatR(cfg =&gt; cfg.RegisterServicesFromAssembly(<span style=color:#66d9ef>typeof</span>(Program).Assembly));
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// 2. IMPORTANT: Auth middleware must run before WCF middleware</span>
+</span></span><span style=display:flex><span>app.UseAuthentication();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.UseAuthorization();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.UseServiceModel(serviceBuilder =&gt;
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    serviceBuilder.AddService&lt;InvoiceService&gt;()
+</span></span><span style=display:flex><span>    .AddServiceEndpoint&lt;InvoiceService, IInvoiceService&gt;(
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>new</span> BasicHttpBinding(), <span style=color:#e6db74>&#34;/Services/InvoiceService.svc&#34;</span> 
+</span></span><span style=display:flex><span>    );
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> serviceMetadataBehavior = app.Services.GetRequiredService&lt;ServiceMetadataBehavior&gt;();
+</span></span><span style=display:flex><span>    serviceMetadataBehavior.HttpGetEnabled = <span style=color:#66d9ef>true</span>;
+</span></span><span style=display:flex><span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><p>Now, if the integrator sends a request without a valid standard HTTP <code>Authorization: Bearer</code> header, CoreWCF will reject it with a 401 before it even reaches our code. Of course our customer needs to implement additional step before making a request but without authn & authz any app will be prone to attacks.</p><hr><h2 id=step-3-the-universal-translator-unified-error-handling>Step 3: The Universal Translator (Unified Error Handling)<a href=#step-3-the-universal-translator-unified-error-handling class=hanchor arialabel=Anchor>&#8983;</a></h2><p>This is the hardest part of the story.</p><p>In a modern REST API, when something goes wrong (e.g., &ldquo;Invoice not found&rdquo;), we throw a custom <code>BadRequestException</code> and return a JSON <code>ProblemDetails</code> (RFC 7807) response.</p><p>In WCF, we are expected to return a <code>FaultException</code> wrapped in XML.</p><p>If we don&rsquo;t handle this, our nice <code>ValidationException</code> will crash the service and return a generic, ugly &ldquo;Internal Server Error&rdquo; to the client. We need a translator that catches our modern Exceptions and translates them into SOAP Faults that still contain all the rich data (like validation error fields).</p><h3 id=the-code-exceptionhandlererrorhandler>The Code: ExceptionHandlerErrorHandler<a href=#the-code-exceptionhandlererrorhandler class=hanchor arialabel=Anchor>&#8983;</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span><span style=color:#66d9ef>using</span> System.Diagnostics;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> System.Xml.Linq;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Channels;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Dispatcher;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.Domain.Constants;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.Domain.Exceptions;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.AspNetCore.Mvc;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.Extensions.Localization;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>namespace</span> Sample.API.Filters;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// CoreWCF Error Handler that catches exceptions and returns ProblemDetails as SOAP Fault.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// This acts as a bridge between modern Exception definitions and legacy SOAP faults.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>/// &lt;/summary&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>ExceptionHandlerErrorHandler</span> : IErrorHandler
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>string</span> HttpRfcBadRequest = <span style=color:#e6db74>&#34;https://tools.ietf.org/html/rfc7231#section-6.5.1&#34;</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>string</span> ProblemDetailsNamespace = <span style=color:#e6db74>&#34;urn:ietf:rfc:7807&#34;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> ILogger&lt;ExceptionHandlerErrorHandler&gt; _logger;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> IHttpContextAccessor _httpContextAccessor;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> IStringLocalizer&lt;ExceptionHandleMiddleware&gt; _localizer;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> Dictionary&lt;Type, Func&lt;Exception, ProblemDetails&gt;&gt; _exceptionHandlers;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> ExceptionHandlerErrorHandler(
+</span></span><span style=display:flex><span>        ILogger&lt;ExceptionHandlerErrorHandler&gt; logger,
+</span></span><span style=display:flex><span>        IHttpContextAccessor httpContextAccessor,
+</span></span><span style=display:flex><span>        IStringLocalizer&lt;ExceptionHandleMiddleware&gt; localizer)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        _logger = logger;
+</span></span><span style=display:flex><span>        _httpContextAccessor = httpContextAccessor;
+</span></span><span style=display:flex><span>        _localizer = localizer;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Map domain exceptions to specific ProblemDetails handlers</span>
+</span></span><span style=display:flex><span>        _exceptionHandlers = <span style=color:#66d9ef>new</span>()
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            { <span style=color:#66d9ef>typeof</span>(BadRequestException), HandleBadRequestException },
+</span></span><span style=display:flex><span>            <span style=color:#75715e>// Add as many as you like</span>
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>bool</span> HandleError(Exception error)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Return true to indicate we handled the error and the session is not faulted</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>true</span>;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>void</span> ProvideFault(Exception error, MessageVersion version, <span style=color:#66d9ef>ref</span> Message fault)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 1. Convert Exception to ProblemDetails</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> problemDetails = CreateProblemDetails(error);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 2. Transform ProblemDetails to XML Element for the SOAP Body</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> problemDetailsElement = TransformToXml(problemDetails);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 3. Create a FaultException with the problem details as detail</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> faultException = <span style=color:#66d9ef>new</span> FaultException&lt;XElement&gt;(
+</span></span><span style=display:flex><span>            problemDetailsElement,
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> FaultReason(problemDetails.Title ?? <span style=color:#e6db74>&#34;An error occurred&#34;</span>),
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> FaultCode(GetFaultCodeFromStatus(problemDetails.Status ?? <span style=color:#ae81ff>500</span>)),
+</span></span><span style=display:flex><span>            <span style=color:#e6db74>&#34;ProblemDetails&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> messageFault = faultException.CreateMessageFault();
+</span></span><span style=display:flex><span>        fault = Message.CreateMessage(version, messageFault, faultException.Action);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// 4. Set the underlying HTTP status code (important for monitoring/observability)</span>
+</span></span><span style=display:flex><span>        SetHttpStatusCode(problemDetails.Status ?? StatusCodes.Status500InternalServerError);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> ProblemDetails CreateProblemDetails(Exception exception)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> exceptionType = exception.GetType();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (_exceptionHandlers.TryGetValue(exceptionType, <span style=color:#66d9ef>out</span> <span style=color:#66d9ef>var</span> handler))
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            _logger.LogWarning(<span style=color:#e6db74>&#34;Handled Exception {ExceptionMessage}: Time {Time}&#34;</span>, exception.Message, DateTime.UtcNow);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> pd = handler(exception);
+</span></span><span style=display:flex><span>            EnrichProblemDetails(pd);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>return</span> pd;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        _logger.LogError(exception, <span style=color:#e6db74>&#34;Unhandled Exception: Time {Time}&#34;</span>, DateTime.UtcNow);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> unknownPd = HandleUnknownException(exception);
+</span></span><span style=display:flex><span>        EnrichProblemDetails(unknownPd);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> unknownPd;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// --- Specific Exception Handlers ---</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> ProblemDetails HandleBadRequestException(Exception ex)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> exception = (BadRequestException)ex;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> ProblemDetails
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Status = StatusCodes.Status400BadRequest,
+</span></span><span style=display:flex><span>            Type = HttpRfcBadRequest,
+</span></span><span style=display:flex><span>            Title = _localizer[Localized.BadRequestExceptionTitle],
+</span></span><span style=display:flex><span>            Detail = _localizer[exception.LocalizedMessage, exception.Arguments]
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> ProblemDetails HandleValidationException(Exception ex)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> exception = (ValidationException)ex;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> ValidationProblemDetails(exception.Errors)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Status = StatusCodes.Status400BadRequest,
+</span></span><span style=display:flex><span>            Type = HttpRfcBadRequest,
+</span></span><span style=display:flex><span>            Title = _localizer[Localized.ValidationExceptionTitle]
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> ProblemDetails HandleUnknownException(Exception ex)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> ProblemDetails
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            Status = StatusCodes.Status500InternalServerError,
+</span></span><span style=display:flex><span>            Type = HttpRfcInternalError,
+</span></span><span style=display:flex><span>            Title = <span style=color:#e6db74>&#34;An unexpected error occurred&#34;</span>,
+</span></span><span style=display:flex><span>            Detail = ex.Message
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// --- Helpers ---</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>void</span> EnrichProblemDetails(ProblemDetails result)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// Add distributed tracing IDs to the error so clients can report them back to us</span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> correlation = AsyncStorage&lt;Correlation&gt;.Retrieve();
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (correlation <span style=color:#66d9ef>is</span> not <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            result.Extensions.Add(<span style=color:#e6db74>&#34;correlationId&#34;</span>, correlation.Id);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> traceId = Activity.Current?.Id;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (traceId <span style=color:#66d9ef>is</span> not <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            result.Extensions.Add(nameof(traceId), traceId);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> XElement TransformToXml(ProblemDetails problemDetails)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> ns = XNamespace.Get(ProblemDetailsNamespace);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> element = <span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;problem&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;type&#34;</span>, problemDetails.Type),
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;title&#34;</span>, problemDetails.Title),
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;status&#34;</span>, problemDetails.Status),
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;detail&#34;</span>, problemDetails.Detail ?? <span style=color:#66d9ef>string</span>.Empty));
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> extension <span style=color:#66d9ef>in</span> problemDetails.Extensions)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            element.Add(<span style=color:#66d9ef>new</span> XElement(ns + extension.Key, extension.Value?.ToString() ?? <span style=color:#66d9ef>string</span>.Empty));
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (problemDetails <span style=color:#66d9ef>is</span> ValidationProblemDetails validationProblemDetails &amp;&amp;
+</span></span><span style=display:flex><span>            validationProblemDetails.Errors.Count &gt; <span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>var</span> errorsElement = <span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;errors&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> error <span style=color:#66d9ef>in</span> validationProblemDetails.Errors)
+</span></span><span style=display:flex><span>            {
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>var</span> errorElement = <span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;error&#34;</span>, <span style=color:#66d9ef>new</span> XAttribute(<span style=color:#e6db74>&#34;field&#34;</span>, error.Key));
+</span></span><span style=display:flex><span>                <span style=color:#66d9ef>foreach</span> (<span style=color:#66d9ef>var</span> message <span style=color:#66d9ef>in</span> error.Value)
+</span></span><span style=display:flex><span>                {
+</span></span><span style=display:flex><span>                    errorElement.Add(<span style=color:#66d9ef>new</span> XElement(ns + <span style=color:#e6db74>&#34;message&#34;</span>, message));
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>                errorsElement.Add(errorElement);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>            element.Add(errorsElement);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> element;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>string</span> GetFaultCodeFromStatus(<span style=color:#66d9ef>int</span> status)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> status <span style=color:#66d9ef>switch</span>
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            <span style=color:#ae81ff>400</span> =&gt; <span style=color:#e6db74>&#34;BadRequest&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#ae81ff>401</span> =&gt; <span style=color:#e6db74>&#34;Unauthorized&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#ae81ff>403</span> =&gt; <span style=color:#e6db74>&#34;Forbidden&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#ae81ff>404</span> =&gt; <span style=color:#e6db74>&#34;NotFound&#34;</span>,
+</span></span><span style=display:flex><span>            _ =&gt; <span style=color:#e6db74>&#34;InternalServerError&#34;</span>
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>void</span> SetHttpStatusCode(<span style=color:#66d9ef>int</span> statusCode)
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>var</span> httpContext = _httpContextAccessor.HttpContext;
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (httpContext <span style=color:#66d9ef>is</span> not <span style=color:#66d9ef>null</span>)
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            httpContext.Response.StatusCode = statusCode;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h3 id=the-configuration-step-3>The Configuration (Step 3)<a href=#the-configuration-step-3 class=hanchor arialabel=Anchor>&#8983;</a></h3><p>We have to wire up this error handler as an <code>IServiceBehavior</code>. This ensures it applies to every single call made to the service.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>// Program.cs - Step 3: Production Ready with Error Handling</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Channels;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Configuration;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Description;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> CoreWCF.Dispatcher;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.API.Filters; <span style=color:#75715e>// Where our ErrorHandler lives</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Sample.API.WCF;
+</span></span><span style=display:flex><span><span style=color:#66d9ef>using</span> Microsoft.Extensions.DependencyInjection.Extensions;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> builder = WebApplication.CreateBuilder(args);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+</span></span><span style=display:flex><span>    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =&gt;
+</span></span><span style=display:flex><span>    {
+</span></span><span style=display:flex><span>        options.MapInboundClaims = <span style=color:#66d9ef>false</span>;
+</span></span><span style=display:flex><span>        options.TokenValidationParameters = <span style=color:#66d9ef>new</span> TokenValidationParameters
+</span></span><span style=display:flex><span>        {
+</span></span><span style=display:flex><span>            ValidateIssuer = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidateAudience = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidateLifetime = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidateIssuerSigningKey = <span style=color:#66d9ef>true</span>,
+</span></span><span style=display:flex><span>            ValidIssuer = configuration[<span style=color:#e6db74>&#34;Jwt:Issuer&#34;</span>],
+</span></span><span style=display:flex><span>            ValidAudience = configuration[<span style=color:#e6db74>&#34;Jwt:Audience&#34;</span>],
+</span></span><span style=display:flex><span>            IssuerSigningKey = <span style=color:#66d9ef>new</span> SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[<span style=color:#e6db74>&#34;Jwt:SecretKey&#34;</span>]!))
+</span></span><span style=display:flex><span>        };
+</span></span><span style=display:flex><span>    });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddAuthorization(options =&gt;
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    options.DefaultPolicy = <span style=color:#66d9ef>new</span> AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+</span></span><span style=display:flex><span>        .RequireAuthenticatedUser()
+</span></span><span style=display:flex><span>        .Build();
+</span></span><span style=display:flex><span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>builder.Services.AddTransient&lt;InvoiceService&gt;();
+</span></span><span style=display:flex><span>builder.Services.AddServiceModelServices();
+</span></span><span style=display:flex><span>builder.Services.AddServiceModelMetadata();
+</span></span><span style=display:flex><span>builder.Services.AddSingleton&lt;IServiceBehavior, UseRequestHeadersForMetadataAddressBehavior&gt;();
+</span></span><span style=display:flex><span>builder.Services.AddSingleton&lt;IErrorHandler, ExceptionHandlerErrorHandler&gt;(); <span style=color:#75715e>// these lines</span>
+</span></span><span style=display:flex><span>builder.Services.AddSingleton&lt;IServiceBehavior, ExceptionHandlerServiceBehaviour&gt;(); <span style=color:#75715e>// should be added.</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>var</span> app = builder.Build();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.UseAuthentication();
+</span></span><span style=display:flex><span>app.UseAuthorization();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.UseServiceModel(serviceBuilder =&gt;
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    serviceBuilder.AddService&lt;InvoiceService&gt;()
+</span></span><span style=display:flex><span>    .AddServiceEndpoint&lt;InvoiceService, IInvoiceService&gt;(
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>new</span> BasicHttpBinding(), <span style=color:#e6db74>&#34;/Services/InvoiceService.svc&#34;</span> 
+</span></span><span style=display:flex><span>    );
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>var</span> serviceMetadataBehavior = app.Services.GetRequiredService&lt;ServiceMetadataBehavior&gt;();
+</span></span><span style=display:flex><span>    serviceMetadataBehavior.HttpGetEnabled = <span style=color:#66d9ef>true</span>;
+</span></span><span style=display:flex><span>});
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>app.Run();
+</span></span></code></pre></div><h3 id=the-happy-ending>The Happy Ending<a href=#the-happy-ending class=hanchor arialabel=Anchor>&#8983;</a></h3><p>By Step 3, we have achieved something remarkable:</p><ol><li><strong>The Integrator</strong> is happy because they are still sending SOAP requests to <code>/Services/InvoiceService.svc</code>. They didn&rsquo;t have to change their integration pattern.</li><li><strong>The Developer</strong> is happy because the <code>InvoiceService</code> is clean. It uses <code>MediatR</code>. It doesn&rsquo;t have <code>try/catch</code> blocks cluttering the business logic. It relies on <code>[Authorize]</code> for security.</li><li><strong>The Operations Team</strong> is happy because the logs show consistent <code>ProblemDetails</code> structures regardless of whether the request came from a REST client or a SOAP client.</li></ol><p>We didn&rsquo;t just &ldquo;port&rdquo; the code; we modernized the ecosystem around it, leaving the WCF interface as a compatibility layer rather than a shackle.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h></span><hr></div><div class=pagination__buttons><span class="button next"><a href=https://berkselvi.dev/posts/grpc-in-net-microservices-comparison-with-rest/><span class=button__text>gRPC in .NET Microservices: Comparison with REST</span>
+<span class=button__icon>→</span></a></span></div></div><script src=https://utteranc.es/client.js repo=berkslv/berkselvi.dev issue-term=title theme=dark-blue crossorigin=anonymous async></script></div></div><footer class=footer><div class=footer__inner><div class="copyright copyright--user"><span>Made by Berk Selvi.<br>This site is <a href=https://github.com/berkslv/berkselvi.dev target=_blank>open source</a></span></div></div></footer><script src=https://berkselvi.dev/assets/main.js></script><script src=https://berkselvi.dev/assets/prism.js></script><script src=https://berkselvi.dev/assets/languageSelector.js></script></div></body></html>
