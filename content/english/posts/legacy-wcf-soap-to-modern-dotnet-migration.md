@@ -226,8 +226,6 @@ In WCF, we are expected to return a `FaultException` wrapped in XML.
 
 If we don't handle this, our nice `ValidationException` will crash the service and return a generic, ugly "Internal Server Error" to the client. We need a translator that catches our modern Exceptions and translates them into SOAP Faults that still contain all the rich data (like validation error fields).
 
-### The Code: ExceptionHandlerErrorHandler
-
 ```csharp
 using System.Diagnostics;
 using System.Xml.Linq;

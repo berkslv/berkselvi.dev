@@ -226,8 +226,6 @@ WCF'de ise, XML içine sarılmış bir `FaultException` döndürmemiz beklenir.
 
 Eğer bunu yönetmezsek, güzelim `ValidationException`'ımız servisi çökertecek ve istemciye genel, çirkin bir "Internal Server Error" dönecektir. Modern Exception'larımızı yakalayan ve onları hala tüm zengin verileri (doğrulama hata alanları gibi) içeren SOAP Hatalarına (Faults) çeviren bir tercümana ihtiyacımız var.
 
-### Kod: ExceptionHandlerErrorHandler
-
 ```csharp
 using System.Diagnostics;
 using System.Xml.Linq;
