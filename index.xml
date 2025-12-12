@@ -173,7 +173,6 @@
 &lt;p&gt;In a modern REST API, when something goes wrong (e.g., &amp;ldquo;Invoice not found&amp;rdquo;), we throw a custom &lt;code&gt;BadRequestException&lt;/code&gt; and return a JSON &lt;code&gt;ProblemDetails&lt;/code&gt; (RFC 7807) response.&lt;/p&gt;
 &lt;p&gt;In WCF, we are expected to return a &lt;code&gt;FaultException&lt;/code&gt; wrapped in XML.&lt;/p&gt;
 &lt;p&gt;If we don&amp;rsquo;t handle this, our nice &lt;code&gt;ValidationException&lt;/code&gt; will crash the service and return a generic, ugly &amp;ldquo;Internal Server Error&amp;rdquo; to the client. We need a translator that catches our modern Exceptions and translates them into SOAP Faults that still contain all the rich data (like validation error fields).&lt;/p&gt;
-&lt;h3 id="the-code-exceptionhandlererrorhandler"&gt;The Code: ExceptionHandlerErrorHandler&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; System.Diagnostics;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; System.Xml.Linq;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF;

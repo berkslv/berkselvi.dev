@@ -175,7 +175,6 @@
 &lt;p&gt;Modern bir REST API&amp;rsquo;de, bir şeyler ters gittiğinde (örneğin &amp;ldquo;Fatura bulunamadı&amp;rdquo;), özel bir &lt;code&gt;BadRequestException&lt;/code&gt; fırlatırız ve bir JSON &lt;code&gt;ProblemDetails&lt;/code&gt; (RFC 7807) yanıtı döndürürüz.&lt;/p&gt;
 &lt;p&gt;WCF&amp;rsquo;de ise, XML içine sarılmış bir &lt;code&gt;FaultException&lt;/code&gt; döndürmemiz beklenir.&lt;/p&gt;
 &lt;p&gt;Eğer bunu yönetmezsek, güzelim &lt;code&gt;ValidationException&lt;/code&gt;&amp;lsquo;ımız servisi çökertecek ve istemciye genel, çirkin bir &amp;ldquo;Internal Server Error&amp;rdquo; dönecektir. Modern Exception&amp;rsquo;larımızı yakalayan ve onları hala tüm zengin verileri (doğrulama hata alanları gibi) içeren SOAP Hatalarına (Faults) çeviren bir tercümana ihtiyacımız var.&lt;/p&gt;
-&lt;h3 id="kod-exceptionhandlererrorhandler"&gt;Kod: ExceptionHandlerErrorHandler&lt;/h3&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; System.Diagnostics;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; System.Xml.Linq;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; CoreWCF;
