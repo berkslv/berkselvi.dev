@@ -44,7 +44,7 @@
 </span></span><span style=display:flex><span>iQIDAQAB  
 </span></span><span style=display:flex><span>-----END PUBLIC KEY-----
 </span></span></code></pre></div><h2 id=setting-up-the-environment-for-net-rsa-decryption>Setting Up the Environment for .NET RSA Decryption<a href=#setting-up-the-environment-for-net-rsa-decryption class=hanchor arialabel=Anchor>&#8983;</a></h2><p>.NET şifre çözme için .NET 8&rsquo;i kullanacağım ve System.Security.Cryptography ad alanınından faydalanacağım. RSA şifre çözme için başka bir nuget paketine ihtiyacımız yoktur, bunun için şöyle bir Helper sınıf oluşturdum.</p><p>RsaKey&rsquo;i appsettings.json dosyasından okuyoruz. RsaKey alanında yeni satırlar için \n eklemeniz gerekir. Bu anahtarı appsettings.json dosyasına koyduk çünkü her istekte aynı anahtarı kullanmak istiyoruz. Ancak .NET kütüphanesinin sorumluluğuna bırakırsanız, her başlangıçta yeni bir anahtar oluşturulacaktır.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-json data-lang=json><span style=display:flex><span><span style=color:#75715e>// appsettings.json  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>{  
+</span></span></span><span style=display:flex><span>{  
 </span></span><span style=display:flex><span>  <span style=color:#f92672>&#34;Logging&#34;</span>: {  
 </span></span><span style=display:flex><span>    <span style=color:#f92672>&#34;LogLevel&#34;</span>: {  
 </span></span><span style=display:flex><span>      <span style=color:#f92672>&#34;Default&#34;</span>: <span style=color:#e6db74>&#34;Information&#34;</span>,  
@@ -101,7 +101,7 @@
 </span></span></code></pre></div><p>Ve bu helper sınıfı EncryptionController içinde kullanarak helper sınıfın methodlarını kullanın. Production ortamlarında, PrivateKey&rsquo;in kimseye açığa çıkarılmaması gerekir. Bu gizli tutulmalıdır.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cs data-lang=cs><span style=display:flex><span><span style=color:#75715e>// Controllers/EncryptionController.cs  </span>
 </span></span><span style=display:flex><span><span style=color:#a6e22e>[ApiController]</span>  
 </span></span><span style=display:flex><span><span style=color:#a6e22e>[Route(&#34;api/[controller]</span><span style=color:#e6db74>&#34;)]  
-</span></span></span><span style=display:flex><span><span style=color:#e6db74></span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>EncryptionController</span> : ControllerBase  
+</span></span></span><span style=display:flex><span><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>EncryptionController</span> : ControllerBase  
 </span></span><span style=display:flex><span>{  
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> RsaEncryptionHelper _rsaEncryptionHelper;  
 </span></span><span style=display:flex><span>      
@@ -153,7 +153,7 @@
 </span></span><span style=display:flex><span>}
 </span></span></code></pre></div><p>Bu backend tarafında yaptığımız geliştirmelerden sonra JavaScript tarafına geçerek devam edebiliriz. Yaptıklarımız sayesinde, public anahtarımızı istemciyle endpoint&rsquo;ten paylaşabiliriz, ardından istemciler bu public anahtarı kullanarak verilerini güvenli iletişim için şifreleyebilirler.</p><h2 id=setting-up-the-development-environment-for-javascript-rsa-encryption>Setting Up the Development environment for JavaScript RSA Encryption<a href=#setting-up-the-development-environment-for-javascript-rsa-encryption class=hanchor arialabel=Anchor>&#8983;</a></h2><p>rnekte, modern tarayıcılara yerleşik olan ve RSA şifrelemeyi içeren kriptografik işlemleri sağlayan Web Crypto API&rsquo;sini kullanacağız. Bu nedenle, herhangi bir npm paketi indirmenize gerek yoktur.</p><p>JavaScript ile tarayıcı uygulaması geliştireceksem genellikle Vite ile başlarım. Bunu yapmak için, aşağıdaki komutu girerek vanilla js veya React ile bir proje başlatabiliriz. Gösterim amaçlı küçük bir React projesi geliştireceğim, ancak vanilla js ile devam etmeniz durumda bile yeterli olacaktır.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>npm create vite@latest
 </span></span></code></pre></div><p>Bundan sonra src/utils/RsaEncryptionHelper.js dosyasını oluşturup o dosyayı aşağıdaki gibi dolduracağım. Bu dosyanın method&rsquo;larıyla RSA algoritması ile şifreleyebilir ve şifresini çözebilirsiniz, ancak şifre çözme genellikle backend sorumluluğundadır çünkü şifre çözme private anahtar gerektirir ve güvenlik nedenlerinden dolayı javascript istemcisinin private anahtarları herkese açık olarak saklamaması veya private anahtarlara erişmemesi gerekir. Ancak SSL&rsquo;deki gibi iki yönlü anahtar şifrelemeye benzer bir şey denemek isteyen olursa diye bunuda paylaşıyorum.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=display:flex><span><span style=color:#75715e>// src/utils/RsaEncryptionHelper.js  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encryptAlgorithm</span> <span style=color:#f92672>=</span> {  
+</span></span></span><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encryptAlgorithm</span> <span style=color:#f92672>=</span> {  
 </span></span><span style=display:flex><span>  <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;RSA-OAEP&#34;</span>,  
 </span></span><span style=display:flex><span>  <span style=color:#a6e22e>modulusLength</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>2048</span>,  
 </span></span><span style=display:flex><span>  <span style=color:#a6e22e>publicExponent</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Uint8Array</span>([<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>]),  
@@ -204,10 +204,10 @@
 </span></span><span style=display:flex><span><span style=color:#66d9ef>export</span> <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encryptRsa</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>async</span> (<span style=color:#a6e22e>str</span>, <span style=color:#a6e22e>pemString</span>) =&gt; {  
 </span></span><span style=display:flex><span>  <span style=color:#66d9ef>try</span> {  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// convert string into ArrayBuffer  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encodedPlaintext</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>TextEncoder</span>().<span style=color:#a6e22e>encode</span>(<span style=color:#a6e22e>str</span>).<span style=color:#a6e22e>buffer</span>;  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encodedPlaintext</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>TextEncoder</span>().<span style=color:#a6e22e>encode</span>(<span style=color:#a6e22e>str</span>).<span style=color:#a6e22e>buffer</span>;  
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>keyArrayBuffer</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>convertPemToArrayBuffer</span>(<span style=color:#a6e22e>pemString</span>);  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// import public key  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>secretKey</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>importKey</span>(  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>secretKey</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>importKey</span>(  
 </span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;spki&#34;</span>,  
 </span></span><span style=display:flex><span>      <span style=color:#a6e22e>keyArrayBuffer</span>,  
 </span></span><span style=display:flex><span>      <span style=color:#a6e22e>encryptAlgorithm</span>,  
@@ -215,7 +215,7 @@
 </span></span><span style=display:flex><span>      [<span style=color:#e6db74>&#34;encrypt&#34;</span>]  
 </span></span><span style=display:flex><span>    );  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// encrypt the text with the public key  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encrypted</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>encrypt</span>(  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encrypted</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>encrypt</span>(  
 </span></span><span style=display:flex><span>      {  
 </span></span><span style=display:flex><span>        <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;RSA-OAEP&#34;</span>,  
 </span></span><span style=display:flex><span>      },  
@@ -223,7 +223,7 @@
 </span></span><span style=display:flex><span>      <span style=color:#a6e22e>encodedPlaintext</span>  
 </span></span><span style=display:flex><span>    );  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// store data into base64 string  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>arrayBufferToBase64</span>(<span style=color:#a6e22e>encrypted</span>);  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>arrayBufferToBase64</span>(<span style=color:#a6e22e>encrypted</span>);  
 </span></span><span style=display:flex><span>  } <span style=color:#66d9ef>catch</span> (<span style=color:#a6e22e>error</span>) {  
 </span></span><span style=display:flex><span>    <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>error</span>(<span style=color:#e6db74>&#34;Encryption Error:&#34;</span>, <span style=color:#a6e22e>error</span>);  
 </span></span><span style=display:flex><span>  }  
@@ -232,10 +232,10 @@
 </span></span><span style=display:flex><span><span style=color:#66d9ef>export</span> <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>decryptRsa</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>async</span> (<span style=color:#a6e22e>str</span>, <span style=color:#a6e22e>pemString</span>) =&gt; {  
 </span></span><span style=display:flex><span>  <span style=color:#66d9ef>try</span> {  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// convert base64 encoded input string into ArrayBuffer  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encodedPlaintext</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>base64StringToArrayBuffer</span>(<span style=color:#a6e22e>str</span>);  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>encodedPlaintext</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>base64StringToArrayBuffer</span>(<span style=color:#a6e22e>str</span>);  
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>keyArrayBuffer</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>convertPemToArrayBuffer</span>(<span style=color:#a6e22e>pemString</span>);  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// import private key  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>secretKey</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>importKey</span>(  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>secretKey</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>importKey</span>(  
 </span></span><span style=display:flex><span>      <span style=color:#e6db74>&#34;pkcs8&#34;</span>,  
 </span></span><span style=display:flex><span>      <span style=color:#a6e22e>keyArrayBuffer</span>,  
 </span></span><span style=display:flex><span>      <span style=color:#a6e22e>encryptAlgorithm</span>,  
@@ -243,7 +243,7 @@
 </span></span><span style=display:flex><span>      [<span style=color:#e6db74>&#34;decrypt&#34;</span>]  
 </span></span><span style=display:flex><span>    );  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// decrypt the text with the public key  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>decrypted</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>decrypt</span>(  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>decrypted</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>crypto</span>.<span style=color:#a6e22e>subtle</span>.<span style=color:#a6e22e>decrypt</span>(  
 </span></span><span style=display:flex><span>      {  
 </span></span><span style=display:flex><span>        <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;RSA-OAEP&#34;</span>,  
 </span></span><span style=display:flex><span>      },  
@@ -251,7 +251,7 @@
 </span></span><span style=display:flex><span>      <span style=color:#a6e22e>encodedPlaintext</span>  
 </span></span><span style=display:flex><span>    );  
 </span></span><span style=display:flex><span>    <span style=color:#75715e>// decode the decrypted ArrayBuffer output  
-</span></span></span><span style=display:flex><span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>uint8Array</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Uint8Array</span>(<span style=color:#a6e22e>decrypted</span>);  
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>uint8Array</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Uint8Array</span>(<span style=color:#a6e22e>decrypted</span>);  
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>textDecoder</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>TextDecoder</span>();  
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>decodedString</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>textDecoder</span>.<span style=color:#a6e22e>decode</span>(<span style=color:#a6e22e>uint8Array</span>);  
 </span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>decodedString</span>;  
