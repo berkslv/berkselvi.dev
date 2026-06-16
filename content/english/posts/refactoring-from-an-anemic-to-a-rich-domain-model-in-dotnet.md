@@ -1,4 +1,5 @@
 +++
+draft = true
 title = "Refactoring from an Anemic to a Rich Domain Model in .NET"
 date = "2026-06-16T00:00:00+03:00"
 author = "Berk Selvi"
