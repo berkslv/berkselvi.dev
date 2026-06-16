@@ -6,7 +6,7 @@ pagination.pagerSize = 10
 googleAnalytics = 'G-W0L24EMSQ5'
 
 [security]
-  allowContent = ['text/html']
+  allowContent = ['text/html', 'text/markdown']
 
 [markup.goldmark.renderer]
   unsafe = true
