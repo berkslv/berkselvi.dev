@@ -1,9 +1,12 @@
 baseURL = 'https://berkselvi.dev'
-languageCode = 'en-us'
+locale = 'en-us'
 defaultContentLanguage = 'en'
 theme = "terminal"
 pagination.pagerSize = 10
 googleAnalytics = 'G-W0L24EMSQ5'
+
+[security]
+  allowContent = ['text/html']
 
 [markup.goldmark.renderer]
   unsafe = true
@@ -67,8 +70,8 @@ googleAnalytics = 'G-W0L24EMSQ5'
 [languages]
   [languages.en]
     disabled = false
-    languageName = "english"
-    languageCode = 'en-US'
+    label = "english"
+    locale = 'en-US'
     contentDir = 'content/english'
     weight = 1
     title = "Berk Selvi | Software Developer"
@@ -98,8 +101,8 @@ googleAnalytics = 'G-W0L24EMSQ5'
 
   [languages.tr]
     disabled = false
-    languageName = "türkçe"
-    languageCode = 'tr-TR'
+    label = "türkçe"
+    locale = 'tr-TR'
     contentDir = 'content/turkish'
     weight = 2
     title = "Berk Selvi | Software Developer"
