@@ -263,16 +263,16 @@ It is important not to confuse an Event-Driven Architecture (EDA) with **Event S
 
 The beauty of software design is choosing the right tool for the job. Here is a quick cheat sheet for when to deploy Commands vs Events in your .NET applications:
 
-- **Use a Command when:**
-* You need the system to perform a specific action and you know exactly which component should handle it.
-* You need to validate user input and potentially reject the request.
-* You expect a result back (success, failure, or the ID of a newly created entity).
+**Use a Command when:**
+- You need the system to perform a specific action and you know exactly which component should handle it.
+- You need to validate user input and potentially reject the request.
+- You expect a result back (success, failure, or the ID of a newly created entity).
 
 
-- **Use an Event when:**
-* A significant state change has occurred, and you want to notify other parts of the system.
-* You want to allow multiple, disparate modules to react to a single action without creating tight coupling.
-* You are integrating across microservice boundaries and want to ensure services remain autonomous.
+**Use an Event when:**
+- A significant state change has occurred, and you want to notify other parts of the system.
+- You want to allow multiple, disparate modules to react to a single action without creating tight coupling.
+- You are integrating across microservice boundaries and want to ensure services remain autonomous.
 
 ## Summary
 

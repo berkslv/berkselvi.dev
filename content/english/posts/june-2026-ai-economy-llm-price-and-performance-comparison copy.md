@@ -61,9 +61,6 @@ Hardware manufacturers, the driving force behind the models, are also directly i
 - **MiniMax:** Powering interactive consumer AI applications, the company also produces versatile multimodal models that form the foundation of audio and video platforms like Hailuo.
 
 
-
----
-
 ## Detailed Frontier Model Rankings: June 2026 Data
 
 There are massive gaps between the overall intelligence scores of AI models and the input/output costs they demand per 1 million tokens. As of June 2026, the detailed performance and price table of the market's leading models is as follows:
@@ -89,7 +86,6 @@ When we examine the ranking table and efficiency analysis graphs, it is striking
 - **Realistic Price Gap:** Alongside extreme examples, there are also significant price advantages in heavily preferred models in the mid-tier that perform closely to one another. The 1 million output cost of the Claude Sonnet 4.6 model, which has a performance score of 82, is $15. Yet, when you use the open-weight DeepSeek V4 Pro model, which has a higher score of 86, your cost drops to $3.48. In other words, simply by choosing the right model, it is possible to gain a direct price advantage of 76.8% by increasing quality rather than compromising it.
 
 
-
 ### Mid-Tier & Value-Efficiency Market
 
 The competition in the mid-tier, which is the real driving force of the market, is driving costs even lower.
@@ -106,9 +102,6 @@ The competition in the mid-tier, which is the real driving force of the market, 
 - xAI's **Grok 4.1 Fast** model, with a score of 68, has a cost of only $0.50 per 1 million outputs.
 
 
-
----
-
 ## Economic Impact: Choosing the Right Source Type
 
 At the end of the day, organizations must make a fundamental choice when determining their AI strategies:
@@ -117,7 +110,6 @@ At the end of the day, organizations must make a fundamental choice when determi
 
 
 2. **Open-Weight Models:** These models, on the other hand, offer developers extraordinary, extreme cost savings (often with $0 per token hosting), full data privacy control, and full ownership. Furthermore, as clearly seen in the DeepSeek and Qwen examples, the performance of these models has now reached the scores of top-tier frontier models.
-
 
 
 ## How Will We Protect Our Wallets? (Practical Developer Solutions)
@@ -130,7 +122,6 @@ Modern software development processes require Universal Access to models like GL
 
 
 - **OpenRouter Routing:** Eliminating the risks and costs of being tied to a single provider, this unified API is a dynamic routing system that instantly switches to a backup model (fallback) in the event of a failure or crash, and ensures you reach the most cost-effective option at any moment with its price balancing features.
-
 
 
 In conclusion, remaining competitive in the 2026 AI economy is not just about choosing the most popular option; it is about strategically establishing flexible APIs and open-source infrastructures that can melt intelligence capacity, data privacy, and price advantage into the same melting pot.

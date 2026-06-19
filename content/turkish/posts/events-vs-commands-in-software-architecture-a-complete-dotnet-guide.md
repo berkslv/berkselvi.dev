@@ -10,8 +10,6 @@ readingTime = true
 cover = "img/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/cover.webp"
 +++
 
-# Yazılım Mimarisinde Events vs Commands Kavramlarını Aydınlatmak: Kapsamlı Bir .NET Rehberi
-
 Modern yazılım mühendisliği dünyasında, monolitik sistemlerden dağıtık **microservices** mimarilerine geçiş yaygın bir evrimsel yoldur. Sistemler karmaşıklaştıkça, farklı bileşenlerin, modüllerin ve servislerin iletişim kurma şekli; sistemin dayanıklılığını, ölçeklenebilirliğini ve sürdürülebilirliğini belirleyen kritik faktör haline gelir. Eğer sağlam, cloud-native uygulamalar geliştiriyorsanız, bileşenlerinizi birbirinden ayırma (decouple) ihtiyacıyla kaçınılmaz olarak karşılaşırsınız.
 
 Bu iletişim ve decoupling stratejisinin merkezinde iki temel mesajlaşma deseni (pattern) yatar: **Commands** ve **Events**.
@@ -263,17 +261,16 @@ Bir **Event-Driven Architecture**'ı (EDA), **Event Sourcing** ile karıştırma
 
 Yazılım tasarımının güzelliği, iş için doğru aracı seçmektir. İşte .NET uygulamalarınızda Commands vs Events tercihini ne zaman yapacağınıza dair kısa bir kopya kağıdı:
 
-- **Şu durumlarda Command kullanın:**
-* Sistemin belirli bir eylemi gerçekleştirmesine ihtiyacınız varsa ve bunu hangi bileşenin işlemesi (handle) gerektiğini tam olarak biliyorsanız.
-* Kullanıcı girdisini doğrulamanız ve potansiyel olarak isteği reddetmeniz gerekiyorsa.
-* Geriye bir sonuç bekliyorsanız (başarı, başarısızlık veya yeni oluşturulan bir entity'nin ID'si).
+**Şu durumlarda Command kullanın:**
+- Sistemin belirli bir eylemi gerçekleştirmesine ihtiyacınız varsa ve bunu hangi bileşenin işlemesi (handle) gerektiğini tam olarak biliyorsanız.
+- Kullanıcı girdisini doğrulamanız ve potansiyel olarak isteği reddetmeniz gerekiyorsa.
+- Geriye bir sonuç bekliyorsanız (başarı, başarısızlık veya yeni oluşturulan bir entity'nin ID'si).
 
 
-- **Şu durumlarda Event kullanın:**
-* Önemli bir durum değişikliği (state change) gerçekleştiyse ve sistemin diğer parçalarını bilgilendirmek istiyorsanız.
-* Farklı, bağımsız modüllerin sıkı bir bağ (tight coupling) yaratmadan tek bir eyleme tepki vermesine izin vermek istiyorsanız.
-* Microservice sınırları arasında entegrasyon yapıyorsanız ve servislerin otonom kalmasını sağlamak istiyorsanız.
-
+**Şu durumlarda Event kullanın:**
+- Önemli bir durum değişikliği (state change) gerçekleştiyse ve sistemin diğer parçalarını bilgilendirmek istiyorsanız.
+- Farklı, bağımsız modüllerin sıkı bir bağ (tight coupling) yaratmadan tek bir eyleme tepki vermesine izin vermek istiyorsanız.
+- Microservice sınırları arasında entegrasyon yapıyorsanız ve servislerin otonom kalmasını sağlamak istiyorsanız.
 
 
 ## Özet

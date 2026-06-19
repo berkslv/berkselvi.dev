@@ -98,8 +98,7 @@ When your domain model is anemic, you encounter several significant architectura
 1. **Lack of Encapsulation:** Any code anywhere can change the state of an entity. It is impossible to guarantee that an `Order` is in a valid state.
 2. **Duplicated Logic:** If you need to recalculate the total amount of an order in a different use case (e.g., applying a discount), you will likely duplicate the recalculation logic in another service.
 3. **Low Cohesion:** The data (`Order`) and the behavior that operates on that data (`OrderService`) are separated. You have to navigate through multiple layers to understand the lifecycle of an order.
-4. 
-**Fragility:** As the application grows, complex business logic becomes scattered across dozens of services, making it incredibly difficult to track down bugs or refactor the system.
+4. **Fragility:** As the application grows, complex business logic becomes scattered across dozens of services, making it incredibly difficult to track down bugs or refactor the system.
 
 
 ## 2. The Cure: Introducing the Rich Domain Model

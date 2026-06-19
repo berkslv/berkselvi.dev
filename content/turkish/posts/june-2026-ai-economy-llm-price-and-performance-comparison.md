@@ -60,8 +60,6 @@ Modellerin arkasındaki itici güç olan donanım üreticileri de yapay zeka ür
 - **MiniMax:** Etkileşimli tüketici yapay zeka uygulamalarına güç veren şirket, aynı zamanda Hailuo gibi ses ve video platformlarının temelini oluşturan çok yönlü çok modlu (multimodal) modeller üretiyor.
 
 
----
-
 ## Detaylı Frontier Model Sıralaması: Haziran 2026 Verileri
 
 Yapay zeka modellerinin genel zeka skorları ve 1 milyon token başına talep ettikleri girdi (input) ve çıktı (output) maliyetleri arasında devasa uçurumlar bulunuyor. Haziran 2026 itibarıyla pazarın lider modellerinin detaylı performans ve fiyat tablosu şu şekildedir:
@@ -103,8 +101,6 @@ Pazarın asıl itici gücü olan orta segmentteki rekabet, maliyetleri daha da a
 
 - xAI'ın **Grok 4.1 Fast** modeli ise 68 skor ile 1 milyon çıktı için yalnızca 0.50$ maliyete sahip.
 
-
----
 
 ## Ekonomik Etki: Doğru Kaynak Türünü Seçmek
 
