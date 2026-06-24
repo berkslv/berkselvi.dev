@@ -1,4 +1,240 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br&gt; This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt;</copyright><lastBuildDate>Fri, 19 Jun 2026 10:38:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>June 2026 AI Economy: LLM Price and Performance Comparison</title><link>https://berkselvi.dev/posts/june-2026-ai-economy-llm-price-and-performance-comparison-copy/</link><pubDate>Fri, 19 Jun 2026 10:38:00 +0300</pubDate><guid>https://berkselvi.dev/posts/june-2026-ai-economy-llm-price-and-performance-comparison-copy/</guid><description>&lt;p&gt;The artificial intelligence (AI) industry is experiencing one of the fastest evolutions in tech history, and as of June 2026, the balance of power in this ecosystem has been completely reshaped. In this comprehensive guide, we will deeply analyze the current state of the market based on the &amp;ldquo;AI Economy in June 2026: LLM Price and Performance Comparison&amp;rdquo; data.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br&gt; This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt;</copyright><lastBuildDate>Mon, 22 Jun 2026 14:55:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Events vs Commands in Software Architecture: A Complete .NET Guide</title><link>https://berkselvi.dev/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</link><pubDate>Mon, 22 Jun 2026 14:55:00 +0300</pubDate><guid>https://berkselvi.dev/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</guid><description>&lt;h1 id="demystifying-events-vs-commands-in-software-architecture-a-complete-net-guide"&gt;Demystifying Events vs Commands in Software Architecture: A Complete .NET Guide&lt;/h1&gt;
+&lt;p&gt;In the modern landscape of software engineering, shifting from monolithic systems to distributed microservices is a common evolutionary path. As systems grow in complexity, the way different components, modules, and services communicate becomes the critical factor in defining the system&amp;rsquo;s resilience, scalability, and maintainability. If you are building robust, cloud-native applications, you inevitably encounter the need to decouple your components.&lt;/p&gt;</description><content>&lt;h1 id="demystifying-events-vs-commands-in-software-architecture-a-complete-net-guide"&gt;Demystifying Events vs Commands in Software Architecture: A Complete .NET Guide&lt;/h1&gt;
+&lt;p&gt;In the modern landscape of software engineering, shifting from monolithic systems to distributed microservices is a common evolutionary path. As systems grow in complexity, the way different components, modules, and services communicate becomes the critical factor in defining the system&amp;rsquo;s resilience, scalability, and maintainability. If you are building robust, cloud-native applications, you inevitably encounter the need to decouple your components.&lt;/p&gt;
+&lt;p&gt;At the heart of this decoupling and communication strategy lie two fundamental messaging patterns: &lt;strong&gt;Commands&lt;/strong&gt; and &lt;strong&gt;Events&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;While they might seem similar at first glance—both are essentially messages containing data sent from one part of a system to another—their intent, handling, and architectural implications are vastly different. Misunderstanding the distinction between &lt;strong&gt;events vs commands in software architecture&lt;/strong&gt; is one of the most common pitfalls when designing an &lt;strong&gt;Event-Driven Architecture (EDA)&lt;/strong&gt; or implementing &lt;strong&gt;Command Query Responsibility Segregation (CQRS)&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;In this comprehensive guide, we will explore the theoretical differences between events and commands, analyze when to use which, and walk through a practical storytelling implementation using &lt;strong&gt;.NET&lt;/strong&gt; and C#.&lt;/p&gt;
+&lt;h2 id="the-core-communication-problem-in-distributed-systems"&gt;The Core Communication Problem in Distributed Systems&lt;/h2&gt;
+&lt;p&gt;Before we dive into the definitions, let&amp;rsquo;s understand the problem we are trying to solve.&lt;/p&gt;
+&lt;p&gt;Imagine an e-commerce application. A user clicks the &amp;ldquo;Checkout&amp;rdquo; button. In a traditional, tightly coupled monolithic architecture, the system might sequentially execute the following steps within a single synchronous flow:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Validate the cart.&lt;/li&gt;
+&lt;li&gt;Deduct inventory.&lt;/li&gt;
+&lt;li&gt;Process the payment.&lt;/li&gt;
+&lt;li&gt;Generate an invoice.&lt;/li&gt;
+&lt;li&gt;Send a confirmation email.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;If the email server is down, the entire checkout process might fail, rolling back the payment and frustrating the user. This tight coupling creates brittle systems.&lt;/p&gt;
+&lt;p&gt;To solve this, architects introduce asynchronous messaging. Instead of calling methods directly, services send messages to each other through a mediator or a message broker (like RabbitMQ, Apache Kafka, or cloud-native solutions on AWS and Google Cloud). But how should these messages be structured? Should the checkout service tell the email service to &lt;em&gt;send an email&lt;/em&gt;, or should it simply state that an &lt;em&gt;order was placed&lt;/em&gt;?&lt;/p&gt;
+&lt;p&gt;This is where the distinction between Commands and Events becomes crucial.&lt;/p&gt;
+&lt;h2 id="what-is-a-command"&gt;What is a Command?&lt;/h2&gt;
+&lt;p&gt;A &lt;strong&gt;Command&lt;/strong&gt; is an expression of &lt;em&gt;intent&lt;/em&gt;. It is a request for the system to perform a specific action or change its state.&lt;/p&gt;
+&lt;p&gt;Think of a command as an imperative instruction. You are telling the system exactly what you want it to do. Because it is a request, a command can be rejected. The system might validate the command and decide that it cannot be executed due to business rules, permissions, or invalid data.&lt;/p&gt;
+&lt;h3 id="key-characteristics-of-a-command"&gt;Key Characteristics of a Command:&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Imperative Naming:&lt;/strong&gt; Commands are named with verbs in the imperative mood (e.g., &lt;code&gt;PlaceOrderCommand&lt;/code&gt;, &lt;code&gt;CreateUserCommand&lt;/code&gt;, &lt;code&gt;ProcessPaymentCommand&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Targeted:&lt;/strong&gt; A command is routed to exactly &lt;strong&gt;one&lt;/strong&gt; handler. You do not broadcast a command to the entire system; you send it to the specific component responsible for that action.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Can Fail:&lt;/strong&gt; Because it is a request to change state, the receiving handler can (and often will) reject it if validation fails, returning an error or an exception to the sender.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;High Coupling (Behavioral):&lt;/strong&gt; The sender of the command needs to know what action needs to happen, implying a tighter behavioral coupling than events, though the physical coupling might still be abstracted via a message bus.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="what-is-an-event"&gt;What is an Event?&lt;/h2&gt;
+&lt;p&gt;An &lt;strong&gt;Event&lt;/strong&gt;, on the other hand, is a statement of &lt;em&gt;fact&lt;/em&gt;. It is an announcement that something has already happened in the past.&lt;/p&gt;
+&lt;p&gt;You cannot reject an event because you cannot change the past. If an event is published, the state change has already occurred. Components in the system listen to events to react and trigger their own subsequent processes.&lt;/p&gt;
+&lt;h3 id="key-characteristics-of-an-event"&gt;Key Characteristics of an Event:&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Past-Tense Naming:&lt;/strong&gt; Events are named using verbs in the past tense (e.g., &lt;code&gt;OrderPlacedEvent&lt;/code&gt;, &lt;code&gt;UserCreatedEvent&lt;/code&gt;, &lt;code&gt;PaymentProcessedEvent&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Broadcasted (Publish/Subscribe):&lt;/strong&gt; An event is published to an event bus or message broker. It can have &lt;strong&gt;zero, one, or multiple&lt;/strong&gt; handlers. The publisher does not know or care who is listening.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Cannot Be Rejected:&lt;/strong&gt; The fact has occurred. Subscribers must process it. If a subscriber fails to process an event, it must handle its own retry logic; it cannot tell the publisher to &amp;ldquo;undo&amp;rdquo; the fact.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Loose Coupling:&lt;/strong&gt; The sender (publisher) is entirely decoupled from the receivers (subscribers). The publisher simply announces a state change, making it incredibly easy to add new functionality without touching existing code.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="key-differences-events-vs-commands"&gt;Key Differences: Events vs Commands&lt;/h2&gt;
+&lt;p&gt;To solidify the concepts, let&amp;rsquo;s look at a side-by-side comparison.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Feature&lt;/th&gt;
+&lt;th&gt;Command&lt;/th&gt;
+&lt;th&gt;Event&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Definition&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;A request to perform an action.&lt;/td&gt;
+&lt;td&gt;A notification that something happened.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Naming Convention&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Imperative (e.g., &lt;code&gt;ShipOrder&lt;/code&gt;)&lt;/td&gt;
+&lt;td&gt;Past Tense (e.g., &lt;code&gt;OrderShipped&lt;/code&gt;)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Routing / Handlers&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Exactly one handler (1:1).&lt;/td&gt;
+&lt;td&gt;Zero to many handlers (1:N).&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Direction&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Point-to-point. Sender targets a receiver.&lt;/td&gt;
+&lt;td&gt;Publish-Subscribe. Sender broadcasts.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Failure Handling&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Can be rejected (validation error).&lt;/td&gt;
+&lt;td&gt;Cannot be rejected. Past facts are immutable.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Sender&amp;rsquo;s Knowledge&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Knows &lt;em&gt;what&lt;/em&gt; needs to happen.&lt;/td&gt;
+&lt;td&gt;Does not know &lt;em&gt;who&lt;/em&gt; cares about the event.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="the-net-implementation-story-bringing-it-to-life"&gt;The .NET Implementation Story: Bringing it to Life&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s tell a story using .NET to illustrate how these concepts flow together in a real-world application. We will use the highly popular &lt;strong&gt;MediatR&lt;/strong&gt; library, which is the standard implementation for in-memory messaging and CQRS patterns in the .NET ecosystem.&lt;/p&gt;
+&lt;p&gt;Imagine we are building an Order Management microservice.&lt;/p&gt;
+&lt;h3 id="step-1-defining-the-command"&gt;Step 1: Defining the Command&lt;/h3&gt;
+&lt;p&gt;The journey begins when a user submits their cart. The API controller receives the HTTP request and creates a command. Notice the imperative naming. We use C# records because messages should be immutable.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Domain.Commands;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The Command: A request that returns a strongly typed result&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;PlaceOrderCommand&lt;/span&gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Guid CustomerId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; List&amp;lt;CartItem&amp;gt; Items,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; ShippingAddress
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;) : IRequest&amp;lt;OrderResult&amp;gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;CartItem&lt;/span&gt;(Guid ProductId, &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; Quantity, &lt;span style="color:#66d9ef"&gt;decimal&lt;/span&gt; Price);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;OrderResult&lt;/span&gt;(&lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt; IsSuccess, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; Message, Guid? OrderId = &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="step-2-handling-the-command"&gt;Step 2: Handling the Command&lt;/h3&gt;
+&lt;p&gt;The command is routed to exactly &lt;em&gt;one&lt;/em&gt; handler. This handler contains the core business logic. It validates the request, modifies the database state, and if successful, generates an Event.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Application.Handlers.Commands;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;PlaceOrderCommandHandler&lt;/span&gt; : IRequestHandler&amp;lt;PlaceOrderCommand, OrderResult&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IOrderRepository _repository;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IMediator _mediator;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; PlaceOrderCommandHandler(IOrderRepository repository, IMediator mediator)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _repository = repository;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _mediator = mediator;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;OrderResult&amp;gt; Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 1. Validation (The command can be rejected!)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (request.Items == &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt; || !request.Items.Any())
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; OrderResult(&lt;span style="color:#66d9ef"&gt;false&lt;/span&gt;, &lt;span style="color:#e6db74"&gt;&amp;#34;Cart cannot be empty.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 2. State Change&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; totalAmount = request.Items.Sum(i =&amp;gt; i.Price * i.Quantity);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; order = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; Order(Guid.NewGuid(), request.CustomerId, totalAmount, request.ShippingAddress);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _repository.SaveAsync(order);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 3. Announcing the Fact (The Event)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; orderPlacedEvent = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; OrderPlacedEvent(order.Id, request.CustomerId, totalAmount);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Notice we are Publishing the event, not Sending a command.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _mediator.Publish(orderPlacedEvent, cancellationToken);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; OrderResult(&lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;, &lt;span style="color:#e6db74"&gt;&amp;#34;Order successfully placed.&amp;#34;&lt;/span&gt;, order.Id);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="step-3-defining-the-event"&gt;Step 3: Defining the Event&lt;/h3&gt;
+&lt;p&gt;The state has changed. The order is securely stored in the database. Now, the system simply announces this fact to the rest of the application. Notice the past-tense naming.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Domain.Events;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The Event: A notification that something happened. Does not return a response.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;OrderPlacedEvent&lt;/span&gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Guid OrderId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Guid CustomerId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;decimal&lt;/span&gt; TotalAmount
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;) : INotification;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="step-4-reacting-to-the-event-multiple-handlers"&gt;Step 4: Reacting to the Event (Multiple Handlers)&lt;/h3&gt;
+&lt;p&gt;This is where the magic of &lt;strong&gt;Event-Driven Architecture&lt;/strong&gt; shines. Because we published an event, we can have multiple independent handlers react to it without modifying our core &lt;code&gt;PlaceOrderCommandHandler&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s say the marketing team wants to send a &amp;ldquo;Thank You&amp;rdquo; email, and the logistics team needs to reserve the inventory. We simply create two separate event handlers.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Handler A: The Email Service&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Application.Handlers.Events;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;SendOrderConfirmationEmailHandler&lt;/span&gt; : INotificationHandler&amp;lt;OrderPlacedEvent&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IEmailService _emailService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; SendOrderConfirmationEmailHandler(IEmailService emailService)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _emailService = emailService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task Handle(OrderPlacedEvent notification, CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// React to the fact&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _emailService.SendEmailAsync(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; notification.CustomerId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#e6db74"&gt;$&amp;#34;Thank you for your order! Your total is ${notification.TotalAmount}.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; );
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Handler B: The Inventory Service&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Application.Handlers.Events;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;ReserveInventoryHandler&lt;/span&gt; : INotificationHandler&amp;lt;OrderPlacedEvent&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IInventoryService _inventoryService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; ReserveInventoryHandler(IInventoryService inventoryService)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _inventoryService = inventoryService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task Handle(OrderPlacedEvent notification, CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// React to the same fact independently&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _inventoryService.ReserveItemsForOrderAsync(notification.OrderId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;By structuring our .NET code this way, we have achieved a beautifully loosely coupled system. If tomorrow the analytics team wants to track sales, we don&amp;rsquo;t touch the &lt;code&gt;PlaceOrderCommandHandler&lt;/code&gt;. We just add a &lt;code&gt;TrackSalesAnalyticsHandler&lt;/code&gt; that listens to the &lt;code&gt;OrderPlacedEvent&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="advanced-architectural-considerations"&gt;Advanced Architectural Considerations&lt;/h2&gt;
+&lt;p&gt;While the MediatR example perfectly illustrates the in-memory concepts, moving these patterns out of memory and into a distributed cloud environment introduces complex challenges. When utilizing cloud platforms like Google Cloud, AWS, or Azure to run microservices, messaging becomes distributed.&lt;/p&gt;
+&lt;p&gt;Here are three advanced patterns you must consider when scaling &lt;strong&gt;Events vs Commands&lt;/strong&gt;:&lt;/p&gt;
+&lt;h3 id="1-the-outbox-pattern-guaranteed-delivery"&gt;1. The Outbox Pattern (Guaranteed Delivery)&lt;/h3&gt;
+&lt;p&gt;In our C# example, we saved the order to the database and then published the event to MediatR. But what if the database save succeeds, but the application crashes exactly one millisecond before the &lt;code&gt;await _mediator.Publish()&lt;/code&gt; line is executed?&lt;/p&gt;
+&lt;p&gt;The state changed, but the event was never fired. The customer&amp;rsquo;s card was charged, but the warehouse never got the memo. This is a catastrophic failure in distributed systems known as the &amp;ldquo;Dual Write Problem.&amp;rdquo;&lt;/p&gt;
+&lt;p&gt;To solve this, architects use the &lt;strong&gt;Transactional Outbox Pattern&lt;/strong&gt;. Instead of publishing the event directly, the command handler writes the &lt;code&gt;OrderPlacedEvent&lt;/code&gt; into an &amp;ldquo;Outbox&amp;rdquo; table in the &lt;em&gt;same database transaction&lt;/em&gt; as the order itself. A separate background worker process (like a .NET BackgroundService) constantly reads this Outbox table and publishes the messages to your external broker (e.g., RabbitMQ or Google Cloud Pub/Sub). This guarantees at-least-once delivery of your events.&lt;/p&gt;
+&lt;h3 id="2-idempotency-handling-duplicate-events"&gt;2. Idempotency (Handling Duplicate Events)&lt;/h3&gt;
+&lt;p&gt;Because distributed messaging systems usually guarantee &amp;ldquo;at-least-once&amp;rdquo; delivery, your event handlers might receive the same &lt;code&gt;OrderPlacedEvent&lt;/code&gt; twice.&lt;/p&gt;
+&lt;p&gt;If the &lt;code&gt;SendOrderConfirmationEmailHandler&lt;/code&gt; is not designed carefully, the customer might receive two emails. Worse, if an event triggers a payment capture, they might be charged twice.&lt;/p&gt;
+&lt;p&gt;Event handlers must be &lt;strong&gt;idempotent&lt;/strong&gt;. This means that applying the same event multiple times has the same effect as applying it once. In .NET, this is often implemented by maintaining a table of processed &lt;code&gt;EventId&lt;/code&gt;s. Before a handler processes an event, it checks: &lt;em&gt;&amp;ldquo;Have I seen this Event ID before?&amp;rdquo;&lt;/em&gt; If yes, it safely ignores it and returns a success response.&lt;/p&gt;
+&lt;h3 id="3-event-sourcing-vs-event-driven-architecture"&gt;3. Event Sourcing vs Event-Driven Architecture&lt;/h3&gt;
+&lt;p&gt;It is important not to confuse an Event-Driven Architecture (EDA) with &lt;strong&gt;Event Sourcing&lt;/strong&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;EDA&lt;/strong&gt; uses events to communicate between services (like our example above). State is still saved in a traditional database table (e.g., an &lt;code&gt;Orders&lt;/code&gt; table with a &lt;code&gt;Status&lt;/code&gt; column).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Event Sourcing&lt;/strong&gt; is a much more complex paradigm where the events &lt;em&gt;are&lt;/em&gt; the database. Instead of saving the current state of an order, you save an append-only log of events: &lt;code&gt;OrderCreated&lt;/code&gt;, &lt;code&gt;AddressUpdated&lt;/code&gt;, &lt;code&gt;ItemAdded&lt;/code&gt;, &lt;code&gt;OrderCheckedOut&lt;/code&gt;. To figure out the current state, the system replays the events from the beginning of time. While powerful for audit trails, it introduces massive complexity and should be reserved for specific domains that require strict historical accuracy (like financial ledgers).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="when-to-use-which"&gt;When to Use Which?&lt;/h2&gt;
+&lt;p&gt;The beauty of software design is choosing the right tool for the job. Here is a quick cheat sheet for when to deploy Commands vs Events in your .NET applications:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Use a Command when:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;You need the system to perform a specific action and you know exactly which component should handle it.&lt;/li&gt;
+&lt;li&gt;You need to validate user input and potentially reject the request.&lt;/li&gt;
+&lt;li&gt;You expect a result back (success, failure, or the ID of a newly created entity).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Use an Event when:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A significant state change has occurred, and you want to notify other parts of the system.&lt;/li&gt;
+&lt;li&gt;You want to allow multiple, disparate modules to react to a single action without creating tight coupling.&lt;/li&gt;
+&lt;li&gt;You are integrating across microservice boundaries and want to ensure services remain autonomous.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="summary"&gt;Summary&lt;/h2&gt;
+&lt;p&gt;Mastering the difference between &lt;strong&gt;events vs commands in software architecture&lt;/strong&gt; is a milestone in a developer&amp;rsquo;s journey toward system design excellence. Commands drive the intent and guard the business rules of your application, ensuring state changes only happen when valid. Events act as the nervous system, broadcasting facts and enabling a highly scalable, loosely coupled ecosystem of microservices.&lt;/p&gt;
+&lt;p&gt;By leveraging powerful libraries like MediatR in .NET, and understanding the nuances of asynchronous communication, you can build systems that not only handle the complexities of today&amp;rsquo;s business logic but are also resilient and flexible enough to adapt to the requirements of tomorrow. Remember to name your commands imperatively, treat your events as immutable facts of the past, and embrace the power of decoupling.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="conclusion"&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Thanks for reading! 🎉 To not miss my research in software development, you can follow me at &lt;a href="https://x.com/berkslv"&gt;@berkslv&lt;/a&gt;.&lt;/p&gt;</content></item><item><title>June 2026 AI Economy: LLM Price and Performance Comparison</title><link>https://berkselvi.dev/posts/june-2026-ai-economy-llm-price-and-performance-comparison-copy/</link><pubDate>Fri, 19 Jun 2026 10:38:00 +0300</pubDate><guid>https://berkselvi.dev/posts/june-2026-ai-economy-llm-price-and-performance-comparison-copy/</guid><description>&lt;p&gt;The artificial intelligence (AI) industry is experiencing one of the fastest evolutions in tech history, and as of June 2026, the balance of power in this ecosystem has been completely reshaped. In this comprehensive guide, we will deeply analyze the current state of the market based on the &amp;ldquo;AI Economy in June 2026: LLM Price and Performance Comparison&amp;rdquo; data.&lt;/p&gt;
 &lt;p&gt;For companies and developers shaping AI strategies, we have three main focus areas: recognizing the Large Language Model (LLM) providers dominating the market, benchmarking the price/performance of the highest capacity &amp;ldquo;Frontier&amp;rdquo; models, and finally exploring how to protect our wallets—that is, how to optimize costs in this massive data economy.&lt;/p&gt;</description><content>&lt;p&gt;The artificial intelligence (AI) industry is experiencing one of the fastest evolutions in tech history, and as of June 2026, the balance of power in this ecosystem has been completely reshaped. In this comprehensive guide, we will deeply analyze the current state of the market based on the &amp;ldquo;AI Economy in June 2026: LLM Price and Performance Comparison&amp;rdquo; data.&lt;/p&gt;
 &lt;p&gt;For companies and developers shaping AI strategies, we have three main focus areas: recognizing the Large Language Model (LLM) providers dominating the market, benchmarking the price/performance of the highest capacity &amp;ldquo;Frontier&amp;rdquo; models, and finally exploring how to protect our wallets—that is, how to optimize costs in this massive data economy.&lt;/p&gt;
 &lt;h2 id="western-frontier-leaders-shaping-the-market"&gt;Western &amp;ldquo;Frontier&amp;rdquo; Leaders Shaping the Market&lt;/h2&gt;

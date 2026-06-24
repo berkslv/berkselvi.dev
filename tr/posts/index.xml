@@ -1,4 +1,240 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br&gt; Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt; olarak yayınlanmıştır.</copyright><lastBuildDate>Tue, 16 Jun 2026 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>.NET'te Anemic'ten Rich Domain Model'e Refactoring</title><link>https://berkselvi.dev/tr/posts/refactoring-from-an-anemic-to-a-rich-domain-model-in-dotnet/</link><pubDate>Tue, 16 Jun 2026 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/refactoring-from-an-anemic-to-a-rich-domain-model-in-dotnet/</guid><description>&lt;p&gt;.NET&amp;rsquo;te kurumsal uygulamalar geliştirmek için önemli bir zaman harcadıysanız, Domain-Driven Design (DDD) kavramıyla karşılaşmış olmanız muhtemeldir. DDD, kodunuzu temsil ettiği gerçek dünya iş domain&amp;rsquo;iyle hizalayarak yazılım karmaşıklığıyla başa çıkmanın bir yolunu vaat eder. Ancak, geliştiricilerin DDD&amp;rsquo;yi—veya sadece temel Object-Oriented Programming&amp;rsquo;i (OOP)—benimserken düştükleri en yaygın tuzaklardan biri &lt;strong&gt;Anemic Domain Model&lt;/strong&gt; yaratmaktır.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br&gt; Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt; olarak yayınlanmıştır.</copyright><lastBuildDate>Mon, 22 Jun 2026 14:55:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Yazılım Mimarisinde Events vs Commands: Kapsamlı Bir .NET Rehberi</title><link>https://berkselvi.dev/tr/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</link><pubDate>Mon, 22 Jun 2026 14:55:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</guid><description>&lt;p&gt;Modern yazılım mühendisliği dünyasında, monolitik sistemlerden dağıtık &lt;strong&gt;microservices&lt;/strong&gt; mimarilerine geçiş yaygın bir evrimsel yoldur. Sistemler karmaşıklaştıkça, farklı bileşenlerin, modüllerin ve servislerin iletişim kurma şekli; sistemin dayanıklılığını, ölçeklenebilirliğini ve sürdürülebilirliğini belirleyen kritik faktör haline gelir. Eğer sağlam, cloud-native uygulamalar geliştiriyorsanız, bileşenlerinizi birbirinden ayırma (decouple) ihtiyacıyla kaçınılmaz olarak karşılaşırsınız.&lt;/p&gt;
+&lt;p&gt;Bu iletişim ve decoupling stratejisinin merkezinde iki temel mesajlaşma deseni (pattern) yatar: &lt;strong&gt;Commands&lt;/strong&gt; ve &lt;strong&gt;Events&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;İlk bakışta birbirlerine benzeseler de —her ikisi de özünde sistemin bir parçasından diğerine gönderilen ve veri içeren mesajlardır— amaçları, işlenme şekilleri (handling) ve mimari etkileri birbirinden çok farklıdır. &lt;strong&gt;Software architecture içinde events vs commands&lt;/strong&gt; ayrımını yanlış anlamak, bir &lt;strong&gt;Event-Driven Architecture (EDA)&lt;/strong&gt; tasarlarken veya &lt;strong&gt;Command Query Responsibility Segregation (CQRS)&lt;/strong&gt; uygularken düşülen en yaygın tuzaklardan biridir.&lt;/p&gt;</description><content>&lt;p&gt;Modern yazılım mühendisliği dünyasında, monolitik sistemlerden dağıtık &lt;strong&gt;microservices&lt;/strong&gt; mimarilerine geçiş yaygın bir evrimsel yoldur. Sistemler karmaşıklaştıkça, farklı bileşenlerin, modüllerin ve servislerin iletişim kurma şekli; sistemin dayanıklılığını, ölçeklenebilirliğini ve sürdürülebilirliğini belirleyen kritik faktör haline gelir. Eğer sağlam, cloud-native uygulamalar geliştiriyorsanız, bileşenlerinizi birbirinden ayırma (decouple) ihtiyacıyla kaçınılmaz olarak karşılaşırsınız.&lt;/p&gt;
+&lt;p&gt;Bu iletişim ve decoupling stratejisinin merkezinde iki temel mesajlaşma deseni (pattern) yatar: &lt;strong&gt;Commands&lt;/strong&gt; ve &lt;strong&gt;Events&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;İlk bakışta birbirlerine benzeseler de —her ikisi de özünde sistemin bir parçasından diğerine gönderilen ve veri içeren mesajlardır— amaçları, işlenme şekilleri (handling) ve mimari etkileri birbirinden çok farklıdır. &lt;strong&gt;Software architecture içinde events vs commands&lt;/strong&gt; ayrımını yanlış anlamak, bir &lt;strong&gt;Event-Driven Architecture (EDA)&lt;/strong&gt; tasarlarken veya &lt;strong&gt;Command Query Responsibility Segregation (CQRS)&lt;/strong&gt; uygularken düşülen en yaygın tuzaklardan biridir.&lt;/p&gt;
+&lt;p&gt;Bu kapsamlı rehberde, events ve commands arasındaki teorik farkları keşfedecek, hangisinin ne zaman kullanılacağını analiz edecek ve &lt;strong&gt;.NET&lt;/strong&gt; ve C# kullanarak hikaye tadında pratik bir uygulamayı adım adım inceleyeceğiz.&lt;/p&gt;
+&lt;h2 id="dağıtık-sistemlerde-temel-iletişim-problemi"&gt;Dağıtık Sistemlerde Temel İletişim Problemi&lt;/h2&gt;
+&lt;p&gt;Tanımlara dalmadan önce, çözmeye çalıştığımız problemi anlayalım.&lt;/p&gt;
+&lt;p&gt;Bir e-ticaret uygulaması hayal edin. Kullanıcı &amp;ldquo;Ödeme Yap&amp;rdquo; (Checkout) butonuna tıklar. Geleneksel, sıkı sıkıya bağlı (tightly coupled) monolitik bir mimaride, sistem aşağıdaki adımları tek bir senkron akış içinde sırayla yürütebilir:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Sepeti doğrula.&lt;/li&gt;
+&lt;li&gt;Stoğu düş.&lt;/li&gt;
+&lt;li&gt;Ödemeyi işle.&lt;/li&gt;
+&lt;li&gt;Fatura oluştur.&lt;/li&gt;
+&lt;li&gt;Onay e-postası gönder.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Eğer e-posta sunucusu çökerse, tüm ödeme süreci başarısız olabilir, ödeme işlemi geri alınabilir ve kullanıcı hüsrana uğrayabilir. Bu sıkı bağ (tight coupling), kırılgan sistemler yaratır.&lt;/p&gt;
+&lt;p&gt;Bunu çözmek için mimarlar &lt;strong&gt;asynchronous messaging&lt;/strong&gt; kavramını devreye sokarlar. Servisler metotları doğrudan çağırmak yerine, bir mediator veya bir message broker (RabbitMQ, Apache Kafka veya AWS ve Google Cloud üzerindeki cloud-native çözümler gibi) aracılığıyla birbirlerine mesaj gönderirler. Peki bu mesajlar nasıl yapılandırılmalıdır? Ödeme servisi, e-posta servisine &lt;em&gt;bir e-posta göndermesini&lt;/em&gt; mi söylemeli, yoksa sadece &lt;em&gt;bir siparişin verildiğini&lt;/em&gt; mi belirtmeli?&lt;/p&gt;
+&lt;p&gt;İşte Commands ve Events arasındaki ayrım bu noktada kritik bir hal alır.&lt;/p&gt;
+&lt;h2 id="command-nedir"&gt;Command Nedir?&lt;/h2&gt;
+&lt;p&gt;Bir &lt;strong&gt;Command&lt;/strong&gt;, bir &lt;em&gt;niyetin&lt;/em&gt; (intent) ifadesidir. Sistemin belirli bir eylemi gerçekleştirmesi veya durumunu (state) değiştirmesi için yapılan bir istektir.&lt;/p&gt;
+&lt;p&gt;Bir command&amp;rsquo;i emir kipiyle verilmiş bir talimat olarak düşünün. Sisteme tam olarak ne yapmasını istediğinizi söylüyorsunuz. Bir istek olduğu için, bir command reddedilebilir. Sistem command&amp;rsquo;i doğrulayabilir ve iş kuralları, izinler veya geçersiz veriler nedeniyle çalıştırılamayacağına karar verebilir.&lt;/p&gt;
+&lt;h3 id="bir-commandin-temel-özellikleri"&gt;Bir Command&amp;rsquo;in Temel Özellikleri:&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Imperative Naming (Emir Kipiyle İsimlendirme):&lt;/strong&gt; Command&amp;rsquo;ler emir kipindeki fiillerle isimlendirilir (örneğin, &lt;code&gt;PlaceOrderCommand&lt;/code&gt;, &lt;code&gt;CreateUserCommand&lt;/code&gt;, &lt;code&gt;ProcessPaymentCommand&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Targeted (Hedefe Yönelik):&lt;/strong&gt; Bir command tam olarak &lt;strong&gt;bir&lt;/strong&gt; handler&amp;rsquo;a yönlendirilir (routed). Bir command&amp;rsquo;i tüm sisteme yayınlamazsınız (broadcast); onu o eylemden sorumlu olan belirli bileşene gönderirsiniz.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Can Fail (Başarısız Olabilir):&lt;/strong&gt; Durumu (state change) değiştirmeye yönelik bir istek olduğundan, alıcı handler doğrulama başarısız olursa bu isteği reddedebilir (ve genellikle reddeder) ve gönderene bir hata veya exception döndürür.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;High Coupling (Behavioral):&lt;/strong&gt; Command&amp;rsquo;i gönderen taraf ne yapılması gerektiğini bilmek zorundadır. Fiziksel bağ bir mesaj veriyolu ile soyutlanmış olsa da, bu durum events&amp;rsquo;e kıyasla daha sıkı bir davranışsal bağ anlamına gelir.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="event-nedir"&gt;Event Nedir?&lt;/h2&gt;
+&lt;p&gt;Öte yandan bir &lt;strong&gt;Event&lt;/strong&gt;, bir &lt;em&gt;gerçeğin&lt;/em&gt; (fact) ifadesidir. Geçmişte bir şeyin zaten gerçekleşmiş olduğunun duyurusudur.&lt;/p&gt;
+&lt;p&gt;Bir event&amp;rsquo;i reddedemezsiniz çünkü geçmişi değiştiremezsiniz. Eğer bir event yayınlanmışsa (published), state change çoktan gerçekleşmiştir. Sistemdeki bileşenler, bu olaylara tepki vermek ve kendi ardışık süreçlerini tetiklemek için events&amp;rsquo;i dinlerler.&lt;/p&gt;
+&lt;h3 id="bir-eventin-temel-özellikleri"&gt;Bir Event&amp;rsquo;in Temel Özellikleri:&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Past-Tense Naming (Geçmiş Zamanla İsimlendirme):&lt;/strong&gt; Events, geçmiş zamanlı fiiller kullanılarak isimlendirilir (örneğin, &lt;code&gt;OrderPlacedEvent&lt;/code&gt;, &lt;code&gt;UserCreatedEvent&lt;/code&gt;, &lt;code&gt;PaymentProcessedEvent&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Broadcasted (Yayınlanan - Publish/Subscribe):&lt;/strong&gt; Bir event, bir event bus veya message broker&amp;rsquo;a yayınlanır. &lt;strong&gt;Sıfır, bir veya birden fazla&lt;/strong&gt; handler&amp;rsquo;ı olabilir. Yayınlayan taraf (publisher), kimin dinlediğini bilmez ve umursamaz.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Cannot Be Rejected (Reddedilemez):&lt;/strong&gt; Olay zaten gerçekleşmiştir. Abone olanlar (subscribers) bunu işlemek zorundadır. Eğer bir subscriber bir event&amp;rsquo;i işlemekte başarısız olursa, kendi retry (yeniden deneme) mantığını yürütmelidir; publisher&amp;rsquo;a bu gerçeği &amp;ldquo;geri almasını&amp;rdquo; söyleyemez.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Loose Coupling (Gevşek Bağ):&lt;/strong&gt; Gönderici (publisher), alıcılardan (subscribers) tamamen izole edilmiştir (decoupled). Publisher sadece bir durum değişikliğini duyurur, bu da mevcut koda hiç dokunmadan sisteme yeni işlevsellikler eklemeyi inanılmaz derecede kolaylaştırır.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="temel-farklar-events-vs-commands"&gt;Temel Farklar: Events vs Commands&lt;/h2&gt;
+&lt;p&gt;Kavramları pekiştirmek için yan yana bir karşılaştırma yapalım.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Özellik&lt;/th&gt;
+&lt;th&gt;Command&lt;/th&gt;
+&lt;th&gt;Event&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Tanım&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Bir eylemi gerçekleştirmek için yapılan istek.&lt;/td&gt;
+&lt;td&gt;Bir şeyin gerçekleştiğine dair bildirim.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;İsimlendirme Standardı&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Emir Kipi (örn. &lt;code&gt;ShipOrder&lt;/code&gt;)&lt;/td&gt;
+&lt;td&gt;Geçmiş Zaman (örn. &lt;code&gt;OrderShipped&lt;/code&gt;)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Yönlendirme / Handlers&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Tam olarak bir handler (1:1).&lt;/td&gt;
+&lt;td&gt;Sıfırdan çoka kadar handlers (1:N).&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Yön&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Noktadan noktaya (Point-to-point). Gönderen bir alıcıyı hedefler.&lt;/td&gt;
+&lt;td&gt;Publish/Subscribe. Gönderen yayınlar.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Hata Yönetimi&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Reddedilebilir (doğrulama hatası).&lt;/td&gt;
+&lt;td&gt;Reddedilemez. Geçmiş olaylar değiştirilemez (immutable).&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Gönderenin Bilgisi&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;&lt;em&gt;Ne&lt;/em&gt; yapılması gerektiğini bilir.&lt;/td&gt;
+&lt;td&gt;Event ile &lt;em&gt;kimin&lt;/em&gt; ilgilendiğini bilmez.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="net-uygulama-hikayesi-hayata-geçirmek"&gt;.NET Uygulama Hikayesi: Hayata Geçirmek&lt;/h2&gt;
+&lt;p&gt;Bu kavramların gerçek dünya uygulamalarında nasıl bir araya geldiğini göstermek için &lt;strong&gt;.NET&lt;/strong&gt; kullanarak bir hikaye anlatalım. .NET ekosisteminde in-memory (bellek içi) mesajlaşma ve &lt;strong&gt;CQRS&lt;/strong&gt; pattern&amp;rsquo;leri için standart uygulama olan, oldukça popüler &lt;strong&gt;MediatR&lt;/strong&gt; kütüphanesini kullanacağız.&lt;/p&gt;
+&lt;p&gt;Bir Sipariş Yönetimi microservice&amp;rsquo;i inşa ettiğimizi hayal edelim.&lt;/p&gt;
+&lt;h3 id="adım-1-commandi-tanımlamak"&gt;Adım 1: Command&amp;rsquo;i Tanımlamak&lt;/h3&gt;
+&lt;p&gt;Yolculuk, bir kullanıcının sepetini onaylamasıyla başlar. API controller HTTP isteğini alır ve bir command oluşturur. Emir kipiyle isimlendirmeye dikkat edin. Mesajlar değiştirilemez (immutable) olması gerektiği için C# record&amp;rsquo;larını kullanıyoruz.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Domain.Commands;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The Command: A request that returns a strongly typed result&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;PlaceOrderCommand&lt;/span&gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Guid CustomerId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; List&amp;lt;CartItem&amp;gt; Items,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; ShippingAddress
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;) : IRequest&amp;lt;OrderResult&amp;gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;CartItem&lt;/span&gt;(Guid ProductId, &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; Quantity, &lt;span style="color:#66d9ef"&gt;decimal&lt;/span&gt; Price);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;OrderResult&lt;/span&gt;(&lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt; IsSuccess, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; Message, Guid? OrderId = &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="adım-2-commandi-işlemek-handling"&gt;Adım 2: Command&amp;rsquo;i İşlemek (Handling)&lt;/h3&gt;
+&lt;p&gt;Command tam olarak &lt;em&gt;bir&lt;/em&gt; handler&amp;rsquo;a yönlendirilir. Bu handler temel iş mantığını içerir. İsteği doğrular, veritabanı durumunu günceller ve eğer başarılı olursa bir Event üretir.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Application.Handlers.Commands;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;PlaceOrderCommandHandler&lt;/span&gt; : IRequestHandler&amp;lt;PlaceOrderCommand, OrderResult&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IOrderRepository _repository;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IMediator _mediator;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; PlaceOrderCommandHandler(IOrderRepository repository, IMediator mediator)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _repository = repository;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _mediator = mediator;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;OrderResult&amp;gt; Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 1. Validation (The command can be rejected!)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (request.Items == &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt; || !request.Items.Any())
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; OrderResult(&lt;span style="color:#66d9ef"&gt;false&lt;/span&gt;, &lt;span style="color:#e6db74"&gt;&amp;#34;Cart cannot be empty.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 2. State Change&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; totalAmount = request.Items.Sum(i =&amp;gt; i.Price * i.Quantity);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; order = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; Order(Guid.NewGuid(), request.CustomerId, totalAmount, request.ShippingAddress);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _repository.SaveAsync(order);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// 3. Announcing the Fact (The Event)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; orderPlacedEvent = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; OrderPlacedEvent(order.Id, request.CustomerId, totalAmount);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Notice we are Publishing the event, not Sending a command.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _mediator.Publish(orderPlacedEvent, cancellationToken);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; OrderResult(&lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;, &lt;span style="color:#e6db74"&gt;&amp;#34;Order successfully placed.&amp;#34;&lt;/span&gt;, order.Id);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="adım-3-eventi-tanımlamak"&gt;Adım 3: Event&amp;rsquo;i Tanımlamak&lt;/h3&gt;
+&lt;p&gt;Durum (state) değişti. Sipariş güvenli bir şekilde veritabanına kaydedildi. Artık sistem sadece bu gerçeği uygulamanın geri kalanına duyurur. Geçmiş zamanlı isimlendirmeye dikkat edin.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Domain.Events;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#75715e"&gt;// The Event: A notification that something happened. Does not return a response.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;OrderPlacedEvent&lt;/span&gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Guid OrderId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Guid CustomerId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;decimal&lt;/span&gt; TotalAmount
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;) : INotification;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="adım-4-evente-tepki-vermek-multiple-handlers"&gt;Adım 4: Event&amp;rsquo;e Tepki Vermek (Multiple Handlers)&lt;/h3&gt;
+&lt;p&gt;İşte &lt;strong&gt;Event-Driven Architecture&lt;/strong&gt;&amp;lsquo;ın büyüsünün parladığı yer burasıdır. Bir event yayınladığımız için, çekirdek &lt;code&gt;PlaceOrderCommandHandler&lt;/code&gt; sınıfımızı değiştirmeden, birbirinden bağımsız birden fazla handler&amp;rsquo;ın bu olaya tepki vermesini sağlayabiliriz.&lt;/p&gt;
+&lt;p&gt;Diyelim ki pazarlama ekibi bir &amp;ldquo;Teşekkürler&amp;rdquo; e-postası göndermek istiyor ve lojistik ekibinin stoğu ayırması gerekiyor. Basitçe iki ayrı event handler oluşturuyoruz.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Handler A: E-posta Servisi&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Application.Handlers.Events;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;SendOrderConfirmationEmailHandler&lt;/span&gt; : INotificationHandler&amp;lt;OrderPlacedEvent&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IEmailService _emailService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; SendOrderConfirmationEmailHandler(IEmailService emailService)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _emailService = emailService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task Handle(OrderPlacedEvent notification, CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// React to the fact&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _emailService.SendEmailAsync(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; notification.CustomerId,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#e6db74"&gt;$&amp;#34;Thank you for your order! Your total is ${notification.TotalAmount}.&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; );
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;Handler B: Envanter Servisi&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; MediatR;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;namespace&lt;/span&gt; ECommerce.Application.Handlers.Events;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;ReserveInventoryHandler&lt;/span&gt; : INotificationHandler&amp;lt;OrderPlacedEvent&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IInventoryService _inventoryService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; ReserveInventoryHandler(IInventoryService inventoryService)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; _inventoryService = inventoryService;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task Handle(OrderPlacedEvent notification, CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// React to the same fact independently&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _inventoryService.ReserveItemsForOrderAsync(notification.OrderId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;.NET&lt;/strong&gt; kodumuzu bu şekilde yapılandırarak harika bir loosely coupled (gevşek bağlı) sistem elde ettik. Yarın analiz ekibi satışları takip etmek isterse, &lt;code&gt;PlaceOrderCommandHandler&lt;/code&gt;&amp;lsquo;a dokunmayız. Sadece &lt;code&gt;OrderPlacedEvent&lt;/code&gt;&amp;lsquo;i dinleyen bir &lt;code&gt;TrackSalesAnalyticsHandler&lt;/code&gt; ekleriz.&lt;/p&gt;
+&lt;h2 id="ileri-düzey-mimari-değerlendirmeler"&gt;İleri Düzey Mimari Değerlendirmeler&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;MediatR&lt;/strong&gt; örneği in-memory kavramları mükemmel bir şekilde gösterse de, bu pattern&amp;rsquo;leri bellekten çıkarıp dağıtık (distributed) bir bulut ortamına taşımak karmaşık zorlukları beraberinde getirir. &lt;strong&gt;Microservices&lt;/strong&gt;&amp;rsquo;leri çalıştırmak için Google Cloud, AWS veya Azure gibi cloud platformları kullanıldığında, mesajlaşma yapısı da dağıtık hale gelir.&lt;/p&gt;
+&lt;p&gt;İşte &lt;strong&gt;Events vs Commands&lt;/strong&gt; yapılarını ölçeklendirirken göz önünde bulundurmanız gereken üç ileri düzey pattern:&lt;/p&gt;
+&lt;h3 id="1-the-outbox-pattern-garantili-teslimat"&gt;1. The Outbox Pattern (Garantili Teslimat)&lt;/h3&gt;
+&lt;p&gt;C# örneğimizde siparişi veritabanına kaydettik ve ardından event&amp;rsquo;i MediatR&amp;rsquo;a yayınladık. Peki ya veritabanı kaydı başarılı olur ancak uygulama tam olarak &lt;code&gt;await _mediator.Publish()&lt;/code&gt; satırı çalıştırılmadan bir milisaniye önce çökerse?&lt;/p&gt;
+&lt;p&gt;Durum değişti, ancak event hiçbir zaman fırlatılmadı. Müşterinin kartından para çekildi, ancak deponun haberi olmadı. Bu, dağıtık sistemlerde &amp;ldquo;&lt;strong&gt;Dual Write Problem&lt;/strong&gt;&amp;rdquo; (Çift Yazma Problemi) olarak bilinen yıkıcı bir hatadır.&lt;/p&gt;
+&lt;p&gt;Bunu çözmek için mimarlar &lt;strong&gt;Outbox Pattern&lt;/strong&gt; (veya Transactional Outbox Pattern) kullanırlar. Command handler, event&amp;rsquo;i doğrudan yayınlamak yerine, siparişin kendisiyle &lt;em&gt;aynı veritabanı transaction&amp;rsquo;ı&lt;/em&gt; içinde &lt;code&gt;OrderPlacedEvent&lt;/code&gt;&amp;lsquo;i bir &amp;ldquo;Outbox&amp;rdquo; tablosuna yazar. Ayrı bir arka plan süreci (bir .NET BackgroundService gibi) sürekli olarak bu Outbox tablosunu okur ve mesajları harici broker&amp;rsquo;ınıza (örn. RabbitMQ veya Google Cloud Pub/Sub) yayınlar. Bu, event&amp;rsquo;lerinizin en az bir kere teslim edilmesini garanti eder.&lt;/p&gt;
+&lt;h3 id="2-idempotency-yinelenen-eventleri-işlemek"&gt;2. Idempotency (Yinelenen Event&amp;rsquo;leri İşlemek)&lt;/h3&gt;
+&lt;p&gt;Dağıtık mesajlaşma sistemleri genellikle &amp;ldquo;en az bir kere&amp;rdquo; teslimat garantisi sunduğundan, event handler&amp;rsquo;larınız aynı &lt;code&gt;OrderPlacedEvent&lt;/code&gt;&amp;lsquo;i iki kez alabilir.&lt;/p&gt;
+&lt;p&gt;Eğer &lt;code&gt;SendOrderConfirmationEmailHandler&lt;/code&gt; dikkatlice tasarlanmazsa, müşteri iki e-posta alabilir. Daha da kötüsü, bir event ödeme alımını tetikliyorsa, müşteriden iki kez ücret alınabilir.&lt;/p&gt;
+&lt;p&gt;Event handler&amp;rsquo;lar &lt;strong&gt;idempotent&lt;/strong&gt; olmalıdır. Bu, aynı event&amp;rsquo;i birden fazla kez uygulamanın, bir kez uygulamakla aynı etkiye sahip olması anlamına gelir. .NET&amp;rsquo;te bu genellikle işlenmiş &lt;code&gt;EventId&lt;/code&gt;&amp;lsquo;lerin tutulduğu bir tablo aracılığıyla uygulanır. Bir handler bir event&amp;rsquo;i işlemeden önce kontrol eder: &lt;em&gt;&amp;ldquo;Bu Event ID&amp;rsquo;yi daha önce gördüm mü?&amp;rdquo;&lt;/em&gt; Eğer evetse, onu güvenli bir şekilde yoksayar ve başarılı bir yanıt döner.&lt;/p&gt;
+&lt;h3 id="3-event-sourcing-vs-event-driven-architecture"&gt;3. Event Sourcing vs Event-Driven Architecture&lt;/h3&gt;
+&lt;p&gt;Bir &lt;strong&gt;Event-Driven Architecture&lt;/strong&gt;&amp;lsquo;ı (EDA), &lt;strong&gt;Event Sourcing&lt;/strong&gt; ile karıştırmamak önemlidir.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;EDA&lt;/strong&gt;, servisler arasında iletişim kurmak için events kullanır (yukarıdaki örneğimizde olduğu gibi). Durum (state) hala geleneksel bir veritabanı tablosunda (örneğin, bir &lt;code&gt;Status&lt;/code&gt; sütunu olan &lt;code&gt;Orders&lt;/code&gt; tablosunda) saklanır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Event Sourcing&lt;/strong&gt; ise events&amp;rsquo;in veritabanının &lt;em&gt;ta kendisi&lt;/em&gt; olduğu çok daha karmaşık bir paradigmadır. Bir siparişin mevcut durumunu kaydetmek yerine, sadece ekleme yapılabilen (append-only) bir olaylar günlüğü (log) kaydedersiniz: &lt;code&gt;OrderCreated&lt;/code&gt;, &lt;code&gt;AddressUpdated&lt;/code&gt;, &lt;code&gt;ItemAdded&lt;/code&gt;, &lt;code&gt;OrderCheckedOut&lt;/code&gt;. Sistemin mevcut durumu bulabilmesi için events başlangıç zamanından itibaren yeniden oynatılır. Denetim izleri için güçlü olsa da, devasa bir karmaşıklık getirir ve finansal defterler gibi katı tarihsel doğruluk gerektiren özel alanlara saklanmalıdır.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="hangisini-ne-zaman-kullanmalı"&gt;Hangisini Ne Zaman Kullanmalı?&lt;/h2&gt;
+&lt;p&gt;Yazılım tasarımının güzelliği, iş için doğru aracı seçmektir. İşte .NET uygulamalarınızda Commands vs Events tercihini ne zaman yapacağınıza dair kısa bir kopya kağıdı:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Şu durumlarda Command kullanın:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Sistemin belirli bir eylemi gerçekleştirmesine ihtiyacınız varsa ve bunu hangi bileşenin işlemesi (handle) gerektiğini tam olarak biliyorsanız.&lt;/li&gt;
+&lt;li&gt;Kullanıcı girdisini doğrulamanız ve potansiyel olarak isteği reddetmeniz gerekiyorsa.&lt;/li&gt;
+&lt;li&gt;Geriye bir sonuç bekliyorsanız (başarı, başarısızlık veya yeni oluşturulan bir entity&amp;rsquo;nin ID&amp;rsquo;si).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Şu durumlarda Event kullanın:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Önemli bir durum değişikliği (state change) gerçekleştiyse ve sistemin diğer parçalarını bilgilendirmek istiyorsanız.&lt;/li&gt;
+&lt;li&gt;Farklı, bağımsız modüllerin sıkı bir bağ (tight coupling) yaratmadan tek bir eyleme tepki vermesine izin vermek istiyorsanız.&lt;/li&gt;
+&lt;li&gt;Microservice sınırları arasında entegrasyon yapıyorsanız ve servislerin otonom kalmasını sağlamak istiyorsanız.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="özet"&gt;Özet&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Software architecture&lt;/strong&gt; içinde &lt;strong&gt;events vs commands&lt;/strong&gt; arasındaki farkta uzmanlaşmak, bir geliştiricinin &lt;strong&gt;system design&lt;/strong&gt; mükemmelliğine giden yolculuğunda önemli bir kilometre taşıdır. Commands uygulamanızın niyetini yönlendirir ve iş kurallarını korur, durum değişikliklerinin sadece geçerli olduğunda gerçekleşmesini sağlar. Events ise sistemin sinir ağı gibi davranır, gerçekleri yayınlar ve yüksek ölçeklenebilir, loosely coupled (gevşek bağlı) bir microservices ekosistemini mümkün kılar.&lt;/p&gt;
+&lt;p&gt;.NET&amp;rsquo;teki &lt;strong&gt;MediatR&lt;/strong&gt; gibi güçlü kütüphanelerden yararlanarak ve &lt;strong&gt;asynchronous messaging&lt;/strong&gt; inceliklerini anlayarak, sadece günümüz iş mantığının karmaşıklığıyla başa çıkabilen değil, aynı zamanda yarının gereksinimlerine uyum sağlayacak kadar esnek ve dayanıklı sistemler inşa edebilirsiniz. Command&amp;rsquo;lerinizi emir kipiyle isimlendirmeyi, event&amp;rsquo;lerinizi geçmişin değiştirilemez gerçekleri olarak ele almayı ve decouple mimarinin gücünü kucaklamayı unutmayın.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="sonuç"&gt;Sonuç&lt;/h2&gt;
+&lt;p&gt;Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme konusundaki araştırmalarımı kaçırmamak için beni &lt;a href="https://x.com/berkslv"&gt;@berkslv&lt;/a&gt; adresinden takip edebilirsiniz.&lt;/p&gt;</content></item><item><title>.NET'te Anemic'ten Rich Domain Model'e Refactoring</title><link>https://berkselvi.dev/tr/posts/refactoring-from-an-anemic-to-a-rich-domain-model-in-dotnet/</link><pubDate>Tue, 16 Jun 2026 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/refactoring-from-an-anemic-to-a-rich-domain-model-in-dotnet/</guid><description>&lt;p&gt;.NET&amp;rsquo;te kurumsal uygulamalar geliştirmek için önemli bir zaman harcadıysanız, Domain-Driven Design (DDD) kavramıyla karşılaşmış olmanız muhtemeldir. DDD, kodunuzu temsil ettiği gerçek dünya iş domain&amp;rsquo;iyle hizalayarak yazılım karmaşıklığıyla başa çıkmanın bir yolunu vaat eder. Ancak, geliştiricilerin DDD&amp;rsquo;yi—veya sadece temel Object-Oriented Programming&amp;rsquo;i (OOP)—benimserken düştükleri en yaygın tuzaklardan biri &lt;strong&gt;Anemic Domain Model&lt;/strong&gt; yaratmaktır.&lt;/p&gt;
 &lt;p&gt;Birçok .NET mimarisinde tanıdık bir pattern görürsünüz: yalnızca public getter ve setter&amp;rsquo;lardan oluşan torbalar olan &amp;ldquo;entity&amp;quot;ler ve bunlara eşlik eden, tüm iş kurallarını (business rules), validation ve state manipulation mantığını içeren devasa &amp;ldquo;service&amp;rdquo; sınıfları. Bu yapı, özellikle veritabanı odaklı bir geçmişten gelenler için rahat hissettirse de, object-oriented design ve encapsulation prensiplerine aktif olarak ters düşer.&lt;/p&gt;</description><content>&lt;p&gt;.NET&amp;rsquo;te kurumsal uygulamalar geliştirmek için önemli bir zaman harcadıysanız, Domain-Driven Design (DDD) kavramıyla karşılaşmış olmanız muhtemeldir. DDD, kodunuzu temsil ettiği gerçek dünya iş domain&amp;rsquo;iyle hizalayarak yazılım karmaşıklığıyla başa çıkmanın bir yolunu vaat eder. Ancak, geliştiricilerin DDD&amp;rsquo;yi—veya sadece temel Object-Oriented Programming&amp;rsquo;i (OOP)—benimserken düştükleri en yaygın tuzaklardan biri &lt;strong&gt;Anemic Domain Model&lt;/strong&gt; yaratmaktır.&lt;/p&gt;
 &lt;p&gt;Birçok .NET mimarisinde tanıdık bir pattern görürsünüz: yalnızca public getter ve setter&amp;rsquo;lardan oluşan torbalar olan &amp;ldquo;entity&amp;quot;ler ve bunlara eşlik eden, tüm iş kurallarını (business rules), validation ve state manipulation mantığını içeren devasa &amp;ldquo;service&amp;rdquo; sınıfları. Bu yapı, özellikle veritabanı odaklı bir geçmişten gelenler için rahat hissettirse de, object-oriented design ve encapsulation prensiplerine aktif olarak ters düşer.&lt;/p&gt;
 &lt;p&gt;Bu kapsamlı rehberde, Anemic Domain Model&amp;rsquo;in tam olarak ne olduğunu, endüstri uzmanlarının bunu neden bir anti-pattern olarak gördüğünü ve C# uygulamalarınızı nasıl &lt;strong&gt;Rich Domain Model&lt;/strong&gt;&amp;rsquo;e refactor edebileceğinizi inceleyeceğiz. Pratik kod örneklerine bakacak, Entity Framework Core (EF Core) ile persistence işlemlerini nasıl halledeceğimizi tartışacak ve mantığı entity&amp;rsquo;lerinizin içine taşımanın unit testing&amp;rsquo;i nasıl çocuk oyuncağı haline getirdiğini göreceğiz.&lt;/p&gt;
