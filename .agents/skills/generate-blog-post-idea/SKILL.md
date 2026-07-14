@@ -9,7 +9,7 @@ Generate 5 distinct, high-quality blog post ideas from whatever context the user
 
 ## Core principle
 
-Do not just summarize or rephrase the input context into a title. The given context is a **seed**, not a boundary. Your job is to explore the surrounding idea-space and find angles the user likely hasn't considered.
+Do not just summarize or rephrase the input context into a title. The given context is a **seed**, not a boundary. Your job is to explore the surrounding idea-space and find angles the user likely hasn't considered. Prioritize creative leaps and original thinking over safe, expected extensions of the input — favor ideas that surprise the user over ideas that merely confirm what they already gave you.
 
 ## Workflow
 
@@ -40,7 +40,7 @@ Do not just summarize or rephrase the input context into a title. The given cont
    - Are not all obvious/expected extensions of the input context.
    - Include at least 1 idea that deliberately steps outside the given context into a related-but-different niche.
 
-5. **If the site/repo has an existing blog** (e.g. a `content/` folder with posts), quickly check existing post titles/topics to avoid suggesting something already written, and to match tone/style/language conventions used (e.g. bilingual EN/TR posts, personal narrative style, technical depth level).
+5. **Do not research the existing blog before ideating.** Ideas must come from the idea-space exploration in step 2, not from what's already published. Only glance at `content/` (if it exists) as a final, optional dedupe pass after the 5 ideas are drafted — just to rename/tweak an idea if it's a near-duplicate of an existing post title. Never let existing posts shape the angles, lenses, or direction of the ideas themselves.
 
 ## Output format
 
