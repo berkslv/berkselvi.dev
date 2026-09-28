@@ -1,4 +1,438 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br&gt; Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt; olarak yayınlanmıştır.</copyright><lastBuildDate>Mon, 22 Jun 2026 14:55:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Yazılım Mimarisinde Events vs Commands: Kapsamlı Bir .NET Rehberi</title><link>https://berkselvi.dev/tr/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</link><pubDate>Mon, 22 Jun 2026 14:55:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</guid><description>&lt;p&gt;Modern yazılım mühendisliği dünyasında, monolitik sistemlerden dağıtık &lt;strong&gt;microservices&lt;/strong&gt; mimarilerine geçiş yaygın bir evrimsel yoldur. Sistemler karmaşıklaştıkça, farklı bileşenlerin, modüllerin ve servislerin iletişim kurma şekli; sistemin dayanıklılığını, ölçeklenebilirliğini ve sürdürülebilirliğini belirleyen kritik faktör haline gelir. Eğer sağlam, cloud-native uygulamalar geliştiriyorsanız, bileşenlerinizi birbirinden ayırma (decouple) ihtiyacıyla kaçınılmaz olarak karşılaşırsınız.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Berk Selvi | Software Developer</title><link>https://berkselvi.dev/tr/posts/</link><description>Recent content in Posts on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>tr-TR</language><copyright>Made by Berk Selvi. &lt;br&gt; Bu websitesi &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt; olarak yayınlanmıştır.</copyright><lastBuildDate>Sun, 02 Aug 2026 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/tr/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>IEnumerable'dan IAsyncEnumerable'a: .NET'te Belleği Öldürmeden Büyük Veri Setlerini Streaming ile İşlemek</title><link>https://berkselvi.dev/tr/posts/from-ienumerable-to-iasyncenumerable-streaming-large-datasets-in-dotnet-without-killing-memory/</link><pubDate>Sun, 02 Aug 2026 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/from-ienumerable-to-iasyncenumerable-streaming-large-datasets-in-dotnet-without-killing-memory/</guid><description>&lt;p&gt;Birkaç ay önce, gece çalışan export job&amp;rsquo;larımızdan biri &lt;code&gt;OutOfMemoryException&lt;/code&gt; fırlatmaya başladı. Kodda hiçbir şey değişmemişti. Değişen tek şey, okuduğu tablonun boyutuydu—sessizce 200 bin satırdan 4 milyon satıra çıkmıştı. Job tam olarak söylediğimiz şeyi yapıyordu: tüm tabloyu &lt;code&gt;.ToListAsync()&lt;/code&gt; ile çekip üzerinde döngü kuruyordu. Sadece önce tüm veritabanı tablosunu RAM&amp;rsquo;e alıyordu ve RAM kaybediyordu.&lt;/p&gt;
+&lt;p&gt;Bu, neredeyse her .NET geliştiricisinin er ya da geç düştüğü bir tuzak: aslında ihtiyacınız olan şey kayıt kayıt streaming yapan &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; iken &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;&amp;lsquo;ye (ya da onun async kuzeni &lt;code&gt;Task&amp;lt;List&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt;&amp;lsquo;ye) yönelmek. &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; ve &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; yüzeysel olarak birbirine benzer ama çok farklı problemleri çözerler, ve yanlışını seçmek sizi gece 2&amp;rsquo;de 4 milyon satırlık bir tabloyu bellekte sayfalamaya götüren tam olarak budur.&lt;/p&gt;</description><content>&lt;p&gt;Birkaç ay önce, gece çalışan export job&amp;rsquo;larımızdan biri &lt;code&gt;OutOfMemoryException&lt;/code&gt; fırlatmaya başladı. Kodda hiçbir şey değişmemişti. Değişen tek şey, okuduğu tablonun boyutuydu—sessizce 200 bin satırdan 4 milyon satıra çıkmıştı. Job tam olarak söylediğimiz şeyi yapıyordu: tüm tabloyu &lt;code&gt;.ToListAsync()&lt;/code&gt; ile çekip üzerinde döngü kuruyordu. Sadece önce tüm veritabanı tablosunu RAM&amp;rsquo;e alıyordu ve RAM kaybediyordu.&lt;/p&gt;
+&lt;p&gt;Bu, neredeyse her .NET geliştiricisinin er ya da geç düştüğü bir tuzak: aslında ihtiyacınız olan şey kayıt kayıt streaming yapan &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; iken &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;&amp;lsquo;ye (ya da onun async kuzeni &lt;code&gt;Task&amp;lt;List&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt;&amp;lsquo;ye) yönelmek. &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; ve &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; yüzeysel olarak birbirine benzer ama çok farklı problemleri çözerler, ve yanlışını seçmek sizi gece 2&amp;rsquo;de 4 milyon satırlık bir tabloyu bellekte sayfalamaya götüren tam olarak budur.&lt;/p&gt;
+&lt;h2 id="bir-bakışta-ienumerable-vs-iasyncenumerable"&gt;Bir Bakışta IEnumerable vs IAsyncEnumerable&lt;/h2&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Özellik&lt;/th&gt;
+&lt;th&gt;&lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; / &lt;code&gt;List&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/th&gt;
+&lt;th&gt;&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Materialization&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Iterasyon başlamadan önce tamamen gerçekleştirilir&lt;/td&gt;
+&lt;td&gt;Talep üzerine, tek tek çekilir&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Bellek ayak izi&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Sonuç kümesinin boyutuyla birlikte büyür&lt;/td&gt;
+&lt;td&gt;Boyuttan bağımsız olarak kabaca sabit&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;İlk öğeye kadar geçen süre&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Tüm sorgu/koleksiyonu bekler&lt;/td&gt;
+&lt;td&gt;İlk öğe hazır olur olmaz kullanılabilir&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Cancellation&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Sadece döngünüzü durdurur; zaten yapılmış iş yapılmış kalır&lt;/td&gt;
+&lt;td&gt;Altta yatan sorguyu akış ortasında durdurabilir&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Iterasyon&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Tekrarlanabilir, indekslenebilir&lt;/td&gt;
+&lt;td&gt;Sadece ileri yönlü, tek geçişli&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Tipik kullanım&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Küçük, sınırlı koleksiyonlar&lt;/td&gt;
+&lt;td&gt;Export&amp;rsquo;lar, ETL, sayfalanmış API&amp;rsquo;ler, log işleme&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="eski-yöntem-önce-her-şeyi-yükle-sonra-iterasyon-yap"&gt;Eski Yöntem: Önce Her Şeyi Yükle, Sonra Iterasyon Yap&lt;/h2&gt;
+&lt;p&gt;İşte bizi belaya sokan pattern buydu. Order&amp;rsquo;ları export etmek için okuyan tipik bir .NET servisi:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;List&amp;lt;Order&amp;gt;&amp;gt; GetAllOrdersAsync()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _dbContext.Orders
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsNoTracking()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .ToListAsync();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task ExportOrdersAsync()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; orders = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; GetAllOrdersAsync();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; order &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; orders)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _exportWriter.WriteLineAsync(order.ToCsvRow());
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Bu tamamen makul görünüyor, ve küçük tablolar için de öyle. Ama &lt;code&gt;ToListAsync()&lt;/code&gt;&amp;lsquo;in aslında ne yaptığına yakından bakın: sorgunun döndürdüğü &lt;strong&gt;her bir satırı&lt;/strong&gt;, kodunuz ilk öğeye dokunmadan önce bellekte duran bir &lt;code&gt;List&amp;lt;Order&amp;gt;&lt;/code&gt; içinde materialize eder. Sorgu 4 milyon satır döndürüyorsa, &lt;code&gt;foreach&lt;/code&gt; döngüsünde her seferinde sadece bir satır işlese bile, aynı anda 4 milyon &lt;code&gt;Order&lt;/code&gt; nesnesini tutacak kadar belleğe ihtiyacınız var.&lt;/p&gt;
+&lt;p&gt;Belirtiler yavaşça ortaya çıkar:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Bellek sıçramaları:&lt;/strong&gt; GC baskısı artar, process&amp;rsquo;in working set&amp;rsquo;i şişer, ve Kubernetes&amp;rsquo;te container bellek limitlerine takılınır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;İlk sonuçtan önce gecikme:&lt;/strong&gt; Caller, tek bir satır görmeden önce &lt;em&gt;tüm&lt;/em&gt; sorgunun tamamlanmasını bekler, sadece sonuçları bir client&amp;rsquo;a stream etmek istese bile.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Cancellation&amp;rsquo;da boşa giden iş:&lt;/strong&gt; Caller yarı yolda işlemi iptal ederse, her şeyi yükleme maliyetinin tamamını zaten ödemişsinizdir.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Backpressure yok:&lt;/strong&gt; &amp;ldquo;Yavaşla, son batch&amp;rsquo;i hâlâ işliyorum&amp;rdquo; demenin bir yolu yoktur—veritabanı, driver&amp;rsquo;ın buffer&amp;rsquo;layabildiği hızda satır üretmeye devam eder.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Export yapan bir background job, bir CSV stream eden API endpoint&amp;rsquo;i, ya da bir veri migration script&amp;rsquo;i için bu pattern ölçeklenmez. Local development&amp;rsquo;ta 50 satırlık seed veri setinizle çalışır, ve sessizce production&amp;rsquo;da bozulur.&lt;/p&gt;
+&lt;h2 id="neden-iasyncenumerable"&gt;Neden IAsyncEnumerable?&lt;/h2&gt;
+&lt;p&gt;.NET Core 3.0, tam olarak bu tür problemi çözmek için &lt;code&gt;await foreach&lt;/code&gt; syntax&amp;rsquo;ıyla birlikte &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;&amp;lsquo;yi tanıttı. Tamamen gerçekleştirilmiş bir koleksiyon döndüren bir method yerine, consumer bir sonraki elemanı her istediğinde asenkron olarak tek tek &lt;strong&gt;çekilen&lt;/strong&gt; bir sequence döndürür.&lt;/p&gt;
+&lt;p&gt;Mental model değişimi önemli:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Task&amp;lt;List&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt;&lt;/strong&gt; şu anlama gelir: &amp;ldquo;her şey hazır olana kadar bekle, sonra bana tüm şeyi ver.&amp;rdquo;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/strong&gt; şu anlama gelir: &amp;ldquo;bir sonrakini istediğimde bana bir öğe ver, hazır değilse &lt;code&gt;await&lt;/code&gt; etmeme izin ver.&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Bu şunları mümkün kılar:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Sabit bellek kullanımı:&lt;/strong&gt; Kaynağın 10 satırı ya da 10 milyon satırı olması fark etmeksizin, herhangi bir anda bellekte sadece bir öğenin (ya da küçük bir buffer&amp;rsquo;ın) olması yeterlidir.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Time-to-first-byte iyileştirmeleri:&lt;/strong&gt; Bir consumer, tüm sonuç kümesini beklemek yerine ilk satır hazır olur olmaz işlemeye (ya da bir HTTP client veri almaya) başlayabilir.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Doğal cancellation desteği:&lt;/strong&gt; &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;, &lt;code&gt;WithCancellation&lt;/code&gt; üzerinden &lt;code&gt;CancellationToken&lt;/code&gt; ile compose olur, böylece bir stream&amp;rsquo;i iptal etmek, sadece zaten yüklenmiş bir listeyi atmak yerine gerçekten altta yatan sorguyu durdurur.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;LINQ ile composability:&lt;/strong&gt; &lt;code&gt;System.Linq.Async&lt;/code&gt; paketiyle, async stream&amp;rsquo;ler üzerinde &lt;code&gt;Select&lt;/code&gt;, &lt;code&gt;Where&lt;/code&gt; ve benzerlerini kullanabilirsiniz, böylece &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; ile alışık olduğunuz ifade gücünü kaybetmezsiniz.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Trade-off ise, random access&amp;rsquo;ten ve ayrı bir sorgu yapmadan sayıyı önceden bilme yeteneğinden vazgeçmenizdir—&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; tasarım gereği sadece ileri yönlü, tek geçişlidir. Streaming senaryoları için bu tam olarak doğru kısıtlamadır.&lt;/p&gt;
+&lt;h2 id="yield-return-ile-iasyncenumerable-üretmek"&gt;yield return ile IAsyncEnumerable Üretmek&lt;/h2&gt;
+&lt;p&gt;Bir &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; üretmenin en basit yolu, &lt;code&gt;async&lt;/code&gt; bir method içinde &lt;code&gt;yield return&lt;/code&gt; kullanmaktır. İşte simüle edilmiş bir I/O gecikmesiyle sayıları stream eden, EF Core&amp;rsquo;u işin içine katmadan önce mekaniği anlamak için kullanışlı, el yazımı bir örnek:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; IAsyncEnumerable&amp;lt;&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt;&amp;gt; GenerateNumbersAsync(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; count,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt; [EnumeratorCancellation]&lt;/span&gt; CancellationToken cancellationToken = &lt;span style="color:#66d9ef"&gt;default&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;for&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; i = &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;; i &amp;lt; count; i++)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cancellationToken.ThrowIfCancellationRequested();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Simulate an async I/O operation, e.g. a network call per item&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; Task.Delay(&lt;span style="color:#ae81ff"&gt;10&lt;/span&gt;, cancellationToken);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;yield&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; i;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;[EnumeratorCancellation]&lt;/code&gt; attribute&amp;rsquo;u gözden kaçması kolay ama önemli bir detay: bu olmadan, &lt;code&gt;WithCancellation&lt;/code&gt;&amp;lsquo;a geçirilen bir &lt;code&gt;CancellationToken&lt;/code&gt; aslında method body&amp;rsquo;sine akmaz, ve &lt;code&gt;ThrowIfCancellationRequested&lt;/code&gt; caller&amp;rsquo;ın token&amp;rsquo;ına karşı no-op haline gelir.&lt;/p&gt;
+&lt;p&gt;Bunu tüketmek şöyle görünür:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; number &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; GenerateNumbersAsync(&lt;span style="color:#ae81ff"&gt;1000&lt;/span&gt;, cts.Token))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Console.WriteLine(number);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Burada &lt;em&gt;olmayan&lt;/em&gt; şeye dikkat edin: 1000 sayının tamamını tutan ara bir &lt;code&gt;List&amp;lt;int&amp;gt;&lt;/code&gt; yok. Her &lt;code&gt;number&lt;/code&gt; üretilir, tüketilir, ve bir sonraki üretilmeden önce garbage collect edilebilir.&lt;/p&gt;
+&lt;h2 id="gerçek-hayat-örneği-ef-core-sorgu-sonuçlarını-streaming-yapmak"&gt;Gerçek Hayat Örneği: EF Core Sorgu Sonuçlarını Streaming Yapmak&lt;/h2&gt;
+&lt;p&gt;Gece 2&amp;rsquo;de 4 milyon &lt;code&gt;Order&lt;/code&gt; satırını belleğe sayfalayan export job&amp;rsquo;a geri dönelim ve doğru şekilde düzeltelim. Entity Framework Core, &lt;code&gt;AsAsyncEnumerable()&lt;/code&gt; üzerinden &lt;code&gt;DbSet&amp;lt;T&amp;gt;&lt;/code&gt; ve &lt;code&gt;IQueryable&amp;lt;T&amp;gt;&lt;/code&gt; üzerinde doğrudan &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; sunar, bu yüzden veritabanı sorguları için kendi &lt;code&gt;yield return&lt;/code&gt; wrapper&amp;rsquo;ınızı yazmanıza gerek yoktur:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; IAsyncEnumerable&amp;lt;Order&amp;gt; StreamOrdersAsync(CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; _dbContext.Orders
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsNoTracking()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .OrderBy(o =&amp;gt; o.Id)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsAsyncEnumerable();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task ExportOrdersAsync(CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; order &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; StreamOrdersAsync(cancellationToken).WithCancellation(cancellationToken))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _exportWriter.WriteLineAsync(order.ToCsvRow());
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Fark kodda ince ama runtime&amp;rsquo;da devasa. Sorgu tamamen çalışıp 4 milyon &lt;code&gt;Order&lt;/code&gt; satırını bir &lt;code&gt;List&amp;lt;Order&amp;gt;&lt;/code&gt;&amp;lsquo;a buffer&amp;rsquo;lamak yerine, EF Core altta yatan &lt;code&gt;DbDataReader&lt;/code&gt;&amp;lsquo;ı açık tutar ve &lt;code&gt;await foreach&lt;/code&gt; döngüsü istedikçe veritabanı bağlantısından satırları stream eder. Sorgunun kendisi için bellek kullanımı, tablo boyutundan bağımsız olarak kabaca sabit kalır—tüm sonuç kümesi için değil, her seferinde bir satır (artı küçük bir internal buffer) için ödeme yaparsınız.&lt;/p&gt;
+&lt;p&gt;Burada gözden kaçması kolay iki detay önemli. Birincisi, &lt;code&gt;.AsNoTracking()&lt;/code&gt; dekoratif değildir—olmadan, EF Core&amp;rsquo;un change tracker&amp;rsquo;ı, &lt;code&gt;DbContext&lt;/code&gt;&amp;lsquo;in ömrü boyunca size verdiği her entity&amp;rsquo;nin bir snapshot&amp;rsquo;ını tutar, bu da sorgu kendisi stream ediyor olsa bile, ortadan kaldırmaya çalıştığınız tam bellek büyümesini sessizce geri getirir. İkincisi, yukarıdaki el yazımı &lt;code&gt;yield return&lt;/code&gt; örneğinin aksine, &lt;code&gt;AsAsyncEnumerable()&lt;/code&gt; kendi kodunuzda herhangi bir yerde &lt;code&gt;[EnumeratorCancellation]&lt;/code&gt; eklemenizi gerektirmez—EF Core, &lt;code&gt;WithCancellation&lt;/code&gt;&amp;lsquo;a geçirdiğiniz &lt;code&gt;CancellationToken&lt;/code&gt;&amp;lsquo;ı internal olarak kendi sorgu pipeline&amp;rsquo;ına bağlar. Attribute sadece &lt;code&gt;async IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; method&amp;rsquo;unu kendiniz yazdığınızda önem kazanır.&lt;/p&gt;
+&lt;p&gt;Bu ayrıca ASP.NET Core ile de temiz bir şekilde compose olur. Bunu minimal bir API endpoint&amp;rsquo;i olarak sunarsanız, framework, tüm JSON array&amp;rsquo;ini önce server-side&amp;rsquo;da buffer&amp;rsquo;lamak yerine, öğeler hazır oldukça stream&amp;rsquo;i doğrudan response body&amp;rsquo;sine serialize eder:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.MapGet(&lt;span style="color:#e6db74"&gt;&amp;#34;/orders/stream&amp;#34;&lt;/span&gt;, (AppDbContext dbContext, CancellationToken cancellationToken) =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; dbContext.Orders
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsNoTracking()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .OrderBy(o =&amp;gt; o.Id)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsAsyncEnumerable();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;.NET 6&amp;rsquo;dan beri, ASP.NET Core&amp;rsquo;un minimal API&amp;rsquo;leri &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; dönüş tipini algılar ve altta yatan enumerable öğeleri ürettikçe JSON array&amp;rsquo;ini, tam listeyi return etmeden önce materialize etmenizi gerektirmek yerine, chunk chunk stream eder. Bilinmeye değer bir tuzak: eğer response compression middleware&amp;rsquo;i endpoint&amp;rsquo;in önünde duruyorsa, etkili bir şekilde sıkıştırmak için response&amp;rsquo;u internal olarak buffer&amp;rsquo;layabilir, bu da az önce kurduğunuz streaming davranışını sessizce boşa çıkarır—uçtan uca çalıştığını varsaymadan önce gerçek bir client ve &lt;code&gt;Transfer-Encoding: chunked&lt;/code&gt; ile kontrol etmeye değer.&lt;/p&gt;
+&lt;h3 id="batching-üzerine-bir-not"&gt;Batching Üzerine Bir Not&lt;/h3&gt;
+&lt;p&gt;EF Core&amp;rsquo;dan bir seferde bir satır stream etmek bellek dostudur, ama her satırı harici bir sisteme yazıyorsanız (bir HTTP call, bir message queue, ikinci bir veritabanı), bunu satır bazında yapmak, öğe başına overhead nedeniyle yavaş olabilir. Yaygın bir orta yol, stream&amp;rsquo;i chunk&amp;rsquo;lara batch&amp;rsquo;lemektir:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; IAsyncEnumerable&amp;lt;List&amp;lt;T&amp;gt;&amp;gt; ChunkAsync&amp;lt;T&amp;gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;this&lt;/span&gt; IAsyncEnumerable&amp;lt;T&amp;gt; source,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; chunkSize,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt; [EnumeratorCancellation]&lt;/span&gt; CancellationToken cancellationToken = &lt;span style="color:#66d9ef"&gt;default&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; buffer = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; List&amp;lt;T&amp;gt;(chunkSize);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; item &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; source.WithCancellation(cancellationToken))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; buffer.Add(item);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (buffer.Count == chunkSize)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;yield&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; buffer;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; buffer = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; List&amp;lt;T&amp;gt;(chunkSize);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (buffer.Count &amp;gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;yield&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; buffer;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Şöyle kullanılır:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; batch &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; StreamOrdersAsync(cancellationToken).ChunkAsync(&lt;span style="color:#ae81ff"&gt;500&lt;/span&gt;, cancellationToken))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _messageBus.PublishBatchAsync(batch);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Yine de belleği sınırlı tutarsınız—4 milyon yerine aynı anda uçuşta sadece 500 order—aynı zamanda downstream sistemin çağrı başına overhead&amp;rsquo;ini bir batch üzerinden amortize edersiniz.&lt;/p&gt;
+&lt;h2 id="iasyncenumerable-doğru-araç-olmadığında"&gt;IAsyncEnumerable Doğru Araç Olmadığında&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;, &lt;code&gt;List&amp;lt;T&amp;gt;&lt;/code&gt; ya da &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; için evrensel bir replacement değildir. Şu durumlarda yanlış seçimdir:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Sayıya ihtiyacınız varsa, yükledikten sonra sort etmeniz gerekiyorsa, ya da random access&amp;rsquo;e ihtiyacınız varsa (örn. &lt;code&gt;orders[42]&lt;/code&gt;)—bunlar zaten veriyi materialize etmeyi gerektirir.&lt;/li&gt;
+&lt;li&gt;Veri seti gerçekten küçük ve sınırlıysa (20 kategoriden oluşan bir dropdown listesi streaming semantiğine ihtiyaç duymaz).&lt;/li&gt;
+&lt;li&gt;Aynı sequence&amp;rsquo;ı birden fazla kez iterate etmeniz gerekiyorsa—&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; convention gereği tek geçişlidir; yeniden enumerate etmek genellikle altta yatan sorguyu yeniden çalıştırır.&lt;/li&gt;
+&lt;li&gt;Zaten tüm koleksiyona ihtiyaç duyan in-memory dönüşümler yapıyorsanız (örn. median hesaplamak), bu durumda streaming, bellek kullanımını azaltmadan sadece &lt;code&gt;await&lt;/code&gt; overhead&amp;rsquo;i ekler.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Problemin şekli &amp;ldquo;potansiyel olarak büyük bir sequence&amp;rsquo;ı, hepsini bir anda tutmaya ihtiyaç duymadan, tek tek (ya da küçük batch&amp;rsquo;ler halinde) işlemek&amp;rdquo; olduğunda özellikle kullanın. Export&amp;rsquo;lar, ETL pipeline&amp;rsquo;ları, sayfalanmış API sonuçları, log işleme, ve büyük rapor üretimi klasik durumlardır.&lt;/p&gt;
+&lt;h2 id="özet"&gt;Özet&lt;/h2&gt;
+&lt;p&gt;Bu araştırmayı başlatan &lt;code&gt;OutOfMemoryException&lt;/code&gt;, geleneksel anlamda bir bug değildi—kod, &lt;code&gt;ToListAsync()&lt;/code&gt;&amp;lsquo;in vaat ettiği şeyi tam olarak yapıyordu. Gerçek çözüm daha akıllı bir allocation stratejisi ya da daha büyük bir container bellek limiti değildi; job&amp;rsquo;un aslında hiçbir zaman bellekte duran bir &lt;code&gt;List&amp;lt;Order&amp;gt;&lt;/code&gt;&amp;lsquo;a ihtiyaç duymadığını fark etmekti. İhtiyacı olan bir stream&amp;rsquo;di. O export job&amp;rsquo;ında &lt;code&gt;ToListAsync()&lt;/code&gt;&amp;lsquo;i &lt;code&gt;AsAsyncEnumerable()&lt;/code&gt; ile değiştirdiğimizde, aynı 4 milyon satırlık tablo düz, öngörülebilir bir bellek kullanımıyla işlendi, ve &lt;code&gt;OutOfMemoryException&lt;/code&gt; bir daha geri gelmedi.&lt;/p&gt;
+&lt;p&gt;Büyük veri setlerini &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; ile stream etmek her sorguyu daha hızlı yapmaz, ve karmaşıklık ekler—cancellation token&amp;rsquo;ları, &lt;code&gt;[EnumeratorCancellation]&lt;/code&gt;, ve random access ile tekrarlanabilir iterasyonun kaybı bedava değildir. Ama probleminiz gerçekten &amp;ldquo;çok fazla veri okuyup sıralı olarak işlemek&amp;rdquo; olduğunda, &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;, sınırsız bir bellek problemini sabit bir probleme dönüştürür. Bir dahaki sefere, beklediğinizden daha fazla satır döndürebilecek bir sorguda alışkanlıktan &lt;code&gt;.ToListAsync()&lt;/code&gt; yazdığınızda, gerçekten listeye mi ihtiyacınız var, yoksa sadece bir sonraki öğeye mi ihtiyacınız var diye durup sormaya değer.&lt;/p&gt;
+&lt;h2 id="sonuç"&gt;Sonuç&lt;/h2&gt;
+&lt;p&gt;Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme alanındaki araştırmalarımı kaçırmamak için &lt;a href="https://x.com/berkslv"&gt;@berkslv&lt;/a&gt; adresinden takipte kalabilirsiniz.
+&lt;/content&gt;&lt;/p&gt;</content></item><item><title>.NET'te Idempotency Key Pattern: Ödeme API'niz İki Kere Çağrılırsa Ne Olur?</title><link>https://berkselvi.dev/tr/posts/the-idempotency-key-pattern-in-dotnet-what-happens-when-your-payment-api-gets-called-twice/</link><pubDate>Wed, 22 Jul 2026 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/the-idempotency-key-pattern-in-dotnet-what-happens-when-your-payment-api-gets-called-twice/</guid><description>&lt;p&gt;Müşteri &amp;ldquo;Öde&amp;rdquo; butonuna basıyor. İstek API&amp;rsquo;nize düşüyor, ödeme sağlayıcınız kartı çekiyor ve sonra&amp;hellip; response timeout&amp;rsquo;a düşüyor. Mobil uygulama ödemenin başarılı olup olmadığını bilmiyor, bu yüzden bildiği tek şeyi yapıyor: retry atıyor. Şimdi tek bir sipariş için iki başarılı çekim, sinirli bir müşteri ve &amp;ldquo;iki kere para çekildi&amp;rdquo; diye başlayan bir destek talebiniz var.&lt;/p&gt;
+&lt;p&gt;Parayla, kuyruklarla veya üçüncü parti API&amp;rsquo;lerle ilgilenen herhangi bir şey geliştirdiyseniz, bu senaryonun hipotetik olmadığını zaten biliyorsunuzdur. Ağ kesintileri, client timeout&amp;rsquo;ları ve load balancer retry&amp;rsquo;ları distributed system&amp;rsquo;lerin gerçeği. &lt;strong&gt;Idempotency key pattern&lt;/strong&gt;, retry sayısı ne olursa olsun aynı mantıksal isteğin yalnızca bir kez uygulanmasını garanti eden, production seviyesindeki ödeme API&amp;rsquo;lerinin kullandığı yöntem. Bu yazıda bunun neden önemli olduğunu, önlem alınmazsa genelde nelerin ters gittiğini ve .NET API&amp;rsquo;de nasıl doğru şekilde uygulanacağını anlatacağım.&lt;/p&gt;</description><content>&lt;p&gt;Müşteri &amp;ldquo;Öde&amp;rdquo; butonuna basıyor. İstek API&amp;rsquo;nize düşüyor, ödeme sağlayıcınız kartı çekiyor ve sonra&amp;hellip; response timeout&amp;rsquo;a düşüyor. Mobil uygulama ödemenin başarılı olup olmadığını bilmiyor, bu yüzden bildiği tek şeyi yapıyor: retry atıyor. Şimdi tek bir sipariş için iki başarılı çekim, sinirli bir müşteri ve &amp;ldquo;iki kere para çekildi&amp;rdquo; diye başlayan bir destek talebiniz var.&lt;/p&gt;
+&lt;p&gt;Parayla, kuyruklarla veya üçüncü parti API&amp;rsquo;lerle ilgilenen herhangi bir şey geliştirdiyseniz, bu senaryonun hipotetik olmadığını zaten biliyorsunuzdur. Ağ kesintileri, client timeout&amp;rsquo;ları ve load balancer retry&amp;rsquo;ları distributed system&amp;rsquo;lerin gerçeği. &lt;strong&gt;Idempotency key pattern&lt;/strong&gt;, retry sayısı ne olursa olsun aynı mantıksal isteğin yalnızca bir kez uygulanmasını garanti eden, production seviyesindeki ödeme API&amp;rsquo;lerinin kullandığı yöntem. Bu yazıda bunun neden önemli olduğunu, önlem alınmazsa genelde nelerin ters gittiğini ve .NET API&amp;rsquo;de nasıl doğru şekilde uygulanacağını anlatacağım.&lt;/p&gt;
+&lt;h2 id="problem-at-least-once-delivery-varsayılan-davranıştır"&gt;Problem: &amp;ldquo;At least once delivery&amp;rdquo; Varsayılan Davranıştır&lt;/h2&gt;
+&lt;p&gt;Rahatsız edici bir gerçek var: güvenilir olmayan bir ağ üzerinden bir isteğin &amp;ldquo;tam olarak bir kez&amp;rdquo; teslim edildiğini garanti edemezsiniz. TCP bağlantıları response ortasında kopabilir, HTTP client&amp;rsquo;lar timeout&amp;rsquo;a düşebilir, load balancer&amp;rsquo;lar veya mobil uygulamalar 5xx hatalarında ve timeout&amp;rsquo;larda retry atabilir. Gerçekçi olarak inşa edebileceğiniz en iyi şey &lt;strong&gt;en az bir kez teslimat&lt;/strong&gt; (at-least-once delivery), yani endpoint&amp;rsquo;iniz tamamen aynı mantıksal isteği iki, üç, hatta on kez alabilir.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;GET /orders/123&lt;/code&gt; isteği için bu zararsız. Veriyi iki kez okumak hiçbir şeyi değiştirmez. Ama &lt;code&gt;POST /payments/charge&lt;/code&gt; için, bu retry&amp;rsquo;ların her biri yepyeni bir çekim tetikleyebilir, çünkü server açısından bu, yeni ve alakasız bir istek gibi görünür.&lt;/p&gt;
+&lt;h2 id="eski-yöntem-mükerrer-isteklere-karşı-hiçbir-koruma-yok"&gt;Eski Yöntem: Mükerrer İsteklere Karşı Hiçbir Koruma Yok&lt;/h2&gt;
+&lt;p&gt;Çoğu ekip hiçbir koruma olmadan başlar. Tipik, naif bir ödeme endpoint&amp;rsquo;i şöyle görünür:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[HttpPost(&amp;#34;charge&amp;#34;)]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;IActionResult&amp;gt; ChargeCard([FromBody] ChargeRequest request)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; result = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _paymentGateway.ChargeAsync(request.CardToken, request.Amount);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _orderRepository.MarkAsPaidAsync(request.OrderId, result.TransactionId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; Ok(result);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Bu, happy path&amp;rsquo;te gayet iyi çalışır. Ama client, aslında başarılı olmak üzere olan bir response&amp;rsquo;u beklerken timeout&amp;rsquo;a düşerse neler olduğuna bakalım:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Client, &lt;code&gt;#4711&lt;/code&gt; numaralı sipariş için &lt;code&gt;POST /payments/charge&lt;/code&gt; isteği gönderir.&lt;/li&gt;
+&lt;li&gt;Server payment gateway&amp;rsquo;i çağırır, kart başarıyla çekilir.&lt;/li&gt;
+&lt;li&gt;Server response dönmeden önce, client&amp;rsquo;ın HTTP timeout&amp;rsquo;u devreye girer.&lt;/li&gt;
+&lt;li&gt;Client, standart retry mantığını izleyerek aynı isteği tekrar gönderir.&lt;/li&gt;
+&lt;li&gt;Server ilk denemeyi hiç hatırlamadığı için kartı ikinci kez çeker.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Bunu &amp;ldquo;timeout olmasın yeter&amp;rdquo; diyerek çözemezsiniz, çünkü timeout&amp;rsquo;lar, kopan bağlantılar ve process crash&amp;rsquo;leri &lt;strong&gt;microservices&lt;/strong&gt; ve diğer &lt;strong&gt;distributed system&lt;/strong&gt;&amp;rsquo;lerde ağ üzerinden çalışan bir servisi işletmenin normal bir parçası. Çözüm retry&amp;rsquo;ları önlemek değil, doğru tasarlanmış bir &lt;strong&gt;idempotent API&lt;/strong&gt; ile retry&amp;rsquo;ları güvenli hale getirmek.&lt;/p&gt;
+&lt;h2 id="neden-idempotency-key"&gt;Neden Idempotency Key?&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Idempotency key&lt;/strong&gt;, genellikle client tarafında üretilen bir UUID olan, çağıranın isteğe eklediği benzersiz bir tanımlayıcıdır. API&amp;rsquo;nize şunu söyler: &amp;ldquo;bu belirli deneme, kaç kere görürsen gör, tek bir mantıksal işlemi temsil ediyor.&amp;rdquo; Server&amp;rsquo;ın görevi şudur:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;İlk başarılı isteğin sonucunu bu key&amp;rsquo;e karşılık saklamak.&lt;/li&gt;
+&lt;li&gt;Aynı key&amp;rsquo;i taşıyan herhangi bir mükerrer istekte, işlemi yeniden çalıştırmak yerine &lt;strong&gt;saklanan sonucu&lt;/strong&gt; döndürmek.&lt;/li&gt;
+&lt;li&gt;Aynı key&amp;rsquo;i farklı bir payload ile yeniden kullanan istekleri reddetmek (client&amp;rsquo;ın key&amp;rsquo;i yanlış kullandığının bir işareti).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="bir-apiyi-gerçekten-idempotent-yapan-nedir"&gt;Bir API&amp;rsquo;yi Gerçekten Idempotent Yapan Nedir&lt;/h3&gt;
+&lt;p&gt;Sıradan bir endpoint&amp;rsquo;i idempotent bir API&amp;rsquo;ye dönüştürmek, client kaç kere aynı key ile çağırırsa çağırsın, endpoint&amp;rsquo;in şu üç özelliği sağlaması demektir:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Side effect&amp;rsquo;lerin tek seferde çalışması:&lt;/strong&gt; payment gateway, envanter sistemi veya veritabanı yazma işlemi yalnızca bir kez gerçekleşir.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Tutarlı response:&lt;/strong&gt; her retry, orijinal denemeyle tamamen aynı response body ve status code&amp;rsquo;u geri alır.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Sınırlı yaşam süresi:&lt;/strong&gt; key belirli bir süre sonra expire olur, böylece store sonsuza kadar büyümez ve bir client&amp;rsquo;ın yanlışlıkla yeniden kullandığı bir key yüzünden meşru yeni istekler engellenmez.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Gezegendeki en çok retry atılan API&amp;rsquo;lerden biri olan Stripe, &lt;a href="https://stripe.com/docs/api/idempotent_requests"&gt;tam olarak bu pattern&amp;rsquo;i dokümante ediyor&lt;/a&gt; ve durum değiştiren tüm isteklerde bir &lt;code&gt;Idempotency-Key&lt;/code&gt; header&amp;rsquo;ı zorunlu kılıyor. Bu bir &amp;ldquo;olsa iyi olur&amp;rdquo; özelliği değil; retry ağırlıklı SDK&amp;rsquo;larını bir ödeme API&amp;rsquo;sine karşı güvenle kullanılabilir kılan temel yapı.&lt;/p&gt;
+&lt;h2 id="idempotency-storeu-tasarlamak"&gt;Idempotency Store&amp;rsquo;u Tasarlamak&lt;/h2&gt;
+&lt;p&gt;Herhangi bir middleware yazmadan önce, idempotency kayıtlarını saklayacak bir yere ihtiyacınız var. Basit bir relational tablo gayet iyi iş görür:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;CREATE&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;TABLE&lt;/span&gt; IdempotencyKeys (
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;Key&lt;/span&gt; VARCHAR(&lt;span style="color:#ae81ff"&gt;64&lt;/span&gt;) &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;KEY&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; RequestHash VARCHAR(&lt;span style="color:#ae81ff"&gt;64&lt;/span&gt;) &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ResponseStatus INT &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ResponseBody TEXT &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Status VARCHAR(&lt;span style="color:#ae81ff"&gt;20&lt;/span&gt;) &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;, &lt;span style="color:#75715e"&gt;-- &amp;#39;Processing&amp;#39; | &amp;#39;Completed&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; CreatedAt &lt;span style="color:#66d9ef"&gt;TIMESTAMP&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ExpiresAt &lt;span style="color:#66d9ef"&gt;TIMESTAMP&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Burada önemli olan birkaç tasarım kararı var:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;RequestHash&lt;/code&gt;&lt;/strong&gt;: request body&amp;rsquo;nin hash&amp;rsquo;i, böylece bir client&amp;rsquo;ın aynı key&amp;rsquo;i &lt;em&gt;farklı&lt;/em&gt; bir payload için yeniden kullanıp kullanmadığını tespit edebilirsiniz (bu bir client bug&amp;rsquo;ı ve saklanan yanlış response&amp;rsquo;u sessizce döndürmek yerine &lt;code&gt;422&lt;/code&gt; dönmelisiniz).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Status&lt;/code&gt;&lt;/strong&gt;: sadece &amp;ldquo;Completed&amp;rdquo; değil, bir &amp;ldquo;Processing&amp;rdquo; state&amp;rsquo;ine de ihtiyacınız var, böylece ikinci, eşzamanlı bir istek ilkinin hâlâ devam ettiğini anlayabilir. Mükerrer çekime karşı asıl garanti, veritabanının &lt;code&gt;Key&lt;/code&gt; üzerindeki unique constraint&amp;rsquo;inin ikinci insert&amp;rsquo;i reddetmesinden gelir, sadece &lt;code&gt;Status&lt;/code&gt; kolonundan değil — bunu aşağıdaki store implementasyonunda göreceksiniz.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;ExpiresAt&lt;/code&gt;&lt;/strong&gt;: idempotency key&amp;rsquo;ler sonsuza kadar yaşamamalı. Stripe bunları 24 saat sonra expire ediyor; client&amp;rsquo;larınızın gerçekçi olarak ne kadar süre retry attığına uyan bir pencere seçin ve &lt;code&gt;ExpiresAt&lt;/code&gt;&amp;lsquo;i geçmiş satırları silen bir background cleanup job&amp;rsquo;ı çalıştırın, böylece tablo sınırsızca büyümesin.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Bu şemanın Postgres tarzı SQL (&lt;code&gt;ON CONFLICT&lt;/code&gt;) kullandığını unutmayın. SQL Server kullanıyorsanız, karşılığı &lt;code&gt;MERGE&lt;/code&gt; veya &lt;code&gt;Key&lt;/code&gt; üzerinde unique index ile birleştirilmiş bir &lt;code&gt;IF NOT EXISTS&lt;/code&gt; guard&amp;rsquo;ıdır — concurrency güvenliği prensibi aynı, sadece syntax farklı.&lt;/p&gt;
+&lt;h2 id="nette-uygulamak"&gt;.NET&amp;rsquo;te Uygulamak&lt;/h2&gt;
+&lt;p&gt;Bunu bir &lt;code&gt;ActionFilter&lt;/code&gt; olarak inşa edelim, böylece business logic&amp;rsquo;i kirletmeden idempotency korumasına ihtiyaç duyan herhangi bir endpoint&amp;rsquo;e deklaratif olarak uygulanabilir.&lt;/p&gt;
+&lt;h3 id="1-idempotency-store"&gt;1. Idempotency Store&lt;/h3&gt;
+&lt;p&gt;Bu örnek raw SQL erişimi için &lt;a href="https://github.com/DapperLib/Dapper"&gt;Dapper&lt;/a&gt; kullanıyor, önce onu ekleyin:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;dotnet add package Dapper
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;interface&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;IIdempotencyStore&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Task&amp;lt;IdempotencyRecord?&amp;gt; GetAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, CancellationToken ct);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Task&amp;lt;&lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt;&amp;gt; TryStartProcessingAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; requestHash, CancellationToken ct);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Task CompleteAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; statusCode, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; responseBody, CancellationToken ct);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;IdempotencyRecord&lt;/span&gt;(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; RequestHash, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; Status, &lt;span style="color:#66d9ef"&gt;int?&lt;/span&gt; ResponseStatus, &lt;span style="color:#66d9ef"&gt;string?&lt;/span&gt; ResponseBody);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;TryStartProcessingAsync&lt;/code&gt; metodu kritik parça. Bu, atomik bir &amp;ldquo;yoksa insert et&amp;rdquo; işlemi olmalı, aksi halde aynı key&amp;rsquo;e sahip iki eşzamanlı istek de kontrolü geçip ikisi de kartı çekmeye devam edebilir:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;SqlIdempotencyStore&lt;/span&gt; : IIdempotencyStore
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IDbConnection _db;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; SqlIdempotencyStore(IDbConnection db) =&amp;gt; _db = db;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;&lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt;&amp;gt; TryStartProcessingAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; requestHash, CancellationToken ct)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Relies on the PRIMARY KEY constraint on `Key` to fail on duplicates&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; sql = &lt;span style="color:#e6db74"&gt;@&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; INSERT INTO IdempotencyKeys (Key, RequestHash, Status, CreatedAt, ExpiresAt)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; VALUES (@Key, @RequestHash, &amp;#39;Processing&amp;#39;, @Now, @Expires)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; ON CONFLICT (Key) DO NOTHING
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; RETURNING Key;&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; inserted = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _db.QueryFirstOrDefaultAsync&amp;lt;&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;&amp;gt;(sql, &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Key = key,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; RequestHash = requestHash,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Now = DateTime.UtcNow,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Expires = DateTime.UtcNow.AddHours(&lt;span style="color:#ae81ff"&gt;24&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; inserted != &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;IdempotencyRecord?&amp;gt; GetAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, CancellationToken ct)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; sql = &lt;span style="color:#e6db74"&gt;&amp;#34;SELECT RequestHash, Status, ResponseStatus, ResponseBody FROM IdempotencyKeys WHERE Key = @Key&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _db.QueryFirstOrDefaultAsync&amp;lt;IdempotencyRecord&amp;gt;(sql, &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; { Key = key });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task CompleteAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; statusCode, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; responseBody, CancellationToken ct)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; sql = &lt;span style="color:#e6db74"&gt;@&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; UPDATE IdempotencyKeys
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; SET Status = &amp;#39;Completed&amp;#39;, ResponseStatus = @Status, ResponseBody = @Body
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; WHERE Key = @Key&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _db.ExecuteAsync(sql, &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; { Key = key, Status = statusCode, Body = responseBody });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;ON CONFLICT (Key) DO NOTHING ... RETURNING Key&lt;/code&gt; numarası, veritabanının unique constraint&amp;rsquo;inin concurrency kontrolünü sizin yerinize yapmasını sağlar, böylece application seviyesinde lock&amp;rsquo;lara ihtiyacınız kalmaz.&lt;/p&gt;
+&lt;h3 id="2-action-filter"&gt;2. Action Filter&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;IdempotentAttribute&lt;/span&gt; : Attribute, IAsyncActionFilter
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; httpContext = context.HttpContext;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Let model validation fail first - an invalid request should never consume a key.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (!context.ModelState.IsValid)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; next();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (!httpContext.Request.Headers.TryGetValue(&lt;span style="color:#e6db74"&gt;&amp;#34;Idempotency-Key&amp;#34;&lt;/span&gt;, &lt;span style="color:#66d9ef"&gt;out&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; keyHeader) ||
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;.IsNullOrWhiteSpace(keyHeader) || keyHeader.ToString().Length &amp;gt; &lt;span style="color:#ae81ff"&gt;64&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; BadRequestObjectResult(&lt;span style="color:#e6db74"&gt;&amp;#34;A valid Idempotency-Key header (max 64 chars) is required.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; store = httpContext.RequestServices.GetRequiredService&amp;lt;IIdempotencyStore&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; key = keyHeader.ToString();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; requestHash = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; ComputeRequestHashAsync(httpContext.Request);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; existing = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.GetAsync(key, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (existing &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; not &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (existing.RequestHash != requestHash)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; UnprocessableEntityObjectResult(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;Idempotency-Key was reused with a different request payload.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (existing.Status == &lt;span style="color:#e6db74"&gt;&amp;#34;Completed&amp;#34;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ContentResult
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; StatusCode = existing.ResponseStatus,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Content = existing.ResponseBody,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ContentType = &lt;span style="color:#e6db74"&gt;&amp;#34;application/json&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Still processing - a concurrent duplicate arrived while the first one is in flight.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ConflictObjectResult(&lt;span style="color:#e6db74"&gt;&amp;#34;Request with this Idempotency-Key is already being processed.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; acquired = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.TryStartProcessingAsync(key, requestHash, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (!acquired)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Lost the race to a concurrent request that inserted first.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ConflictObjectResult(&lt;span style="color:#e6db74"&gt;&amp;#34;Request with this Idempotency-Key is already being processed.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; executedContext = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; next();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Persist whatever the action produced so retries get an identical replay.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Anything other than ObjectResult (exceptions, StatusCodeResult, etc.) should&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// still release the key - otherwise it stays stuck in &amp;#34;Processing&amp;#34; until it expires.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (executedContext.Result &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; ObjectResult objectResult)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; statusCode = objectResult.StatusCode ?? &lt;span style="color:#ae81ff"&gt;200&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; body = JsonSerializer.Serialize(objectResult.Value, httpContext.RequestServices
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .GetRequiredService&amp;lt;IOptions&amp;lt;JsonOptions&amp;gt;&amp;gt;().Value.JsonSerializerOptions);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.CompleteAsync(key, statusCode, body, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; statusCode = executedContext.Exception &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; not &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt; ? &lt;span style="color:#ae81ff"&gt;500&lt;/span&gt; : (httpContext.Response.StatusCode);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.CompleteAsync(key, statusCode, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;.Empty, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;&amp;gt; ComputeRequestHashAsync(HttpRequest request)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; request.EnableBuffering();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; var reader = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; StreamReader(request.Body, leaveOpen: &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; body = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; reader.ReadToEndAsync();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; request.Body.Position = &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; bytes = Encoding.UTF8.GetBytes(body);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; hash = SHA256.HashData(bytes);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; Convert.ToHexString(hash);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Değinilmesi gereken iki detay var: &lt;code&gt;JsonSerializerOptions&lt;/code&gt;, uygulamanın gerçek &lt;code&gt;AddJsonOptions&lt;/code&gt; konfigürasyonundan &lt;code&gt;IOptions&amp;lt;JsonOptions&amp;gt;&lt;/code&gt; üzerinden alınıyor, böylece replay edilen body, client&amp;rsquo;ın zaten beklediği casing ve converter&amp;rsquo;larla eşleşiyor — burada default serializer&amp;rsquo;ı kullanmak sessizce orijinal response&amp;rsquo;tan farklı bir payload üretirdi. Ve hatalar dahil her code path artık &lt;code&gt;CompleteAsync&lt;/code&gt;&amp;lsquo;i çağırıyor, böylece bir key hiçbir zaman kalıcı olarak &lt;code&gt;&amp;quot;Processing&amp;quot;&lt;/code&gt;&amp;lsquo;de takılı kalmıyor; bunu, bir şekilde yine de takılı kalan herhangi bir kaydın otomatik olarak geri alınması için &lt;code&gt;ExpiresAt&lt;/code&gt; cleanup job&amp;rsquo;ı ile birleştirin.&lt;/p&gt;
+&lt;h3 id="3-idempotent-apiyi-endpointe-uygulamak"&gt;3. Idempotent API&amp;rsquo;yi Endpoint&amp;rsquo;e Uygulamak&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[HttpPost(&amp;#34;charge&amp;#34;)]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[Idempotent]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;IActionResult&amp;gt; ChargeCard([FromBody] ChargeRequest request)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; result = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _paymentGateway.ChargeAsync(request.CardToken, request.Amount);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _orderRepository.MarkAsPaidAsync(request.OrderId, result.TransactionId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; Ok(result);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Artık client, her mantıksal ödeme denemesi için bir UUID üretmekten ve aynı denemenin her retry&amp;rsquo;ında bunu &lt;code&gt;Idempotency-Key&lt;/code&gt; header&amp;rsquo;ı olarak göndermekten sorumlu:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;$ curl -X POST https://api.example.com/payments/charge &lt;span style="color:#ae81ff"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; -H &lt;span style="color:#e6db74"&gt;&amp;#34;Idempotency-Key: 8f14e45f-ceea-467e-bb9d-8f7c1a1c1b1a&amp;#34;&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; -H &lt;span style="color:#e6db74"&gt;&amp;#34;Content-Type: application/json&amp;#34;&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; -d &lt;span style="color:#e6db74"&gt;&amp;#39;{&amp;#34;orderId&amp;#34;:&amp;#34;4711&amp;#34;,&amp;#34;cardToken&amp;#34;:&amp;#34;tok_visa&amp;#34;,&amp;#34;amount&amp;#34;:4999}&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Response gelmeden ağ koparsa ve client aynı header ile retry atarsa, ikinci istek payment gateway&amp;rsquo;e bir daha hiç dokunmadan ilk denemede saklanan sonucu döndürür.&lt;/p&gt;
+&lt;h2 id="bunun-çözmediği-şeyler"&gt;Bunun Çözmediği Şeyler&lt;/h2&gt;
+&lt;p&gt;Idempotency key&amp;rsquo;ler sihirli bir değnek değil, sınırlarını açıkça belirtmekte fayda var:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Outbox pattern&amp;rsquo;inin yerini tutmaz.&lt;/strong&gt; Charge handler&amp;rsquo;ınız aynı zamanda bir &lt;code&gt;OrderPaidEvent&lt;/code&gt; yayınlaması gerekiyorsa, klasik dual-write problemini önlemek için o event için hâlâ transactional garantilere ihtiyacınız var.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Client işbirliği gerektirir.&lt;/strong&gt; Mobil client&amp;rsquo;ınız aynı UUID&amp;rsquo;yi yeniden kullanmak yerine her retry&amp;rsquo;da &lt;em&gt;yeni&lt;/em&gt; bir UUID üretirse, tüm pattern boşa çıkar. Bunu API kontratınızda açıkça dokümante edin ve key&amp;rsquo;i her HTTP denemesinde değil, kullanıcı &amp;ldquo;Öde&amp;quot;ye bastığı anda client tarafında üretmeyi düşünün.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Her istekte bir yazma işlemi ekler.&lt;/strong&gt; Aşırı yüksek throughput&amp;rsquo;lu, düşük değerli endpoint&amp;rsquo;ler için ekstra veritabanı round-trip&amp;rsquo;i buna değmeyebilir. Bu pattern&amp;rsquo;i, mükerrerliğin gerçekten pahalıya mal olduğu işlemler için saklayın: ödemeler, sipariş oluşturma ve para veya envanter hareket ettiren her şey.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Expiration bir trade-off.&lt;/strong&gt; Çok kısa olursa, meşru ama yavaş retry&amp;rsquo;lar pencerenin dışında kalır ve yine de mükerrer çekim olur. Çok uzun olursa, sürekli büyüyen bir ölü kayıt tablosu biriktirirsiniz. Expire olmuş key&amp;rsquo;leri temizleyen bir background cleanup job&amp;rsquo;ı ilk günden inşa edilmeye değer.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="özet"&gt;Özet&lt;/h2&gt;
+&lt;p&gt;Retry&amp;rsquo;lar distributed system&amp;rsquo;lerde bir edge case değil; payment gateway&amp;rsquo;lerle, webhook&amp;rsquo;larla ve birbiriyle konuşan microservices&amp;rsquo;lerin normal işleyiş koşuludur. Idempotency key pattern retry&amp;rsquo;ları önlemeye çalışmaz, &amp;ldquo;bu ödeme çekildi mi?&amp;rdquo; sorusunu bir tahmin yerine bir lookup&amp;rsquo;a çevirerek onları zararsız hale getirir. Yazının başındaki, iki kere ücretlendirilip ücretlendirilmediğini merak eden o müşteriyi hatırlayın? Idempotent bir API yerinde olsaydı, o retry sessizce tamamen aynı başarı response&amp;rsquo;unu döndürürdü ve müşteri bir ağ sorunu yaşandığından haberdar bile olmazdı. Bir ödeme API&amp;rsquo;si, bir webhook receiver&amp;rsquo;ı veya mükerrer çalışmanın gerçek bir maliyeti olan başka bir şey inşa ediyorsanız, idempotency key&amp;rsquo;leri sonradan eklenen bir yama değil, birinci sınıf bir gereksinim olarak ele alın.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="sonuç"&gt;Sonuç&lt;/h2&gt;
+&lt;p&gt;Okuduğunuz için teşekkürler! 🎉 Yazılım geliştirme alanındaki araştırmalarımı kaçırmamak için &lt;a href="https://x.com/berkslv"&gt;@berkslv&lt;/a&gt; adresinden takipte kalabilirsiniz.&lt;/p&gt;</content></item><item><title>Yazılım Mimarisinde Events vs Commands: Kapsamlı Bir .NET Rehberi</title><link>https://berkselvi.dev/tr/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</link><pubDate>Mon, 22 Jun 2026 14:55:00 +0300</pubDate><guid>https://berkselvi.dev/tr/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</guid><description>&lt;p&gt;Modern yazılım mühendisliği dünyasında, monolitik sistemlerden dağıtık &lt;strong&gt;microservices&lt;/strong&gt; mimarilerine geçiş yaygın bir evrimsel yoldur. Sistemler karmaşıklaştıkça, farklı bileşenlerin, modüllerin ve servislerin iletişim kurma şekli; sistemin dayanıklılığını, ölçeklenebilirliğini ve sürdürülebilirliğini belirleyen kritik faktör haline gelir. Eğer sağlam, cloud-native uygulamalar geliştiriyorsanız, bileşenlerinizi birbirinden ayırma (decouple) ihtiyacıyla kaçınılmaz olarak karşılaşırsınız.&lt;/p&gt;
 &lt;p&gt;Bu iletişim ve decoupling stratejisinin merkezinde iki temel mesajlaşma deseni (pattern) yatar: &lt;strong&gt;Commands&lt;/strong&gt; ve &lt;strong&gt;Events&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;İlk bakışta birbirlerine benzeseler de —her ikisi de özünde sistemin bir parçasından diğerine gönderilen ve veri içeren mesajlardır— amaçları, işlenme şekilleri (handling) ve mimari etkileri birbirinden çok farklıdır. &lt;strong&gt;Software architecture içinde events vs commands&lt;/strong&gt; ayrımını yanlış anlamak, bir &lt;strong&gt;Event-Driven Architecture (EDA)&lt;/strong&gt; tasarlarken veya &lt;strong&gt;Command Query Responsibility Segregation (CQRS)&lt;/strong&gt; uygularken düşülen en yaygın tuzaklardan biridir.&lt;/p&gt;</description><content>&lt;p&gt;Modern yazılım mühendisliği dünyasında, monolitik sistemlerden dağıtık &lt;strong&gt;microservices&lt;/strong&gt; mimarilerine geçiş yaygın bir evrimsel yoldur. Sistemler karmaşıklaştıkça, farklı bileşenlerin, modüllerin ve servislerin iletişim kurma şekli; sistemin dayanıklılığını, ölçeklenebilirliğini ve sürdürülebilirliğini belirleyen kritik faktör haline gelir. Eğer sağlam, cloud-native uygulamalar geliştiriyorsanız, bileşenlerinizi birbirinden ayırma (decouple) ihtiyacıyla kaçınılmaz olarak karşılaşırsınız.&lt;/p&gt;
 &lt;p&gt;Bu iletişim ve decoupling stratejisinin merkezinde iki temel mesajlaşma deseni (pattern) yatar: &lt;strong&gt;Commands&lt;/strong&gt; ve &lt;strong&gt;Events&lt;/strong&gt;.&lt;/p&gt;

@@ -1,4 +1,437 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br&gt; This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt;</copyright><lastBuildDate>Mon, 22 Jun 2026 14:55:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>Events vs Commands in Software Architecture: A Complete .NET Guide</title><link>https://berkselvi.dev/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</link><pubDate>Mon, 22 Jun 2026 14:55:00 +0300</pubDate><guid>https://berkselvi.dev/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</guid><description>&lt;h1 id="demystifying-events-vs-commands-in-software-architecture-a-complete-net-guide"&gt;Demystifying Events vs Commands in Software Architecture: A Complete .NET Guide&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Berk Selvi | Software Developer</title><link>https://berkselvi.dev/</link><description>Recent content on Berk Selvi | Software Developer</description><generator>Hugo -- gohugo.io</generator><language>en-US</language><copyright>Made by Berk Selvi. &lt;br&gt; This site is &lt;a href='https://github.com/berkslv/berkselvi.dev' target='_blank'&gt;open source&lt;/a&gt;</copyright><lastBuildDate>Sun, 02 Aug 2026 00:00:00 +0300</lastBuildDate><atom:link href="https://berkselvi.dev/index.xml" rel="self" type="application/rss+xml"/><item><title>From IEnumerable to IAsyncEnumerable: Streaming Large Datasets in .NET Without Killing Memory</title><link>https://berkselvi.dev/posts/from-ienumerable-to-iasyncenumerable-streaming-large-datasets-in-dotnet-without-killing-memory/</link><pubDate>Sun, 02 Aug 2026 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/from-ienumerable-to-iasyncenumerable-streaming-large-datasets-in-dotnet-without-killing-memory/</guid><description>&lt;p&gt;A few months ago, one of our nightly export jobs started throwing &lt;code&gt;OutOfMemoryException&lt;/code&gt;. Nothing in the code had changed. What had changed was the size of the table it was reading from—it had quietly grown from 200K rows to 4 million. The job was doing exactly what we told it to do: &lt;code&gt;.ToListAsync()&lt;/code&gt; the whole thing, then loop over it. It just took the whole database table into RAM first, and RAM lost.&lt;/p&gt;</description><content>&lt;p&gt;A few months ago, one of our nightly export jobs started throwing &lt;code&gt;OutOfMemoryException&lt;/code&gt;. Nothing in the code had changed. What had changed was the size of the table it was reading from—it had quietly grown from 200K rows to 4 million. The job was doing exactly what we told it to do: &lt;code&gt;.ToListAsync()&lt;/code&gt; the whole thing, then loop over it. It just took the whole database table into RAM first, and RAM lost.&lt;/p&gt;
+&lt;p&gt;This is a trap almost every .NET developer falls into at some point: reaching for &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; (or its async cousin &lt;code&gt;Task&amp;lt;List&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt;) when what you actually need is &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; streaming large datasets record by record. &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; and &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; look similar on the surface, but they solve very different problems, and picking the wrong one is exactly how you end up paging through a 4-million-row table in memory at 2am.&lt;/p&gt;
+&lt;h2 id="ienumerable-vs-iasyncenumerable-at-a-glance"&gt;IEnumerable vs IAsyncEnumerable at a Glance&lt;/h2&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Aspect&lt;/th&gt;
+&lt;th&gt;&lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; / &lt;code&gt;List&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/th&gt;
+&lt;th&gt;&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Materialization&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Fully realized before iteration starts&lt;/td&gt;
+&lt;td&gt;Pulled one item at a time, on demand&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Memory footprint&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Grows with result set size&lt;/td&gt;
+&lt;td&gt;Roughly constant, regardless of size&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Time to first item&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Waits for the entire query/collection&lt;/td&gt;
+&lt;td&gt;First item available as soon as it&amp;rsquo;s ready&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Cancellation&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Only stops your loop; work already done stays done&lt;/td&gt;
+&lt;td&gt;Can stop the underlying query mid-stream&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Iteration&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Repeatable, indexable&lt;/td&gt;
+&lt;td&gt;Forward-only, single-pass&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Typical use&lt;/strong&gt;&lt;/td&gt;
+&lt;td&gt;Small, bounded collections&lt;/td&gt;
+&lt;td&gt;Exports, ETL, paginated APIs, log processing&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="the-old-way-load-everything-then-iterate"&gt;The Old Way: Load Everything, Then Iterate&lt;/h2&gt;
+&lt;p&gt;Here&amp;rsquo;s the pattern that got us into trouble. A typical .NET service reading orders to export them:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;List&amp;lt;Order&amp;gt;&amp;gt; GetAllOrdersAsync()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _dbContext.Orders
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsNoTracking()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .ToListAsync();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task ExportOrdersAsync()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; orders = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; GetAllOrdersAsync();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; order &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; orders)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _exportWriter.WriteLineAsync(order.ToCsvRow());
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This looks perfectly reasonable, and for small tables it is. But look closely at what &lt;code&gt;ToListAsync()&lt;/code&gt; actually does: it materializes &lt;strong&gt;every single row&lt;/strong&gt; returned by the query into a &lt;code&gt;List&amp;lt;Order&amp;gt;&lt;/code&gt; sitting in memory before your code ever touches the first item. If the query returns 4 million rows, you need enough memory to hold 4 million &lt;code&gt;Order&lt;/code&gt; objects simultaneously, even though you only ever process one row at a time in the &lt;code&gt;foreach&lt;/code&gt; loop.&lt;/p&gt;
+&lt;p&gt;The symptoms creep up slowly:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Memory spikes:&lt;/strong&gt; GC pressure increases, the process&amp;rsquo;s working set balloons, and container memory limits get hit in Kubernetes.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Latency before the first result:&lt;/strong&gt; The caller waits for the &lt;em&gt;entire&lt;/em&gt; query to complete before seeing a single row, even if all they wanted was to stream results to a client.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Wasted work on cancellation:&lt;/strong&gt; If the caller aborts halfway through, you&amp;rsquo;ve already paid the full cost of loading everything.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;No backpressure:&lt;/strong&gt; There&amp;rsquo;s no way to say &amp;ldquo;slow down, I&amp;rsquo;m still processing the last batch&amp;rdquo;—the database just keeps producing rows as fast as the driver can buffer them.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For a background job doing an export, an API endpoint streaming a CSV, or a data migration script, this pattern doesn&amp;rsquo;t scale. It works in local development with your 50-row seed dataset, and quietly breaks in production.&lt;/p&gt;
+&lt;h2 id="why-iasyncenumerable"&gt;Why IAsyncEnumerable?&lt;/h2&gt;
+&lt;p&gt;.NET Core 3.0 introduced &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;, paired with the &lt;code&gt;await foreach&lt;/code&gt; syntax, specifically to solve this class of problem. Instead of a method returning a fully realized collection, it returns a sequence that is &lt;strong&gt;pulled&lt;/strong&gt; one item at a time, asynchronously, as the consumer asks for the next element.&lt;/p&gt;
+&lt;p&gt;The mental model shift is important:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Task&amp;lt;List&amp;lt;T&amp;gt;&amp;gt;&lt;/code&gt;&lt;/strong&gt; means &amp;ldquo;wait for everything to be ready, then give me the whole thing.&amp;rdquo;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/strong&gt; means &amp;ldquo;give me an item whenever I ask for the next one, and let me &lt;code&gt;await&lt;/code&gt; if it&amp;rsquo;s not ready yet.&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This unlocks:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Constant memory usage:&lt;/strong&gt; Only one item (or a small buffer) needs to be in memory at any given time, regardless of whether the source has 10 rows or 10 million.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Time-to-first-byte improvements:&lt;/strong&gt; A consumer can start processing (or an HTTP client can start receiving) data as soon as the first row is available, instead of waiting for the full result set.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Natural cancellation support:&lt;/strong&gt; &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; composes with &lt;code&gt;CancellationToken&lt;/code&gt; via &lt;code&gt;WithCancellation&lt;/code&gt;, so aborting a stream actually stops the underlying query instead of just discarding an already-loaded list.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Composability with LINQ:&lt;/strong&gt; With the &lt;code&gt;System.Linq.Async&lt;/code&gt; package, you get &lt;code&gt;Select&lt;/code&gt;, &lt;code&gt;Where&lt;/code&gt;, and friends over async streams, so you don&amp;rsquo;t lose the expressiveness you&amp;rsquo;re used to with &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The trade-off is that you give up random access and the ability to know the count upfront without a separate query—&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; is forward-only, single-pass, by design. For streaming scenarios, that&amp;rsquo;s exactly the right constraint.&lt;/p&gt;
+&lt;h2 id="producing-an-iasyncenumerable-with-yield-return"&gt;Producing an IAsyncEnumerable with yield return&lt;/h2&gt;
+&lt;p&gt;The simplest way to produce an &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; is with &lt;code&gt;yield return&lt;/code&gt; inside an &lt;code&gt;async&lt;/code&gt; method. Here&amp;rsquo;s a hand-rolled example that streams numbers with a simulated I/O delay, useful for understanding the mechanics before we bring EF Core into the picture:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; IAsyncEnumerable&amp;lt;&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt;&amp;gt; GenerateNumbersAsync(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; count,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt; [EnumeratorCancellation]&lt;/span&gt; CancellationToken cancellationToken = &lt;span style="color:#66d9ef"&gt;default&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;for&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; i = &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;; i &amp;lt; count; i++)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cancellationToken.ThrowIfCancellationRequested();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Simulate an async I/O operation, e.g. a network call per item&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; Task.Delay(&lt;span style="color:#ae81ff"&gt;10&lt;/span&gt;, cancellationToken);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;yield&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; i;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;[EnumeratorCancellation]&lt;/code&gt; attribute is easy to miss but important: without it, a &lt;code&gt;CancellationToken&lt;/code&gt; passed to &lt;code&gt;WithCancellation&lt;/code&gt; won&amp;rsquo;t actually flow into the method body, and &lt;code&gt;ThrowIfCancellationRequested&lt;/code&gt; becomes a no-op against the caller&amp;rsquo;s token.&lt;/p&gt;
+&lt;p&gt;Consuming it looks like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; number &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; GenerateNumbersAsync(&lt;span style="color:#ae81ff"&gt;1000&lt;/span&gt;, cts.Token))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Console.WriteLine(number);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Notice what&amp;rsquo;s &lt;em&gt;not&lt;/em&gt; happening here: there&amp;rsquo;s no intermediate &lt;code&gt;List&amp;lt;int&amp;gt;&lt;/code&gt; holding all 1000 numbers. Each &lt;code&gt;number&lt;/code&gt; is produced, consumed, and can be garbage collected before the next one is even generated.&lt;/p&gt;
+&lt;h2 id="real-life-example-streaming-ef-core-query-results"&gt;Real-life Example: Streaming EF Core Query Results&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s go back to the export job that paged 4 million &lt;code&gt;Order&lt;/code&gt; rows into memory at 2am and fix it properly. Entity Framework Core exposes &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; directly on &lt;code&gt;DbSet&amp;lt;T&amp;gt;&lt;/code&gt; and &lt;code&gt;IQueryable&amp;lt;T&amp;gt;&lt;/code&gt; via &lt;code&gt;AsAsyncEnumerable()&lt;/code&gt;, so you don&amp;rsquo;t need to write your own &lt;code&gt;yield return&lt;/code&gt; wrapper for database queries:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; IAsyncEnumerable&amp;lt;Order&amp;gt; StreamOrdersAsync(CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; _dbContext.Orders
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsNoTracking()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .OrderBy(o =&amp;gt; o.Id)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsAsyncEnumerable();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task ExportOrdersAsync(CancellationToken cancellationToken)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; order &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; StreamOrdersAsync(cancellationToken).WithCancellation(cancellationToken))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _exportWriter.WriteLineAsync(order.ToCsvRow());
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The difference is subtle in the code but massive at runtime. Instead of the query executing fully and buffering 4 million &lt;code&gt;Order&lt;/code&gt; rows into a &lt;code&gt;List&amp;lt;Order&amp;gt;&lt;/code&gt;, EF Core keeps the underlying &lt;code&gt;DbDataReader&lt;/code&gt; open and streams rows from the database connection as the &lt;code&gt;await foreach&lt;/code&gt; loop asks for them. Memory usage for the query itself stays roughly flat regardless of table size—you&amp;rsquo;re paying for one row (plus a small internal buffer) at a time, not the whole result set.&lt;/p&gt;
+&lt;p&gt;Two details matter here that are easy to miss. First, &lt;code&gt;.AsNoTracking()&lt;/code&gt; isn&amp;rsquo;t decorative—without it, EF Core&amp;rsquo;s change tracker keeps a snapshot of every entity it hands you for the lifetime of the &lt;code&gt;DbContext&lt;/code&gt;, which quietly reintroduces the exact memory growth you&amp;rsquo;re trying to eliminate, even though the query itself is streaming. Second, unlike the hand-rolled &lt;code&gt;yield return&lt;/code&gt; example above, &lt;code&gt;AsAsyncEnumerable()&lt;/code&gt; doesn&amp;rsquo;t require you to add &lt;code&gt;[EnumeratorCancellation]&lt;/code&gt; anywhere in your own code—EF Core wires the &lt;code&gt;CancellationToken&lt;/code&gt; you pass to &lt;code&gt;WithCancellation&lt;/code&gt; into its own query pipeline internally. The attribute only matters when you&amp;rsquo;re writing the &lt;code&gt;async IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; method yourself.&lt;/p&gt;
+&lt;p&gt;This also composes cleanly with ASP.NET Core. If you expose this as a minimal API endpoint, the framework will serialize the stream directly to the response body as items become available, instead of buffering the whole JSON array server-side first:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;app.MapGet(&lt;span style="color:#e6db74"&gt;&amp;#34;/orders/stream&amp;#34;&lt;/span&gt;, (AppDbContext dbContext, CancellationToken cancellationToken) =&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; dbContext.Orders
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsNoTracking()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .OrderBy(o =&amp;gt; o.Id)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .AsAsyncEnumerable();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Since .NET 6, ASP.NET Core&amp;rsquo;s minimal APIs detect the &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; return type and stream the JSON array chunk by chunk as the underlying enumerable produces items, rather than requiring you to materialize the full list before returning it. One gotcha worth knowing: if response compression middleware sits in front of the endpoint, it can end up buffering the response internally to compress it effectively, quietly defeating the streaming behavior you just wired up—worth checking with a real client and &lt;code&gt;Transfer-Encoding: chunked&lt;/code&gt; before assuming it&amp;rsquo;s working end to end.&lt;/p&gt;
+&lt;h3 id="a-note-on-batching"&gt;A Note on Batching&lt;/h3&gt;
+&lt;p&gt;Streaming one row at a time from EF Core is memory-friendly, but if you&amp;rsquo;re writing each row to an external system (an HTTP call, a message queue, a second database), doing that per-row can be slow due to per-item overhead. A common middle ground is to batch the stream into chunks:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; IAsyncEnumerable&amp;lt;List&amp;lt;T&amp;gt;&amp;gt; ChunkAsync&amp;lt;T&amp;gt;(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;this&lt;/span&gt; IAsyncEnumerable&amp;lt;T&amp;gt; source,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; chunkSize,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt; [EnumeratorCancellation]&lt;/span&gt; CancellationToken cancellationToken = &lt;span style="color:#66d9ef"&gt;default&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; buffer = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; List&amp;lt;T&amp;gt;(chunkSize);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; item &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; source.WithCancellation(cancellationToken))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; buffer.Add(item);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (buffer.Count == chunkSize)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;yield&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; buffer;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; buffer = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; List&amp;lt;T&amp;gt;(chunkSize);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (buffer.Count &amp;gt; &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;yield&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; buffer;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Used like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;foreach&lt;/span&gt; (&lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; batch &lt;span style="color:#66d9ef"&gt;in&lt;/span&gt; StreamOrdersAsync(cancellationToken).ChunkAsync(&lt;span style="color:#ae81ff"&gt;500&lt;/span&gt;, cancellationToken))
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _messageBus.PublishBatchAsync(batch);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You still keep memory bounded—only 500 orders in flight at a time instead of 4 million—while amortizing the per-call overhead of the downstream system across a batch.&lt;/p&gt;
+&lt;h2 id="when-iasyncenumerable-isnt-the-right-tool"&gt;When IAsyncEnumerable Isn&amp;rsquo;t the Right Tool&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; isn&amp;rsquo;t a universal replacement for &lt;code&gt;List&amp;lt;T&amp;gt;&lt;/code&gt; or &lt;code&gt;IEnumerable&amp;lt;T&amp;gt;&lt;/code&gt;. It&amp;rsquo;s the wrong choice when:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;You need the count, need to sort after loading, or need random access (e.g., &lt;code&gt;orders[42]&lt;/code&gt;)—those require materializing the data anyway.&lt;/li&gt;
+&lt;li&gt;The dataset is genuinely small and bounded (a dropdown list of 20 categories doesn&amp;rsquo;t need streaming semantics).&lt;/li&gt;
+&lt;li&gt;You need to iterate the same sequence multiple times—&lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; is single-pass by convention; re-enumerating typically re-runs the underlying query.&lt;/li&gt;
+&lt;li&gt;You&amp;rsquo;re doing in-memory transformations that need the whole collection anyway (e.g., computing a median), in which case streaming just adds &lt;code&gt;await&lt;/code&gt; overhead without reducing memory.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Use it specifically when the shape of the problem is &amp;ldquo;process a potentially large sequence, one item (or small batch) at a time, without needing to hold it all at once.&amp;rdquo; Exports, ETL pipelines, paginated API results, log processing, and large report generation are the classic cases.&lt;/p&gt;
+&lt;h2 id="summary"&gt;Summary&lt;/h2&gt;
+&lt;p&gt;The &lt;code&gt;OutOfMemoryException&lt;/code&gt; that started this whole investigation for us wasn&amp;rsquo;t a bug in the traditional sense—the code was doing exactly what &lt;code&gt;ToListAsync()&lt;/code&gt; promises to do. The real fix wasn&amp;rsquo;t a smarter allocation strategy or a bigger container memory limit; it was recognizing that the job never needed a &lt;code&gt;List&amp;lt;Order&amp;gt;&lt;/code&gt; sitting in memory in the first place. It needed a stream. Once we swapped &lt;code&gt;ToListAsync()&lt;/code&gt; for &lt;code&gt;AsAsyncEnumerable()&lt;/code&gt; on that export job, the same 4-million-row table processed with flat, predictable memory usage, and the &lt;code&gt;OutOfMemoryException&lt;/code&gt; never came back.&lt;/p&gt;
+&lt;p&gt;Streaming large datasets with &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; won&amp;rsquo;t make every query faster, and it does add complexity—cancellation tokens, &lt;code&gt;[EnumeratorCancellation]&lt;/code&gt;, and the loss of random access and repeatable iteration aren&amp;rsquo;t free. But when your problem is genuinely &amp;ldquo;read a lot of data and process it sequentially,&amp;rdquo; &lt;code&gt;IAsyncEnumerable&amp;lt;T&amp;gt;&lt;/code&gt; turns an unbounded memory problem into a constant one. The next time you write &lt;code&gt;.ToListAsync()&lt;/code&gt; out of habit on a query that could return more rows than you expect, it&amp;rsquo;s worth pausing and asking whether you actually need the list, or whether you just need the next item.&lt;/p&gt;
+&lt;h2 id="conclusion"&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Thanks for reading! 🎉 To not miss my research in software development, you can follow me at &lt;a href="https://x.com/berkslv"&gt;@berkslv&lt;/a&gt;.
+&lt;/content&gt;&lt;/p&gt;</content></item><item><title>The Idempotency Key Pattern in .NET: What Happens When Your Payment API Gets Called Twice</title><link>https://berkselvi.dev/posts/the-idempotency-key-pattern-in-dotnet-what-happens-when-your-payment-api-gets-called-twice/</link><pubDate>Wed, 22 Jul 2026 00:00:00 +0300</pubDate><guid>https://berkselvi.dev/posts/the-idempotency-key-pattern-in-dotnet-what-happens-when-your-payment-api-gets-called-twice/</guid><description>&lt;p&gt;A customer clicks &amp;ldquo;Pay Now.&amp;rdquo; The request hits your API, your payment provider charges the card, and then&amp;hellip; the response times out. The mobile app doesn&amp;rsquo;t know if the payment succeeded, so it does the only thing it knows how to do: it retries. Now you have two successful charges for one order, an angry customer, and a support ticket that starts with &amp;ldquo;I was charged twice.&amp;rdquo;&lt;/p&gt;
+&lt;p&gt;If you&amp;rsquo;ve built anything that touches money, queues, or third-party APIs, you already know this scenario isn&amp;rsquo;t hypothetical. Network blips, client timeouts, and load balancer retries are a fact of life in distributed systems. The &lt;strong&gt;idempotency key pattern&lt;/strong&gt; is how production-grade payment APIs guarantee that the same logical request, no matter how many times it&amp;rsquo;s retried, only ever gets applied once. In this post, I&amp;rsquo;ll walk through why this matters, what typically goes wrong without it, and how to implement it properly in a .NET API.&lt;/p&gt;</description><content>&lt;p&gt;A customer clicks &amp;ldquo;Pay Now.&amp;rdquo; The request hits your API, your payment provider charges the card, and then&amp;hellip; the response times out. The mobile app doesn&amp;rsquo;t know if the payment succeeded, so it does the only thing it knows how to do: it retries. Now you have two successful charges for one order, an angry customer, and a support ticket that starts with &amp;ldquo;I was charged twice.&amp;rdquo;&lt;/p&gt;
+&lt;p&gt;If you&amp;rsquo;ve built anything that touches money, queues, or third-party APIs, you already know this scenario isn&amp;rsquo;t hypothetical. Network blips, client timeouts, and load balancer retries are a fact of life in distributed systems. The &lt;strong&gt;idempotency key pattern&lt;/strong&gt; is how production-grade payment APIs guarantee that the same logical request, no matter how many times it&amp;rsquo;s retried, only ever gets applied once. In this post, I&amp;rsquo;ll walk through why this matters, what typically goes wrong without it, and how to implement it properly in a .NET API.&lt;/p&gt;
+&lt;h2 id="the-problem-at-least-once-delivery-is-the-default"&gt;The Problem: &amp;ldquo;At-Least-Once&amp;rdquo; Delivery Is the Default&lt;/h2&gt;
+&lt;p&gt;Here&amp;rsquo;s an uncomfortable truth: over an unreliable network, you cannot guarantee &amp;ldquo;exactly-once&amp;rdquo; delivery of a request. TCP connections drop mid-response, HTTP clients time out, and load balancers or mobile apps retry on 5xx errors and timeouts. The best you can realistically build for is &lt;strong&gt;at-least-once delivery&lt;/strong&gt;, meaning your endpoint might receive the exact same logical request two, three, or ten times.&lt;/p&gt;
+&lt;p&gt;For a &lt;code&gt;GET /orders/123&lt;/code&gt; request, that&amp;rsquo;s harmless. Reading data twice changes nothing. But for &lt;code&gt;POST /payments/charge&lt;/code&gt;, every one of those retries can trigger a brand-new charge, because from the server&amp;rsquo;s point of view, it just looks like a new, unrelated request.&lt;/p&gt;
+&lt;h2 id="the-old-way-no-protection-against-duplicate-requests"&gt;The Old Way: No Protection Against Duplicate Requests&lt;/h2&gt;
+&lt;p&gt;Most teams start without any protection at all. A typical naive payment endpoint looks something like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[HttpPost(&amp;#34;charge&amp;#34;)]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;IActionResult&amp;gt; ChargeCard([FromBody] ChargeRequest request)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; result = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _paymentGateway.ChargeAsync(request.CardToken, request.Amount);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _orderRepository.MarkAsPaidAsync(request.OrderId, result.TransactionId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; Ok(result);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This works fine in the happy path. But walk through what happens when the client times out waiting for a response that was actually about to succeed:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Client sends &lt;code&gt;POST /payments/charge&lt;/code&gt; for order &lt;code&gt;#4711&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Server calls the payment gateway, the card is charged successfully.&lt;/li&gt;
+&lt;li&gt;Before the server can respond, the client&amp;rsquo;s HTTP timeout fires.&lt;/li&gt;
+&lt;li&gt;The client, following standard retry logic, sends the exact same request again.&lt;/li&gt;
+&lt;li&gt;The server has no memory of the first attempt, so it charges the card a second time.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;No amount of &amp;ldquo;just don&amp;rsquo;t time out&amp;rdquo; fixes this, because timeouts, dropped connections, and process crashes are a normal part of operating a networked service in &lt;strong&gt;microservices&lt;/strong&gt; and other &lt;strong&gt;distributed systems&lt;/strong&gt;. The fix isn&amp;rsquo;t to prevent retries; it&amp;rsquo;s to make retries safe with a properly designed &lt;strong&gt;idempotent API&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id="why-idempotency-keys"&gt;Why Idempotency Keys?&lt;/h2&gt;
+&lt;p&gt;An &lt;strong&gt;idempotency key&lt;/strong&gt; is a unique identifier, usually a client-generated UUID, that the caller attaches to a request. It tells your API: &amp;ldquo;this specific attempt represents one logical operation, no matter how many times you see it.&amp;rdquo; The server&amp;rsquo;s job is to:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Store the result of the first successful request against that key.&lt;/li&gt;
+&lt;li&gt;On any duplicate request carrying the same key, return the &lt;strong&gt;stored result&lt;/strong&gt; instead of re-executing the operation.&lt;/li&gt;
+&lt;li&gt;Reject requests that reuse a key with a different payload (a sign the client is misusing the key).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="what-makes-an-api-truly-idempotent"&gt;What Makes an API Truly Idempotent&lt;/h3&gt;
+&lt;p&gt;Turning a regular endpoint into an idempotent API means the endpoint has to satisfy three properties, regardless of how many times a client calls it with the same key:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Single execution of side effects:&lt;/strong&gt; the payment gateway, inventory system, or database write only happens once.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Consistent response:&lt;/strong&gt; every retry gets back the exact same response body and status code as the original attempt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Bounded lifetime:&lt;/strong&gt; the key eventually expires, so the store doesn&amp;rsquo;t grow forever and legitimate new requests aren&amp;rsquo;t blocked by a key some client reused by mistake.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Stripe, one of the most heavily retried APIs on the planet, &lt;a href="https://stripe.com/docs/api/idempotent_requests"&gt;documents this exact pattern&lt;/a&gt; and requires an &lt;code&gt;Idempotency-Key&lt;/code&gt; header on all state-changing requests. It&amp;rsquo;s not a nice-to-have; it&amp;rsquo;s the foundation that makes their retry-heavy SDKs safe to use against a payments API.&lt;/p&gt;
+&lt;h2 id="designing-the-idempotency-store"&gt;Designing the Idempotency Store&lt;/h2&gt;
+&lt;p&gt;Before writing any middleware, you need a place to persist idempotency records. A simple relational table works well:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-sql" data-lang="sql"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;CREATE&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;TABLE&lt;/span&gt; IdempotencyKeys (
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;Key&lt;/span&gt; VARCHAR(&lt;span style="color:#ae81ff"&gt;64&lt;/span&gt;) &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;PRIMARY&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;KEY&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; RequestHash VARCHAR(&lt;span style="color:#ae81ff"&gt;64&lt;/span&gt;) &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ResponseStatus INT &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ResponseBody TEXT &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Status VARCHAR(&lt;span style="color:#ae81ff"&gt;20&lt;/span&gt;) &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;, &lt;span style="color:#75715e"&gt;-- &amp;#39;Processing&amp;#39; | &amp;#39;Completed&amp;#39;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; CreatedAt &lt;span style="color:#66d9ef"&gt;TIMESTAMP&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ExpiresAt &lt;span style="color:#66d9ef"&gt;TIMESTAMP&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NOT&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;NULL&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;A few design decisions matter here:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;RequestHash&lt;/code&gt;&lt;/strong&gt;: a hash of the request body, so you can detect if a client reuses the same key for a &lt;em&gt;different&lt;/em&gt; payload (that&amp;rsquo;s a client bug, and you should return a &lt;code&gt;422&lt;/code&gt; instead of silently returning the wrong stored response).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;Status&lt;/code&gt;&lt;/strong&gt;: you need a &amp;ldquo;Processing&amp;rdquo; state, not just &amp;ldquo;Completed,&amp;rdquo; so a second concurrent request can tell that the first one is still in flight. The actual guarantee against double-charging comes from the database&amp;rsquo;s unique constraint on &lt;code&gt;Key&lt;/code&gt; rejecting the second insert, not from the &lt;code&gt;Status&lt;/code&gt; column alone — you&amp;rsquo;ll see this in the store implementation below.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;ExpiresAt&lt;/code&gt;&lt;/strong&gt;: idempotency keys shouldn&amp;rsquo;t live forever. Stripe expires them after 24 hours; pick a window that matches how long your clients realistically retry, and run a background cleanup job that deletes rows past &lt;code&gt;ExpiresAt&lt;/code&gt; so the table doesn&amp;rsquo;t grow unbounded.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Note this schema uses Postgres-flavored SQL (&lt;code&gt;ON CONFLICT&lt;/code&gt;). If you&amp;rsquo;re on SQL Server, the equivalent is &lt;code&gt;MERGE&lt;/code&gt; or an &lt;code&gt;IF NOT EXISTS&lt;/code&gt; guard combined with a unique index on &lt;code&gt;Key&lt;/code&gt; — the concurrency-safety principle is the same, only the syntax differs.&lt;/p&gt;
+&lt;h2 id="implementing-it-in-net"&gt;Implementing It in .NET&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s build this as an &lt;code&gt;ActionFilter&lt;/code&gt;, so it can be applied declaratively to any endpoint that needs idempotency protection, without polluting the business logic.&lt;/p&gt;
+&lt;h3 id="1-the-idempotency-store"&gt;1. The Idempotency Store&lt;/h3&gt;
+&lt;p&gt;This example uses &lt;a href="https://github.com/DapperLib/Dapper"&gt;Dapper&lt;/a&gt; for the raw SQL access, so add it first:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;dotnet add package Dapper
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;interface&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;IIdempotencyStore&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Task&amp;lt;IdempotencyRecord?&amp;gt; GetAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, CancellationToken ct);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Task&amp;lt;&lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt;&amp;gt; TryStartProcessingAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; requestHash, CancellationToken ct);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Task CompleteAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; statusCode, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; responseBody, CancellationToken ct);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;record&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;IdempotencyRecord&lt;/span&gt;(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; RequestHash, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; Status, &lt;span style="color:#66d9ef"&gt;int?&lt;/span&gt; ResponseStatus, &lt;span style="color:#66d9ef"&gt;string?&lt;/span&gt; ResponseBody);
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;TryStartProcessingAsync&lt;/code&gt; method is the critical piece. It must be an atomic &amp;ldquo;insert if not exists&amp;rdquo; operation, otherwise two concurrent requests with the same key can both pass the check and both proceed to charge the card:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;SqlIdempotencyStore&lt;/span&gt; : IIdempotencyStore
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;readonly&lt;/span&gt; IDbConnection _db;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; SqlIdempotencyStore(IDbConnection db) =&amp;gt; _db = db;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;&lt;span style="color:#66d9ef"&gt;bool&lt;/span&gt;&amp;gt; TryStartProcessingAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; requestHash, CancellationToken ct)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Relies on the PRIMARY KEY constraint on `Key` to fail on duplicates&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; sql = &lt;span style="color:#e6db74"&gt;@&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; INSERT INTO IdempotencyKeys (Key, RequestHash, Status, CreatedAt, ExpiresAt)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; VALUES (@Key, @RequestHash, &amp;#39;Processing&amp;#39;, @Now, @Expires)
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; ON CONFLICT (Key) DO NOTHING
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; RETURNING Key;&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; inserted = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _db.QueryFirstOrDefaultAsync&amp;lt;&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;&amp;gt;(sql, &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Key = key,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; RequestHash = requestHash,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Now = DateTime.UtcNow,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Expires = DateTime.UtcNow.AddHours(&lt;span style="color:#ae81ff"&gt;24&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; inserted != &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;IdempotencyRecord?&amp;gt; GetAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, CancellationToken ct)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; sql = &lt;span style="color:#e6db74"&gt;&amp;#34;SELECT RequestHash, Status, ResponseStatus, ResponseBody FROM IdempotencyKeys WHERE Key = @Key&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _db.QueryFirstOrDefaultAsync&amp;lt;IdempotencyRecord&amp;gt;(sql, &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; { Key = key });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task CompleteAsync(&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; key, &lt;span style="color:#66d9ef"&gt;int&lt;/span&gt; statusCode, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; responseBody, CancellationToken ct)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;const&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt; sql = &lt;span style="color:#e6db74"&gt;@&amp;#34;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; UPDATE IdempotencyKeys
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; SET Status = &amp;#39;Completed&amp;#39;, ResponseStatus = @Status, ResponseBody = @Body
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#e6db74"&gt; WHERE Key = @Key&amp;#34;&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _db.ExecuteAsync(sql, &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; { Key = key, Status = statusCode, Body = responseBody });
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The &lt;code&gt;ON CONFLICT (Key) DO NOTHING ... RETURNING Key&lt;/code&gt; trick lets the database&amp;rsquo;s unique constraint do the concurrency control for you, so you don&amp;rsquo;t need application-level locks.&lt;/p&gt;
+&lt;h3 id="2-the-action-filter"&gt;2. The Action Filter&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;class&lt;/span&gt; &lt;span style="color:#a6e22e"&gt;IdempotentAttribute&lt;/span&gt; : Attribute, IAsyncActionFilter
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; httpContext = context.HttpContext;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Let model validation fail first - an invalid request should never consume a key.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (!context.ModelState.IsValid)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; next();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (!httpContext.Request.Headers.TryGetValue(&lt;span style="color:#e6db74"&gt;&amp;#34;Idempotency-Key&amp;#34;&lt;/span&gt;, &lt;span style="color:#66d9ef"&gt;out&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; keyHeader) ||
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;.IsNullOrWhiteSpace(keyHeader) || keyHeader.ToString().Length &amp;gt; &lt;span style="color:#ae81ff"&gt;64&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; BadRequestObjectResult(&lt;span style="color:#e6db74"&gt;&amp;#34;A valid Idempotency-Key header (max 64 chars) is required.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; store = httpContext.RequestServices.GetRequiredService&amp;lt;IIdempotencyStore&amp;gt;();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; key = keyHeader.ToString();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; requestHash = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; ComputeRequestHashAsync(httpContext.Request);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; existing = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.GetAsync(key, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (existing &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; not &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (existing.RequestHash != requestHash)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; UnprocessableEntityObjectResult(
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#e6db74"&gt;&amp;#34;Idempotency-Key was reused with a different request payload.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (existing.Status == &lt;span style="color:#e6db74"&gt;&amp;#34;Completed&amp;#34;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ContentResult
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; StatusCode = existing.ResponseStatus,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Content = existing.ResponseBody,
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ContentType = &lt;span style="color:#e6db74"&gt;&amp;#34;application/json&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; };
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Still processing - a concurrent duplicate arrived while the first one is in flight.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ConflictObjectResult(&lt;span style="color:#e6db74"&gt;&amp;#34;Request with this Idempotency-Key is already being processed.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; acquired = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.TryStartProcessingAsync(key, requestHash, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (!acquired)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Lost the race to a concurrent request that inserted first.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context.Result = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; ConflictObjectResult(&lt;span style="color:#e6db74"&gt;&amp;#34;Request with this Idempotency-Key is already being processed.&amp;#34;&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; executedContext = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; next();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Persist whatever the action produced so retries get an identical replay.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// Anything other than ObjectResult (exceptions, StatusCodeResult, etc.) should&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#75715e"&gt;// still release the key - otherwise it stays stuck in &amp;#34;Processing&amp;#34; until it expires.&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;if&lt;/span&gt; (executedContext.Result &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; ObjectResult objectResult)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; statusCode = objectResult.StatusCode ?? &lt;span style="color:#ae81ff"&gt;200&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; body = JsonSerializer.Serialize(objectResult.Value, httpContext.RequestServices
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; .GetRequiredService&amp;lt;IOptions&amp;lt;JsonOptions&amp;gt;&amp;gt;().Value.JsonSerializerOptions);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.CompleteAsync(key, statusCode, body, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; statusCode = executedContext.Exception &lt;span style="color:#66d9ef"&gt;is&lt;/span&gt; not &lt;span style="color:#66d9ef"&gt;null&lt;/span&gt; ? &lt;span style="color:#ae81ff"&gt;500&lt;/span&gt; : (httpContext.Response.StatusCode);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; store.CompleteAsync(key, statusCode, &lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;.Empty, httpContext.RequestAborted);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;private&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;static&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;&lt;span style="color:#66d9ef"&gt;string&lt;/span&gt;&amp;gt; ComputeRequestHashAsync(HttpRequest request)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; request.EnableBuffering();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;using&lt;/span&gt; var reader = &lt;span style="color:#66d9ef"&gt;new&lt;/span&gt; StreamReader(request.Body, leaveOpen: &lt;span style="color:#66d9ef"&gt;true&lt;/span&gt;);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; body = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; reader.ReadToEndAsync();
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; request.Body.Position = &lt;span style="color:#ae81ff"&gt;0&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; bytes = Encoding.UTF8.GetBytes(body);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; hash = SHA256.HashData(bytes);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; Convert.ToHexString(hash);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Two details worth calling out: the &lt;code&gt;JsonSerializerOptions&lt;/code&gt; is pulled from the app&amp;rsquo;s actual &lt;code&gt;AddJsonOptions&lt;/code&gt; configuration via &lt;code&gt;IOptions&amp;lt;JsonOptions&amp;gt;&lt;/code&gt;, so the replayed body matches the casing and converters the client already expects — reusing the default serializer here would silently produce a different payload than the original response. And every code path, including failures, now calls &lt;code&gt;CompleteAsync&lt;/code&gt; so a key never gets permanently stuck in &lt;code&gt;&amp;quot;Processing&amp;quot;&lt;/code&gt;; combine this with the &lt;code&gt;ExpiresAt&lt;/code&gt; cleanup job so any record that somehow still gets stuck is reclaimed automatically.&lt;/p&gt;
+&lt;h3 id="3-applying-the-idempotent-api-to-the-endpoint"&gt;3. Applying the Idempotent API to the Endpoint&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-csharp" data-lang="csharp"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[HttpPost(&amp;#34;charge&amp;#34;)]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#a6e22e"&gt;[Idempotent]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#66d9ef"&gt;public&lt;/span&gt; &lt;span style="color:#66d9ef"&gt;async&lt;/span&gt; Task&amp;lt;IActionResult&amp;gt; ChargeCard([FromBody] ChargeRequest request)
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;{
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;var&lt;/span&gt; result = &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _paymentGateway.ChargeAsync(request.CardToken, request.Amount);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;await&lt;/span&gt; _orderRepository.MarkAsPaidAsync(request.OrderId, result.TransactionId);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &lt;span style="color:#66d9ef"&gt;return&lt;/span&gt; Ok(result);
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Now the client is responsible for generating a UUID per logical payment attempt and sending it as the &lt;code&gt;Idempotency-Key&lt;/code&gt; header on every retry of that same attempt:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;$ curl -X POST https://api.example.com/payments/charge &lt;span style="color:#ae81ff"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; -H &lt;span style="color:#e6db74"&gt;&amp;#34;Idempotency-Key: 8f14e45f-ceea-467e-bb9d-8f7c1a1c1b1a&amp;#34;&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; -H &lt;span style="color:#e6db74"&gt;&amp;#34;Content-Type: application/json&amp;#34;&lt;/span&gt; &lt;span style="color:#ae81ff"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; -d &lt;span style="color:#e6db74"&gt;&amp;#39;{&amp;#34;orderId&amp;#34;:&amp;#34;4711&amp;#34;,&amp;#34;cardToken&amp;#34;:&amp;#34;tok_visa&amp;#34;,&amp;#34;amount&amp;#34;:4999}&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If the network drops before the response arrives and the client retries with the exact same header, the second request returns the stored result from the first attempt, without ever touching the payment gateway again.&lt;/p&gt;
+&lt;h2 id="what-this-doesnt-solve"&gt;What This Doesn&amp;rsquo;t Solve&lt;/h2&gt;
+&lt;p&gt;Idempotency keys are not a silver bullet, and it&amp;rsquo;s worth being explicit about their limits:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;They don&amp;rsquo;t replace the outbox pattern.&lt;/strong&gt; If your charge handler also needs to publish an &lt;code&gt;OrderPaidEvent&lt;/code&gt;, you still need transactional guarantees for that event to avoid the classic dual-write problem.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;They require client cooperation.&lt;/strong&gt; If your mobile client generates a &lt;em&gt;new&lt;/em&gt; UUID on every retry instead of reusing the same one, the whole pattern is defeated. Document this clearly in your API contract, and consider generating the key client-side at the moment the user taps &amp;ldquo;Pay,&amp;rdquo; not per HTTP attempt.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;They add a write on every request.&lt;/strong&gt; For extremely high-throughput, low-value endpoints, the extra database round-trip might not be worth it. Reserve this pattern for operations where duplication is actually expensive: payments, order creation, and anything that moves money or inventory.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Expiration is a trade-off.&lt;/strong&gt; Too short, and legitimate slow retries fall outside the window and double-charge anyway. Too long, and you accumulate an ever-growing table of dead records. A background cleanup job that purges expired keys is worth building from day one.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="summary"&gt;Summary&lt;/h2&gt;
+&lt;p&gt;Retries are not an edge case in distributed systems; they&amp;rsquo;re the normal operating condition for microservices talking to payment gateways, webhooks, and each other. The idempotency key pattern doesn&amp;rsquo;t try to prevent retries, it makes them harmless by turning &amp;ldquo;did this get charged?&amp;rdquo; into a lookup instead of a guess. Remember that customer from the opening story, stuck wondering if they&amp;rsquo;d been billed twice? With an idempotent API in place, that retry would have silently returned the exact same success response, and they&amp;rsquo;d never have known there was a network hiccup at all. If you&amp;rsquo;re building a payment API, a webhook receiver, or anything else where duplicate execution has a real cost, treat idempotency keys as a first-class requirement, not an afterthought you bolt on after the first double-charge incident.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id="conclusion"&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Thanks for reading! 🎉 To not miss my research in software development, you can follow me at &lt;a href="https://x.com/berkslv"&gt;@berkslv&lt;/a&gt;.&lt;/p&gt;</content></item><item><title>Events vs Commands in Software Architecture: A Complete .NET Guide</title><link>https://berkselvi.dev/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</link><pubDate>Mon, 22 Jun 2026 14:55:00 +0300</pubDate><guid>https://berkselvi.dev/posts/events-vs-commands-in-software-architecture-a-complete-dotnet-guide/</guid><description>&lt;h1 id="demystifying-events-vs-commands-in-software-architecture-a-complete-net-guide"&gt;Demystifying Events vs Commands in Software Architecture: A Complete .NET Guide&lt;/h1&gt;
 &lt;p&gt;In the modern landscape of software engineering, shifting from monolithic systems to distributed microservices is a common evolutionary path. As systems grow in complexity, the way different components, modules, and services communicate becomes the critical factor in defining the system&amp;rsquo;s resilience, scalability, and maintainability. If you are building robust, cloud-native applications, you inevitably encounter the need to decouple your components.&lt;/p&gt;</description><content>&lt;h1 id="demystifying-events-vs-commands-in-software-architecture-a-complete-net-guide"&gt;Demystifying Events vs Commands in Software Architecture: A Complete .NET Guide&lt;/h1&gt;
 &lt;p&gt;In the modern landscape of software engineering, shifting from monolithic systems to distributed microservices is a common evolutionary path. As systems grow in complexity, the way different components, modules, and services communicate becomes the critical factor in defining the system&amp;rsquo;s resilience, scalability, and maintainability. If you are building robust, cloud-native applications, you inevitably encounter the need to decouple your components.&lt;/p&gt;
 &lt;p&gt;At the heart of this decoupling and communication strategy lie two fundamental messaging patterns: &lt;strong&gt;Commands&lt;/strong&gt; and &lt;strong&gt;Events&lt;/strong&gt;.&lt;/p&gt;

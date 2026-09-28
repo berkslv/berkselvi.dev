@@ -1,3 +1,63 @@
+/* ---------------------------------------------------------------
+   Theme overrides (terminal theme)
+   Tema dosyaları vendored olduğu için renkler burada eziliyor;
+   bu dosya head.html'de en son yüklenir.
+   --------------------------------------------------------------- */
+:root {
+  --accent: #61f3b0;
+  --accent-rgb: 97, 243, 176;
+  --background: #060a0a;
+  --color: #fff;
+  --border-color: rgba(255, 255, 255, .1);
+}
+
+/* style.css bu değerleri değişkensiz yazdığı için ismen eziliyor */
+body {
+  background-color: var(--background);
+}
+
+.pagination__title-h {
+  background: var(--background);
+}
+
+.header .menu {
+  --shadow-color: rgba(6, 10, 10, .8);
+}
+
+code,
+kbd {
+  background: rgba(var(--accent-rgb), .2);
+}
+
+.post-meta {
+  color: rgba(var(--accent-rgb), .7);
+}
+
+.hanchor {
+  color: rgba(var(--accent-rgb), .9);
+}
+
+blockquote.twitter-tweet {
+  background: rgba(var(--accent-rgb), .1);
+}
+
+.token.atrule-id,
+.token.attr-name,
+.token.class-name,
+.token.constant,
+.token.deleted,
+.token.namespace,
+.token.operator,
+.token.placeholder,
+.token.property,
+.token.symbol,
+.token.tag,
+.token.tag-id,
+.token.unit,
+.token.variable {
+  color: rgba(var(--accent-rgb), .7) !important;
+}
+
 body {
   border-left: 10px solid var(--accent);
   font-size: 1.2em;
