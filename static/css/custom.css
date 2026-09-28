@@ -12,6 +12,10 @@
 }
 
 /* style.css bu değerleri değişkensiz yazdığı için ismen eziliyor */
+.logo {
+  color: var(--background);
+}
+
 body {
   background-color: var(--background);
 }
