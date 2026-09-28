@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ES Dizayn — Fuar Standı ve Mimari Proje Tasarımı</title>
+<meta name="description" content="15+ yıldır fuar standı, modüler stand ve mimari proje çözümleri sunan ES Dizayn. İstanbul merkezli, uluslararası ölçekte üretim ve montaj." />
+<style>
+  :root{
+    --bg: oklch(97% 0.012 80);
+    --surface: oklch(99.5% 0.006 80);
+    --surface-2: oklch(94% 0.016 75);
+    --fg: oklch(20% 0.018 50);
+    --muted: oklch(45% 0.022 55);
+    --border: oklch(87% 0.012 70);
+    --accent: oklch(54% 0.135 45);
+    --accent-ink: oklch(30% 0.09 45);
+    --ink: oklch(16% 0.02 260);
+    --ink-surface: oklch(20% 0.022 260);
+    --paper-on-ink: oklch(92% 0.012 80);
+
+    --font-display: 'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'IBM Plex Mono', Menlo, monospace;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img,svg{ display:block; max-width:100%; }
+  a{ color:inherit; text-decoration:none; }
+  .wrap{ max-width:1240px; margin:0 auto; padding:0 32px; }
+  ::selection{ background:var(--accent); color:var(--surface); }
+
+  /* ---------- reveal-on-scroll ---------- */
+  .reveal{ opacity:0; transform:translateY(28px); transition:opacity .8s cubic-bezier(.16,.8,.24,1), transform .8s cubic-bezier(.16,.8,.24,1); }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  .reveal-stagger > *{ opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.16,.8,.24,1), transform .7s cubic-bezier(.16,.8,.24,1); }
+  .reveal-stagger.in > *{ opacity:1; transform:translateY(0); }
+  .reveal-stagger.in > *:nth-child(1){ transition-delay:.02s; }
+  .reveal-stagger.in > *:nth-child(2){ transition-delay:.10s; }
+  .reveal-stagger.in > *:nth-child(3){ transition-delay:.18s; }
+  .reveal-stagger.in > *:nth-child(4){ transition-delay:.26s; }
+  .reveal-stagger.in > *:nth-child(5){ transition-delay:.34s; }
+  .reveal-stagger.in > *:nth-child(6){ transition-delay:.42s; }
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:fixed; top:0; left:0; right:0; z-index:500;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 32px;
+    transition:padding .35s ease, background .35s ease, border-color .35s ease, backdrop-filter .35s ease;
+  }
+  .nav.scrolled{
+    padding:14px 32px;
+    background:color-mix(in oklab, var(--bg) 82%, transparent);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-logo{ display:flex; align-items:center; }
+  .nav-logo img{ height:44px; width:auto; display:block; }
+  .nav-links{ display:flex; align-items:center; gap:36px; }
+  .nav-links a{ font-size:13.5px; font-weight:550; letter-spacing:.02em; color:var(--muted); transition:color .2s; }
+  .nav-links a:hover{ color:var(--fg); }
+  .nav-cta{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 20px; border-radius:100px;
+    background:var(--ink); color:var(--paper-on-ink);
+    font-size:13px; font-weight:600; letter-spacing:.02em;
+    transition:transform .25s cubic-bezier(.16,.8,.24,1), background .25s;
+  }
+  .nav-cta:hover{ background:var(--accent-ink); }
+  .nav-mobile-toggle{ display:none; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative; min-height:100svh; display:flex; flex-direction:column; justify-content:center;
+    padding:140px 0 80px; overflow:hidden;
+  }
+  .hero-grid-bg{
+    position:absolute; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 75%);
+            mask-image:radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 75%);
+    opacity:.6;
+  }
+  .hero-kicker{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-ink); margin-bottom:26px; position:relative; z-index:1;
+  }
+  .hero-kicker::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .hero h1{
+    position:relative; z-index:1;
+    font-family:var(--font-display); font-weight:600;
+    font-size:clamp(40px, 7.2vw, 108px); line-height:.98; letter-spacing:-.025em;
+    max-width:16ch;
+  }
+  .hero h1 em{ font-style:italic; color:var(--accent-ink); font-weight:500; }
+  .hero-sub{
+    position:relative; z-index:1;
+    max-width:52ch; margin-top:30px; font-size:clamp(16px,1.6vw,19px); color:var(--muted); line-height:1.65;
+  }
+  .hero-actions{ position:relative; z-index:1; display:flex; align-items:center; gap:22px; margin-top:44px; flex-wrap:wrap; }
+  .btn-primary{
+    position:relative; display:inline-flex; align-items:center; gap:10px;
+    padding:16px 30px; border-radius:100px; background:var(--ink); color:var(--paper-on-ink);
+    font-size:14.5px; font-weight:600; letter-spacing:.01em;
+    transition:transform .35s cubic-bezier(.16,.8,.24,1);
+    will-change:transform;
+  }
+  .btn-primary svg{ width:15px; height:15px; transition:transform .3s; }
+  .btn-primary:hover svg{ transform:translate(3px,-3px); }
+  .btn-ghost{
+    font-size:14.5px; font-weight:600; color:var(--fg); display:inline-flex; align-items:center; gap:8px;
+    border-bottom:1.5px solid var(--fg); padding-bottom:3px; transition:border-color .2s, color .2s;
+  }
+  .btn-ghost:hover{ color:var(--accent-ink); border-color:var(--accent-ink); }
+
+  .hero-scrollcue{
+    position:absolute; bottom:36px; left:50%; transform:translateX(-50%); z-index:1;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+  }
+  .hero-scrollcue .line{ width:1px; height:36px; background:linear-gradient(var(--muted), transparent); animation:scrolldown 2s ease-in-out infinite; }
+  @keyframes scrolldown{ 0%{ opacity:1; transform:scaleY(0);} 50%{ opacity:1; transform:scaleY(1);} 100%{ opacity:0; transform:scaleY(1);} }
+
+  /* ---------- stats bar ---------- */
+  .stats{
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    background:var(--surface);
+  }
+  .stats-inner{
+    display:grid; grid-template-columns:repeat(4,1fr);
+  }
+  .stat{
+    padding:44px 28px; text-align:left; border-left:1px solid var(--border);
+  }
+  .stat:first-child{ border-left:none; }
+  .stat-num{
+    font-family:var(--font-display); font-size:clamp(34px,4vw,52px); font-weight:600; letter-spacing:-.02em;
+    display:flex; align-items:baseline; gap:2px;
+  }
+  .stat-num .suffix{ font-size:.5em; color:var(--accent-ink); font-weight:600; }
+  .stat-label{ margin-top:8px; font-size:13px; color:var(--muted); letter-spacing:.01em; }
+
+  /* ---------- section shell ---------- */
+  section{ position:relative; }
+  .section-pad{ padding:150px 0; }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent-ink); margin-bottom:20px; display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{ content:''; width:26px; height:1.5px; background:var(--accent); }
+  .section-head{ max-width:60ch; }
+  .section-head h2{
+    font-family:var(--font-display); font-weight:600; letter-spacing:-.02em;
+    font-size:clamp(30px,4.6vw,54px); line-height:1.06;
+  }
+  .section-head p{ margin-top:22px; font-size:17px; color:var(--muted); max-width:56ch; line-height:1.7; }
+
+  /* ---------- services ---------- */
+  .services-list{ margin-top:70px; border-top:1px solid var(--border); }
+  .service-row{
+    display:grid; grid-template-columns:100px 1.1fr 1.4fr; gap:40px; align-items:start;
+    padding:52px 0; border-bottom:1px solid var(--border);
+    transition:background .3s;
+  }
+  .service-row:hover{ background:color-mix(in oklab, var(--surface-2) 55%, transparent); }
+  .service-index{ font-family:var(--font-mono); font-size:14px; color:var(--muted); padding-top:6px; }
+  .service-name h3{
+    font-family:var(--font-display); font-size:clamp(24px,2.6vw,32px); font-weight:600; letter-spacing:-.01em;
+  }
+  .service-name .tag{
+    display:inline-block; margin-top:14px; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--accent-ink); font-family:var(--font-mono); background:color-mix(in oklab, var(--accent) 12%, transparent);
+    padding:5px 12px; border-radius:100px;
+  }
+  .service-desc p{ color:var(--muted); font-size:15.5px; line-height:1.75; max-width:60ch; }
+  .service-desc .clients{ margin-top:18px; font-size:13px; color:var(--fg); }
+  .service-desc .clients b{ font-weight:600; color:var(--accent-ink); }
+
+  /* ---------- client wall ---------- */
+  .clients-band{ background:var(--surface-2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .vertical-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); margin-top:60px; border:1px solid var(--border); }
+  .vertical-card{ background:var(--bg); padding:40px 34px; }
+  .vertical-card h4{ font-family:var(--font-display); font-size:20px; font-weight:600; margin-bottom:16px; }
+  .vertical-card .names{ display:flex; flex-wrap:wrap; gap:8px 10px; }
+  .vertical-card .names span{ font-size:13.5px; color:var(--muted); }
+  .vertical-card .names span::after{ content:'·'; margin-left:10px; color:var(--border); }
+  .vertical-card .names span:last-child::after{ content:''; }
+  .vertical-card .count{ font-family:var(--font-mono); font-size:12px; color:var(--accent-ink); margin-top:18px; display:block; }
+
+  .marquee-wrap{ overflow:hidden; margin-top:56px; -webkit-mask-image:linear-gradient(90deg, transparent, black 8%, black 92%, transparent); mask-image:linear-gradient(90deg, transparent, black 8%, black 92%, transparent); }
+  .marquee{ display:flex; gap:64px; white-space:nowrap; width:max-content; animation:marquee 32s linear infinite; }
+  .marquee span{ font-family:var(--font-display); font-size:26px; font-weight:600; color:var(--muted); letter-spacing:-.01em; }
+  @keyframes marquee{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+
+  /* ---------- process ---------- */
+  .process-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:2px; background:var(--border); margin-top:64px; border:1px solid var(--border); }
+  .process-step{ background:var(--bg); padding:38px 30px; min-height:220px; display:flex; flex-direction:column; justify-content:space-between; }
+  .process-step .num{ font-family:var(--font-mono); font-size:12px; color:var(--accent-ink); }
+  .process-step h4{ font-family:var(--font-display); font-size:19px; font-weight:600; margin-top:26px; letter-spacing:-.01em; }
+  .process-step p{ margin-top:12px; font-size:13.8px; color:var(--muted); line-height:1.6; }
+
+  /* ---------- case study (dark) ---------- */
+  .casestudy{ background:var(--ink); color:var(--paper-on-ink); }
+  .casestudy .eyebrow{ color:oklch(72% 0.13 60); }
+  .casestudy .eyebrow::before{ background:oklch(72% 0.13 60); }
+  .casestudy h2{ color:var(--paper-on-ink); }
+  /* ---------- portfolio gallery ---------- */
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(6,1fr); grid-auto-rows:150px;
+    gap:14px; margin-top:60px;
+  }
+  .gallery-item{
+    position:relative; overflow:hidden; border-radius:2px; background:var(--surface-2);
+    border:1px solid var(--border);
+  }
+  .gallery-item img{
+    width:100%; height:100%; object-fit:cover; object-position:center;
+    transition:transform .7s cubic-bezier(.16,.8,.24,1), filter .5s ease;
+    filter:saturate(.92) contrast(1.02);
+  }
+  .gallery-item:hover img{ transform:scale(1.045); filter:saturate(1) contrast(1.04); }
+  .gallery-item .g-cap{
+    position:absolute; left:0; right:0; bottom:0; padding:16px 18px 14px;
+    background:linear-gradient(to top, oklch(12% 0.02 260 / 82%), transparent);
+    opacity:0; transform:translateY(8px); transition:opacity .35s ease, transform .35s ease;
+  }
+  .gallery-item:hover .g-cap{ opacity:1; transform:translateY(0); }
+  .g-cap .g-line{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:oklch(85% 0.02 80 / 90%); }
+  .g-cap .g-title{ font-family:var(--font-display); font-size:16px; font-weight:600; color:#fff; margin-top:3px; letter-spacing:-.01em; }
+  .gallery-item.g-tall{ grid-row:span 2; }
+  .gallery-item.g-wide{ grid-column:span 2; }
+  .gallery-item.g-1{ grid-column:1 / span 2; grid-row:span 2; }
+  .gallery-item.g-2{ grid-column:3 / span 2; }
+  .gallery-item.g-3{ grid-column:5 / span 2; grid-row:span 2; }
+  .gallery-item.g-4{ grid-column:3 / span 2; }
+  .gallery-item.g-5{ grid-column:1 / span 4; }
+
+  .cs-grid{ display:grid; grid-template-columns:1fr 1fr; gap:64px; margin-top:60px; align-items:start; }
+  .cs-item{ border-top:1px solid oklch(35% 0.02 260); padding-top:28px; }
+  .cs-item .kicker{ font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:oklch(65% 0.02 260); }
+  .cs-item h3{ font-family:var(--font-display); font-size:clamp(22px,2.4vw,28px); font-weight:600; margin-top:14px; letter-spacing:-.01em; }
+  .cs-item p{ margin-top:14px; color:oklch(75% 0.015 260); font-size:14.8px; line-height:1.75; }
+  .cs-item .press{ margin-top:18px; display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:oklch(72% 0.13 60); font-weight:600; }
+
+  /* ---------- CTA ---------- */
+  .cta-section{ text-align:center; padding:170px 0; }
+  .cta-section h2{
+    font-family:var(--font-display); font-weight:600; letter-spacing:-.025em;
+    font-size:clamp(34px,6vw,74px); line-height:1.02; max-width:18ch; margin:0 auto;
+  }
+  .cta-section h2 em{ font-style:italic; color:var(--accent-ink); }
+  .cta-section p{ margin:26px auto 0; max-width:52ch; color:var(--muted); font-size:17px; }
+  .cta-actions{ margin-top:46px; display:flex; align-items:center; justify-content:center; gap:22px; flex-wrap:wrap; }
+  .cta-contact-line{ margin-top:60px; display:flex; gap:36px; justify-content:center; flex-wrap:wrap; font-size:14px; color:var(--muted); }
+  .cta-contact-line a{ color:var(--fg); font-weight:600; }
+  .cta-contact-line a:hover{ color:var(--accent-ink); }
+
+  /* ---------- footer ---------- */
+  footer{ border-top:1px solid var(--border); padding:64px 0 40px; }
+  .footer-top{ display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; }
+  .footer-brand{ display:flex; align-items:center; }
+  .footer-brand img{ height:44px; width:auto; display:block; }
+  .footer-brand p{ margin-top:16px; font-size:13.5px; color:var(--muted); max-width:32ch; line-height:1.7; }
+  .footer-col h5{ font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:16px; font-family:var(--font-mono); }
+  .footer-col a, .footer-col p{ display:block; font-size:14px; color:var(--fg); margin-bottom:10px; }
+  .footer-col a:hover{ color:var(--accent-ink); }
+  .footer-bottom{ margin-top:60px; padding-top:26px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; font-size:12.5px; color:var(--muted); font-family:var(--font-mono); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px){
+    .nav-links{ display:none; }
+    .stats-inner{ grid-template-columns:repeat(2,1fr); }
+    .stat:nth-child(3){ border-left:none; }
+    .stat{ border-bottom:1px solid var(--border); }
+    .service-row{ grid-template-columns:1fr; gap:16px; }
+    .vertical-grid{ grid-template-columns:1fr; }
+    .process-grid{ grid-template-columns:1fr 1fr; }
+    .cs-grid{ grid-template-columns:1fr; gap:36px; }
+    .footer-top{ grid-template-columns:1fr 1fr; }
+    .gallery-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:200px; }
+    .gallery-item.g-1{ grid-column:1 / span 2; grid-row:span 2; }
+    .gallery-item.g-2{ grid-column:1 / span 1; grid-row:span 1; }
+    .gallery-item.g-3{ grid-column:2 / span 1; grid-row:span 2; }
+    .gallery-item.g-4{ grid-column:1 / span 1; grid-row:span 1; }
+    .gallery-item.g-5{ grid-column:1 / span 2; grid-row:span 1; }
+  }
+  @media (max-width: 560px){
+    .wrap{ padding:0 20px; }
+    .process-grid{ grid-template-columns:1fr; }
+    .footer-top{ grid-template-columns:1fr; }
+    .gallery-grid{ grid-template-columns:1fr; grid-auto-rows:220px; }
+    .gallery-item.g-1, .gallery-item.g-2, .gallery-item.g-3, .gallery-item.g-4, .gallery-item.g-5{
+      grid-column:1 / -1; grid-row:span 1;
+    }
+    .section-pad{ padding:96px 0; }
+    .stats-inner{ grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <a href="#top" class="nav-logo"><img src="mr9cwrwb-ES-DIZAYN-2024.png" alt="ES Dizayn"></a>
+  <div class="nav-links">
+    <a href="#hizmetler">Hizmetler</a>
+    <a href="#referanslar">Referanslar</a>
+    <a href="#surec">Süreç</a>
+    <a href="#vitrine">Proje Vitrini</a>
+    <a href="#projeler">Projeler</a>
+    <a href="#iletisim">İletişim</a>
+  </div>
+  <a href="#iletisim" class="nav-cta">Teklif Alın</a>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-grid-bg"></div>
+  <div class="wrap">
+    <div class="hero-kicker reveal">İstanbul · Şişli — 2009'dan beri fuar &amp; mimari proje ortağı</div>
+    <h1 class="reveal">Markanızın sahnede <em>durduğu</em> yeri biz tasarlarız.</h1>
+    <p class="hero-sub reveal">ES Dizayn; ahşap stand, Maxima sistem stand, modüler stand ve mimari proje hatlarıyla fikirden montaja kadar tüm süreci tek çatı altında yönetir. 15 yılı aşkın tecrübe, 100'ü aşkın marka.</p>
+    <div class="hero-actions reveal">
+      <a href="#iletisim" class="btn-primary" id="heroCta">
+        Projenizi Konuşalım
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+      </a>
+      <a href="#hizmetler" class="btn-ghost">Hizmetlerimizi İnceleyin</a>
+    </div>
+  </div>
+  <div class="hero-scrollcue"><span>Kaydırın</span><span class="line"></span></div>
+</header>
+
+<section class="stats">
+  <div class="wrap stats-inner">
+    <div class="stat reveal">
+      <div class="stat-num" data-count="15"><span class="value">0</span><span class="suffix">+</span></div>
+      <div class="stat-label">Yıllık sektör tecrübesi</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num" data-count="100"><span class="value">0</span><span class="suffix">+</span></div>
+      <div class="stat-label">Tamamlanmış marka projesi</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num" data-count="4"><span class="value">0</span></div>
+      <div class="stat-label">Uzmanlaşılmış hizmet hattı</div>
+    </div>
+    <div class="stat reveal">
+      <div class="stat-num" data-count="2"><span class="value">0</span></div>
+      <div class="stat-label">Ülkede saha montaj deneyimi</div>
+    </div>
+  </div>
+</section>
+
+<section id="hizmetler" class="section-pad">
+  <div class="wrap">
+    <div class="eyebrow reveal">Hizmet Hatları</div>
+    <div class="section-head reveal">
+      <h2>Dört uzmanlık alanı, tek proje yönetimi.</h2>
+      <p>Her marka aynı sahneyi paylaşmaz. Bütçenize, fuar takvimine ve marka diline göre doğru stand sistemini seçer; tasarımdan mühendisliğe, üretimden saha montajına kadar süreci uçtan uca yönetiriz.</p>
+    </div>
+
+    <div class="services-list">
+      <div class="service-row reveal">
+        <div class="service-index">01</div>
+        <div class="service-name">
+          <h3>Ahşap Stand</h3>
+          <span class="tag">50+ referans proje</span>
+        </div>
+        <div class="service-desc">
+          <p>En köklü hizmet hattımız. Özel tasarım ahşap konstrüksiyon ile marka kimliğini birebir yansıtan, detay işçiliğine dayalı standlar üretiyoruz — sağlık/estetik cihaz markalarından kurumsal devlet etkinliklerine kadar geniş bir yelpazede.</p>
+          <div class="clients"><b>Referanslar:</b> Pierre Cardin, Falken, Weider, Karadeniz Teknik Üniversitesi, Trabzon Büyükşehir Belediyesi, Avrasya Asansör</div>
+        </div>
+      </div>
+
+      <div class="service-row reveal">
+        <div class="service-index">02</div>
+        <div class="service-name">
+          <h3>Maxima Stand</h3>
+          <span class="tag">Premium sistem çözüm</span>
+        </div>
+        <div class="service-desc">
+          <p>Yüksek kaliteli sistem bileşenleriyle kurulan, hızlı montaj ve rafine bitiş gerektiren markalar için geliştirdiğimiz premium ürün hattı. Özellikle estetik ve kozmetik sektöründe tercih edilir.</p>
+          <div class="clients"><b>Referanslar:</b> Cosme Core, Labina, Medikoz, Papila Kozmetik, RobotX</div>
+        </div>
+      </div>
+
+      <div class="service-row reveal">
+        <div class="service-index">03</div>
+        <div class="service-name">
+          <h3>Modüler Stand</h3>
+          <span class="tag">40+ referans proje</span>
+        </div>
+        <div class="service-desc">
+          <p>Yeniden kullanılabilir, sistemli bileşenlerle hem bütçe hem de zaman açısından verimli çözümler. Yoğun fuar takvimine sahip markalar için tekrarlanabilir kalite ve hızlı kurulum.</p>
+          <div class="clients"><b>Referanslar:</b> Çaykur, Gensa Alüminyum, Efe Otomotiv, İstanbul Collection, Kapex Lazer</div>
+        </div>
+      </div>
+
+      <div class="service-row reveal">
+        <div class="service-index">04</div>
+        <div class="service-name">
+          <h3>Mimari Projeler</h3>
+          <span class="tag">İç mekân &amp; vitrin</span>
+        </div>
+        <div class="service-desc">
+          <p>Fuar dışında; otel, mağaza, showroom, kafe-bar, restoran ve ofis projelerinde iç mekân tasarımı. Paket stand, dijital baskı ve vitrin tasarımını da bu hat altında yürütüyoruz.</p>
+          <div class="clients"><b>Referanslar:</b> Akrones Termal Otel, Promax Kids, MAYMUN Club &amp; Bar, Yussi Shoes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="referanslar" class="clients-band section-pad">
+  <div class="wrap">
+    <div class="eyebrow reveal">Referanslar</div>
+    <div class="section-head reveal">
+      <h2>Sektörün güvendiği markalarla çalıştık.</h2>
+      <p>Medikal estetikten kamu kurumlarına, otomotivden ağırlamaya kadar farklı sektörlerden markalarla uzun soluklu iş birlikleri kurduk.</p>
+    </div>
+
+    <div class="vertical-grid reveal-stagger">
+      <div class="vertical-card">
+        <h4>Medikal Estetik &amp; Kozmetik</h4>
+        <div class="names">
+          <span>Cosmetic Med</span><span>AYQ Medikal</span><span>Mesoxy</span><span>Beka Medikal</span><span>Phibrows</span><span>Mersal Kozmetik</span><span>Okar Group</span><span>Viola Beauty</span>
+        </div>
+        <span class="count">En yoğun uzmanlaştığımız sektör</span>
+      </div>
+      <div class="vertical-card">
+        <h4>Kamu &amp; Belediye Etkinlikleri</h4>
+        <div class="names">
+          <span>Trabzon Büyükşehir Belediyesi</span><span>Trabzon Valiliği</span><span>Ortahisar Belediyesi</span>
+        </div>
+        <span class="count">Ankara · İzmit · Antalya · İstanbul · Dortmund</span>
+      </div>
+      <div class="vertical-card">
+        <h4>Otomotiv, Havacılık &amp; Sanayi</h4>
+        <div class="names">
+          <span>Falken</span><span>Bilen Havacılık</span><span>Avrasya Asansör</span><span>Efe Otomotiv</span><span>Aydın Otomobilcilik</span><span>GNG Valve</span>
+        </div>
+        <span class="count">Ağır sanayi ölçeğinde montaj deneyimi</span>
+      </div>
+      <div class="vertical-card">
+        <h4>Uluslararası Tüketici Markaları</h4>
+        <div class="names">
+          <span>Pierre Cardin</span><span>Weider</span><span>Çaykur</span>
+        </div>
+        <span class="count">Global markalar, yerel uygulama</span>
+      </div>
+      <div class="vertical-card">
+        <h4>Eğitim &amp; Yayıncılık</h4>
+        <div class="names">
+          <span>Karadeniz Teknik Üniversitesi</span><span>Öner Yayın Grubu</span>
+        </div>
+        <span class="count">Kurumsal itibar odaklı tasarım</span>
+      </div>
+      <div class="vertical-card">
+        <h4>Ağırlama &amp; Perakende</h4>
+        <div class="names">
+          <span>Akrones Termal Otel</span><span>Yussi Shoes</span><span>MAYMUN Club &amp; Bar</span><span>Promax Kids</span>
+        </div>
+        <span class="count">Mimari proje hattımızın vitrini</span>
+      </div>
+    </div>
+
+    <div class="marquee-wrap reveal">
+      <div class="marquee" id="marquee">
+        <span>Pierre Cardin</span><span>Çaykur</span><span>Falken</span><span>Weider</span><span>Karadeniz Teknik Üniversitesi</span><span>Trabzon Büyükşehir Belediyesi</span><span>Avrasya Asansör</span>
+        <span>Pierre Cardin</span><span>Çaykur</span><span>Falken</span><span>Weider</span><span>Karadeniz Teknik Üniversitesi</span><span>Trabzon Büyükşehir Belediyesi</span><span>Avrasya Asansör</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="surec" class="section-pad">
+  <div class="wrap">
+    <div class="eyebrow reveal">Nasıl Çalışıyoruz</div>
+    <div class="section-head reveal">
+      <h2>Tasarımdan montaja, uçtan uca tek ekip.</h2>
+      <p>Projeyi fuar takvimine, bütçeye ve saha koşullarına göre planlıyor; sahada çıkabilecek her soruna anında müdahale ederek zamanında ve bütçe dahilinde teslim ediyoruz.</p>
+    </div>
+    <div class="process-grid reveal-stagger">
+      <div class="process-step">
+        <span class="num">01 · Tasarım</span>
+        <div>
+          <h4>Konsept &amp; Mimari Tasarım</h4>
+          <p>Marka kimliği, fuar teması ve alan verilerine göre 3B konsept ve teknik çizimler hazırlanır.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <span class="num">02 · Mühendislik</span>
+        <div>
+          <h4>Statik &amp; Teknik Mühendislik</h4>
+          <p>Konstrüksiyon, elektrik ve LED/interaktif teknoloji entegrasyonu mühendislik ekibimizce projelendirilir.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <span class="num">03 · Üretim</span>
+        <div>
+          <h4>Atölyede Üretim</h4>
+          <p>Ahşap, Maxima ve modüler bileşenler kendi atölyemizde, kalite kontrolden geçirilerek üretilir.</p>
+        </div>
+      </div>
+      <div class="process-step">
+        <span class="num">04 · Saha</span>
+        <div>
+          <h4>Montaj &amp; Saha Yönetimi</h4>
+          <p>Kurulum ekibimiz yurt içi ve yurt dışında sahada bulunur, açılışa kadar her detayı takip eder.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="vitrine" class="section-pad">
+  <div class="wrap">
+    <div class="eyebrow reveal">Proje Vitrini</div>
+    <div class="section-head reveal">
+      <h2>Sahadan kareler.</h2>
+      <p>Ahşap, Maxima ve modüler stand hatlarımızdan; atölyeden fuar alanına taşınan gerçek proje görüntüleri.</p>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item g-1 reveal">
+        <img src="mr9cskos-proje-01.jpg" alt="ES Dizayn ahşap fuar standı — genel görünüm" loading="lazy" />
+        <div class="g-cap"><div class="g-line">Ahşap Stand</div><div class="g-title">Fuar Standı — Genel Kurulum</div></div>
+      </div>
+      <div class="gallery-item g-2 reveal">
+        <img src="mr9cskov-proje-02.jpg" alt="ES Dizayn modüler stand tasarımı" loading="lazy" />
+        <div class="g-cap"><div class="g-line">Modüler Stand</div><div class="g-title">Marka Alanı Tasarımı</div></div>
+      </div>
+      <div class="gallery-item g-3 reveal">
+        <img src="mr9cskow-proje-03.jpg" alt="ES Dizayn Maxima sistem stand" loading="lazy" />
+        <div class="g-cap"><div class="g-line">Maxima Stand</div><div class="g-title">Sistem Stand Uygulaması</div></div>
+      </div>
+      <div class="gallery-item g-4 reveal">
+        <img src="mr9cskox-proje-04.jpg" alt="ES Dizayn fuar standı detay" loading="lazy" />
+        <div class="g-cap"><div class="g-line">Ahşap Stand</div><div class="g-title">Vitrin &amp; Ürün Sergileme</div></div>
+      </div>
+      <div class="gallery-item g-5 reveal">
+        <img src="mr9cskox-proje-05.jpg" alt="ES Dizayn kurumsal stand içi" loading="lazy" />
+        <div class="g-cap"><div class="g-line">Mimari Proje</div><div class="g-title">İç Mekân &amp; Aydınlatma</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projeler" class="casestudy section-pad">
+  <div class="wrap">
+    <div class="eyebrow reveal">Öne Çıkan Projeler</div>
+    <div class="section-head reveal">
+      <h2>Basında yer bulan iki proje.</h2>
+      <p>Fuar standının ötesine geçtiğimiz, ulusal basında yer alan iki çalışmamız.</p>
+    </div>
+    <div class="cs-grid">
+      <div class="cs-item reveal">
+        <div class="kicker">Mimari Proje — Ağırlama</div>
+        <h3>Akrones Termal Otel</h3>
+        <p>Otelin iç mekân tasarımını, marka konseptine uygun malzeme ve aydınlatma dili ile yeniden kurguladık. Proje, ulusal basında birden fazla yayın organında yer aldı.</p>
+        <span class="press">Ulusal medyada yayınlandı →</span>
+      </div>
+      <div class="cs-item reveal">
+        <div class="kicker">Ahşap Stand — Kamu &amp; Kültür</div>
+        <h3>Trabzon Günleri Turnesi</h3>
+        <p>Trabzon Büyükşehir Belediyesi için Ankara, İzmit, Antalya, İstanbul ve Almanya'nın Dortmund şehrinde farklı sürümleriyle kurulan, şehri tanıtan gezici stand projesi.</p>
+        <span class="press">Ankara · İzmit · Antalya · İstanbul · Dortmund →</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="wrap">
+    <div class="eyebrow reveal" style="justify-content:center;">İletişim</div>
+    <h2 class="reveal">Bir sonraki fuarınızda <em>sahneyi</em> biz kuralım.</h2>
+    <p class="reveal">Stand ihtiyacınızı, fuar tarihinizi ve marka hedeflerinizi bize iletin — 24 saat içinde teklif ve konsept önerisiyle dönüş yapalım.</p>
+    <div class="cta-actions reveal">
+      <a href="mailto:info@esdizayn.com" class="btn-primary" id="ctaBtn">
+        Teklif İsteyin
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M7 7h10v10"/></svg>
+      </a>
+      <a href="tel:+902123258063" class="btn-ghost">+90 (212) 325 80 63</a>
+    </div>
+    <div class="cta-contact-line reveal">
+      <span>Merkez Mah. Abide-i Hürriyet Cad. No:211 Blackout (Bolkan Center) D:67, Şişli / İstanbul</span>
+    </div>
+  </div>
+</section>
+
+<footer id="iletisim">
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand"><img src="mr9cwrwb-ES-DIZAYN-2024.png" alt="ES Dizayn"></div>
+        <p>2009'dan bu yana fuar standı, modüler stand ve mimari proje çözümleriyle markaların sahnesini kuruyoruz.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Hizmetler</h5>
+        <a href="#hizmetler">Ahşap Stand</a>
+        <a href="#hizmetler">Maxima Stand</a>
+        <a href="#hizmetler">Modüler Stand</a>
+        <a href="#hizmetler">Mimari Projeler</a>
+      </div>
+      <div class="footer-col">
+        <h5>İletişim</h5>
+        <a href="tel:+902123258063">+90 (212) 325 80 63</a>
+        <a href="mailto:info@esdizayn.com">info@esdizayn.com</a>
+        <p>Şişli, İstanbul</p>
+      </div>
+      <div class="footer-col">
+        <h5>Sosyal</h5>
+        <a href="#">Instagram</a>
+        <a href="#">YouTube</a>
+        <a href="#">Facebook</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 ES Dizayn. Tüm hakları saklıdır.</span>
+      <span>Şişli, İstanbul — Türkiye</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // nav scroll state
+  var nav = document.getElementById('nav');
+  function onScroll(){ nav.classList.toggle('scrolled', window.scrollY > 8); }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+
+  // reveal on scroll
+  var revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting){
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.16, rootMargin: '0px 0px -60px 0px' });
+  revealEls.forEach(function(el){ io.observe(el); });
+
+  // counters
+  var counters = document.querySelectorAll('.stat-num[data-count]');
+  var counted = new WeakSet();
+  var cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting && !counted.has(entry.target)){
+        counted.add(entry.target);
+        var el = entry.target;
+        var target = parseInt(el.getAttribute('data-count'), 10);
+        var valueEl = el.querySelector('.value');
+        var start = null;
+        var duration = 1100;
+        function step(ts){
+          if (!start) start = ts;
+          var progress = Math.min((ts - start) / duration, 1);
+          var eased = 1 - Math.pow(1 - progress, 3);
+          valueEl.textContent = Math.round(eased * target);
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+    });
+  }, { threshold: 0.5 });
+  counters.forEach(function(el){ cio.observe(el); });
+
+  // magnetic buttons
+  function magnetic(el, strength){
+    el.addEventListener('mousemove', function(e){
+      var r = el.getBoundingClientRect();
+      var x = e.clientX - r.left - r.width/2;
+      var y = e.clientY - r.top - r.height/2;
+      el.style.transform = 'translate(' + (x*strength) + 'px,' + (y*strength) + 'px)';
+    });
+    el.addEventListener('mouseleave', function(){ el.style.transform = 'translate(0,0)'; });
+  }
+  ['heroCta','ctaBtn'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) magnetic(el, 0.25);
+  });
+})();
+</script>
+</body>
+</html>
